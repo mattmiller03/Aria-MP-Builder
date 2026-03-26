@@ -1,10 +1,11 @@
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo mp-test                                                   
+ sudo mp-test
 /usr/lib/python3.11/site-packages/paramiko/pkey.py:83: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
   "cipher": algorithms.TripleDES,
 /usr/lib/python3.11/site-packages/paramiko/transport.py:254: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
   "class": algorithms.TripleDES,
+Building base image [Finished]
 Unexpected error
-'identifiers'
+invalid tag 'azure government cloud management pack-test:1.0.0': invalid reference format
   File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 938, in main
     asyncio.run(run(parser.parse_args()))
   File "/usr/lib/python3.11/asyncio/runners.py", line 190, in run
@@ -16,22 +17,18 @@ Unexpected error
   File "/usr/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
     return future.result()
            ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 326, in run
-    project = get_project(arguments)
-              ^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/project.py", line 273, in get_project
-    return _find_project_by_path(os.getcwd())
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/project.py", line 307, in _find_project_by_path
-    return read_project(path)
-           ^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/project.py", line 301, in read_project
-    return Project.extract(path)
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/project.py", line 246, in extract
-    connections = [
-                  ^
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/project.py", line 247, in <listcomp>
-    Connection.extract(path, connection)
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/project.py", line 156, in extract
-    identifiers = json_connection[CONNECTIONS_CONFIG_CONNECTION_IDENTIFIERS_KEY]
+  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 362, in run
+    await adapter_container._image_task
+  File "/usr/lib/python3.11/concurrent/futures/thread.py", line 58, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/docker_wrapper.py", line 288, in get_container_image
+    build_image(
+  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/docker_wrapper.py", line 198, in build_image
+    return client.images.build(  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/docker/models/images.py", line 296, in build
+    resp = self.client.api.build(**kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/docker/api/build.py", line 130, in build
+    raise errors.DockerException(
