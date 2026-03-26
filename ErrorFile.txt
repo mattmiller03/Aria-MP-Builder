@@ -1,34 +1,7 @@
- sudo mp-test
 /usr/lib/python3.11/site-packages/paramiko/pkey.py:83: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
   "cipher": algorithms.TripleDES,
 /usr/lib/python3.11/site-packages/paramiko/transport.py:254: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
   "class": algorithms.TripleDES,
 Building base image [Finished]
-Unexpected error
-invalid tag 'azure government cloud management pack-test:1.0.0': invalid reference format
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 938, in main
-    asyncio.run(run(parser.parse_args()))
-  File "/usr/lib/python3.11/asyncio/runners.py", line 190, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/asyncio/runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 362, in run
-    await adapter_container._image_task
-  File "/usr/lib/python3.11/concurrent/futures/thread.py", line 58, in run
-    result = self.fn(*self.args, **self.kwargs)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/docker_wrapper.py", line 288, in get_container_image
-    build_image(
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/docker_wrapper.py", line 198, in build_image
-    return client.images.build(  # type: ignore
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/docker/models/images.py", line 296, in build
-    resp = self.client.api.build(**kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/docker/api/build.py", line 130, in build
-    raise errors.DockerException(
+Unable to run container
+SDK message: 500 Server Error for http+docker://localhost/v1.42/build?t=azuregovcloud-test%3A1.0.0&q=False&nocache=False&rm=True&forcerm=False&pull=False&labels=%7B%22mp-test%22%3A+%221774546450.7202888%22%7D: Internal Server Error ("Cannot locate specified Dockerfile: Dockerfile")
