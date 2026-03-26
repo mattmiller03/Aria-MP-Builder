@@ -1,62 +1,37 @@
-=== Operating System ===
-  [PASS]  Photon OS detected: VMware Photon OS 5.0
-PHOTON_BUILD_NUMBER=b9d98344d
-
-=== Python ===
-  [PASS]  Python 3.11.13 (>= 3.8 required)
-  [PASS]  pip found: pip 24.3.1 from /usr/lib/python3.11/site-packages/pip (python 3.11)
-
-=== Docker ===
-  [PASS]  Docker version 23.0.2, build 569dd73
-  [PASS]  Docker service is running
-  [PASS]  Current user can access Docker
-
-=== Git ===
-  [PASS]  git version 2.39.0
-
-=== VCF Operations Integration SDK ===
-  [PASS]  mp-build found: /usr/bin/mp-build
-  [PASS]  mp-test found: /usr/bin/mp-test
-  [PASS]  mp-init found: /usr/bin/mp-init
-
-=== Python Dependencies ===
-  [PASS]  requests library installed: vNone
-
-=== Project Files ===
-  [PASS]  app/adapter.py exists
-  [PASS]  app/auth.py exists
-  [PASS]  app/azure_client.py exists
-  [PASS]  app/constants.py exists
-  [PASS]  app/collectors/__init__.py exists
-  [PASS]  app/requirements.txt exists
-  [PASS]  conf/describe.xml exists
-  [PASS]  manifest.txt exists
-  [PASS]  resources/resources.properties exists
-  [PASS]  eula.txt exists
-
-=== Credentials Configuration ===
-  [PASS]  connections.json configured (placeholders replaced)
-
-=== Network Connectivity (Azure Gov Endpoints) ===
-  [PASS]  Azure Gov Auth — login.microsoftonline.us:443 reachable
-  [PASS]  Azure Gov ARM — management.usgovcloudapi.net:443 reachable
-
-=== SUMMARY ===
-
-  Passed:   24
-  Failed:   0
-  Warnings: 0
-
-  ✓ All checks passed. You are ready to build and test the management pack.
-
-  Next steps:
-    cd Azure
-    mp-test       # Test locally against Azure Gov
-    mp-build      # Build the .pak file
-
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder ]$ cd Azure/
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ mp-test
-Traceback (most recent call last):
-  File "/usr/bin/mp-test", line 5, in <module>
-    from vmware_aria_operations_integration_sdk.mp_test import main
-ModuleNotFoundError: No module named 'vmware_aria_operations_integration_sdk.mp_test'
+vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo mp-test                                                   
+/usr/lib/python3.11/site-packages/paramiko/pkey.py:83: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
+  "cipher": algorithms.TripleDES,
+/usr/lib/python3.11/site-packages/paramiko/transport.py:254: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
+  "class": algorithms.TripleDES,
+Unexpected error
+'identifiers'
+  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 938, in main
+    asyncio.run(run(parser.parse_args()))
+  File "/usr/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 326, in run
+    project = get_project(arguments)
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/project.py", line 273, in get_project
+    return _find_project_by_path(os.getcwd())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/project.py", line 307, in _find_project_by_path
+    return read_project(path)
+           ^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/project.py", line 301, in read_project
+    return Project.extract(path)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/project.py", line 246, in extract
+    connections = [
+                  ^
+  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/project.py", line 247, in <listcomp>
+    Connection.extract(path, connection)
+  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/project.py", line 156, in extract
+    identifiers = json_connection[CONNECTIONS_CONFIG_CONNECTION_IDENTIFIERS_KEY]
