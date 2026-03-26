@@ -107,7 +107,7 @@ fi
 header "Python Dependencies"
 
 if python3 -c "import requests" &>/dev/null 2>&1; then
-    REQ_VERSION=$(python3 -c "import requests; print(requests.__version__)")
+    REQ_VERSION=$(python3 -c "from importlib.metadata import version; print(version('requests'))" 2>/dev/null || echo "unknown")
     pass "requests library installed: v$REQ_VERSION"
 else
     fail "requests library not found. Run: pip install -r Azure/app/requirements.txt"
@@ -117,7 +117,15 @@ fi
 header "Project Files"
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_DIR="$SCRIPT_DIR/Azure"
+# Script lives inside Azure/ — if we detect app/adapter.py here, use SCRIPT_DIR directly
+# Otherwise assume we're in the repo root and look for Azure/
+if [ -f "$SCRIPT_DIR/app/adapter.py" ]; then
+    PROJECT_DIR="$SCRIPT_DIR"
+elif [ -f "$SCRIPT_DIR/Azure/app/adapter.py" ]; then
+    PROJECT_DIR="$SCRIPT_DIR/Azure"
+else
+    PROJECT_DIR="$SCRIPT_DIR"
+fi
 
 check_file() {
     if [ -f "$PROJECT_DIR/$1" ]; then
