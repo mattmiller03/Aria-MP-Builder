@@ -9,7 +9,12 @@ Choose a method to test: Test Connection
 Building adapter [Finished]
 Waiting for adapter to start [Finished]
 Unable to run container
-SDK message: 409 Client Error for http+docker://localhost/v1.42/containers/89856885a2b89eed4d49f015c6cb8763b521dc2ca53745c8882dd560896d7e4d/kill: Conflict ("Cannot kill container: 89856885a2b89eed4d49f015c6cb8763b521dc2ca53745c8882dd560896d7e4d: Container 89856885a2b89eed4d49f015c6cb8763b521dc2ca53745c8882dd560896d7e4d is not running")
+SDK message: 409 Client Error for http+docker://localhost/v1.42/containers/7c208501e6dc3cfcffc769f4c9f9ac9164805923a4495c0d67154d10c98f0c40/kill: Conflict ("Cannot kill container: 7c208501e6dc3cfcffc769f4c9f9ac9164805923a4495c0d67154d10c98f0c40: Container 7c208501e6dc3cfcffc769f4c9f9ac9164805923a4495c0d67154d10c98f0c40 is not running")
 vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker ps -a
 CONTAINER ID   IMAGE                      COMMAND               CREATED          STATUS                      PORTS     NAMES
-89856885a2b8   azuregovcloud-test:1.0.0   "python adapter.py"   35 seconds ago   Exited (0) 33 seconds ago             clever_cerf
+7c208501e6dc   azuregovcloud-test:1.0.0   "python adapter.py"   28 seconds ago   Exited (1) 27 seconds ago             silly_swirles
+vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ docker logs 7c208501e6dc
+Traceback (most recent call last):
+  File "/adapter/adapter.py", line 488, in <module>
+    from aria.ops.adapter import start_adapter
+ModuleNotFoundError: No module named 'aria'
