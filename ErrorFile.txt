@@ -1,83 +1,537 @@
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker load -i /home/vropsssh/Aria-MP-Builder/Azure/python311slim.tar 
-188c9b34dfbe: Loading layer [==================================================>]  29.78MB/29.78MB
-188695d9eb1d: Loading layer [==================================================>]  1.293MB/1.293MB
-34b037810a00: Loading layer [==================================================>]  14.37MB/14.37MB
-8347a0657a00: Loading layer [==================================================>]     250B/250B
-Loaded image: python:3.11-slim
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker kill $(sudo docker ps -q) 2>/dev/null; sudo docker rm $(sudo docker ps -aq) 2>/dev/null
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker ps -a
-CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker kill $(sudo docker ps -q) 2>/dev/null; sudo docker rm $(sudo docker ps -aq) 2>/dev/null
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo mp-test --port 8181
-/usr/lib/python3.11/site-packages/paramiko/pkey.py:83: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
-  "cipher": algorithms.TripleDES,
-/usr/lib/python3.11/site-packages/paramiko/transport.py:254: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
-  "class": algorithms.TripleDES,
-Building base image [Finished]
-Choose a connection:  Azure Gov Test
-Choose a method to test: Test Connection
-Building adapter [Finished]
-Waiting for adapter to start [Finished]
-Unable to run container
-SDK message: 409 Client Error for http+docker://localhost/v1.42/containers/20a738d8261c046a6e25eca66d053149fd742eb2dbe29b1c7b685e21bf037311/kill: Conflict ("Cannot kill container: 20a738d8261c046a6e25eca66d053149fd742eb2dbe29b1c7b685e21bf037311: Container 20a738d8261c046a6e25eca66d053149fd742eb2dbe29b1c7b685e21bf037311 is not running")
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker ps -a
-CONTAINER ID   IMAGE                      COMMAND     CREATED          STATUS                      PORTS     NAMES
-20a738d8261c   azuregovcloud-test:1.0.0   "python3"   28 seconds ago   Exited (0) 27 seconds ago             beautiful_northcutt
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ docker logs 20a738d8261c
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker rmi -f $(sudo docker images -q) 2>/dev/null
-[sudo] password for vropsssh: 
-Untagged: azuregovcloud-test:1.0.0
-Deleted: sha256:3a6404e73d924e9ef6d72a61a3b2f27f78baf60b3a25674d26c73ad2837b5e96
-Deleted: sha256:c655a0bd6f9b0b2ad1312d02a3ed0d7812e758b91965f81ac1419ea09c192a76
-Deleted: sha256:15b4d7139341db40b9f1b0d91185909575e7eb6035dc399dd10240b2a9abe234
-Deleted: sha256:4473b3bbee5b80b04c18794c6e26f6ef00b37f8ae4b2bc65b0da7eb28e313500
-Deleted: sha256:f11021c16f32153f4b8230b8c07ba9eacc2836d9db71ac17f87f7965d12a1cfe
-Untagged: python:3.11-slim
-Deleted: sha256:e67db9b14d098500c534b3acb73f5503fad7eed29720b8870d12dadb98ae245b
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker load -i /home/vropsssh/Aria-MP-Builder/Azure/python311slim.tar
-Loaded image: python:3.11-slim
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ find /home/vropsssh/Aria-MP-Builder -name "Dockerfile*" 2>/dev/null
-/home/vropsssh/Aria-MP-Builder/Azure/Dockerfile
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ find /tmp -name "Dockerfile*" 2>/dev/null
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ grep -n "Dockerfile\|dockerfile\|COPY.*adapter\|CMD\|ENTRYPOINT" /usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/docker_wrapper.py
-grep: /usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/docker_wrapper.py: Permission denied
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo grep -n "Dockerfile\|dockerfile\|COPY.*adapter\|CMD\|ENTRYPOINT" /usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/docker_wrapper.py
-177:    :param path: path to the directory containing the dockerfile
-183:    dockerfile_path = os.path.join(path, "Dockerfile")
-184:    if os.path.exists(dockerfile_path):
-185:        with open(dockerfile_path, "r") as f:
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ cd /home/vropsssh/Aria-MP-Builder/Azure
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo mp-test --port 8181
-/usr/lib/python3.11/site-packages/paramiko/pkey.py:83: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
-  "cipher": algorithms.TripleDES,
-/usr/lib/python3.11/site-packages/paramiko/transport.py:254: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
-  "class": algorithms.TripleDES,
-Building base image [Finished]
-Choose a connection:  Azure Gov Test
-Choose a method to test: Test Connection
-Building adapter [Finished]
-Waiting for adapter to start [Finished]
-Unable to run container
-SDK message: 409 Client Error for http+docker://localhost/v1.42/containers/b8af168ddf3482f3d36a030128cec25cebcf687f782b11d195c6207e8f7ffb37/kill: Conflict ("Cannot kill container: b8af168ddf3482f3d36a030128cec25cebcf687f782b11d195c6207e8f7ffb37: Container b8af168ddf3482f3d36a030128cec25cebcf687f782b11d195c6207e8f7ffb37 is not running")
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker ps -a
-CONTAINER ID   IMAGE                      COMMAND     CREATED          STATUS                      PORTS     NAMES
-b8af168ddf34   azuregovcloud-test:1.0.0   "python3"   45 seconds ago   Exited (0) 45 seconds ago             serene_jemison
-20a738d8261c   3a6404e73d92               "python3"   8 minutes ago    Exited (0) 8 minutes ago              beautiful_northcutt
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker logs 20a738d8261c
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker inspect 20a738d8261c --format='{{.Config.Cmd}}'            
-[python3]
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker inspect 20a738d8261c --format='{{.Config.Entrypoint}}'
-[]
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker run --rm azuregovcloud-test:1.0.0 ls -la /adapter/
-total 64
-drwxr-xr-x 4 root root  4096 Mar 27 14:56 .
-drwxr-xr-x 1 root root  4096 Mar 27 14:58 ..
--rw-r----- 1 root root 25909 Mar 27 14:19 adapter.py
--rw-r----- 1 root root  2848 Mar 23 14:53 auth.py
--rw-r----- 1 root root  5053 Mar 23 14:53 azure_client.py
-drwxr-x--- 2 root root  4096 Mar 27 13:30 collectors
--rw-r----- 1 root root  2115 Mar 23 14:53 constants.py
--rw-r----- 1 root root   111 Mar 27 14:35 requirements.txt
-drwxr-x--- 2 root root  4096 Mar 27 14:10 wheels
-vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker run --rm azuregovcloud-test:1.0.0 pip list | grep aria
-vmware-aria-operations-integration-sdk-lib 1.1.0
+sudo cat /usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/docker_wrapper.py
+#  Copyright 2022 VMware, Inc.
+#  SPDX-License-Identifier: Apache-2.0
+import asyncio
+import io
+import json
+import logging
+import os
+import platform
+import re
+import stat
+import subprocess
+import sys
+import tarfile
+import time
+from types import TracebackType
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Set
+from typing import Tuple
+from typing import Type
+
+import docker
+from docker import DockerClient
+from docker.models.containers import Container
+from docker.models.images import Image
+from sen.util import calculate_blkio_bytes
+from sen.util import calculate_network_bytes
+
+from vmware_aria_operations_integration_sdk.constant import DEFAULT_MEMORY_LIMIT
+from vmware_aria_operations_integration_sdk.constant import DEFAULT_PORT
+from vmware_aria_operations_integration_sdk.filesystem import files_in_directory
+from vmware_aria_operations_integration_sdk.logging_format import CustomFormatter
+from vmware_aria_operations_integration_sdk.logging_format import PTKHandler
+from vmware_aria_operations_integration_sdk.stats import convert_bytes
+from vmware_aria_operations_integration_sdk.stats import LongRunStats
+from vmware_aria_operations_integration_sdk.threading import threaded
+from vmware_aria_operations_integration_sdk.ui import Table
+
+logger = logging.getLogger(__name__)
+logger.setLevel(os.getenv("LOG_LEVEL", "INFO").upper())
+consoleHandler = PTKHandler()
+consoleHandler.setFormatter(CustomFormatter())
+logger.addHandler(consoleHandler)
+
+
+def login(**kwargs: Any) -> str:
+    command = ["docker", "login"]
+    if "container_registry" not in kwargs:
+        print(f"Login into Docker Hub")
+        container_registry = "docker.io"
+    else:
+        container_registry = kwargs["container_registry"]
+        print(f"Login into {container_registry}")
+        command.append(container_registry)
+
+    if (
+        "registry_username" in kwargs and kwargs["registry_username"] is not None
+    ):  # TODO: should be constants
+        command.append("--username")
+        command.append(kwargs["registry_username"])
+
+    if "registry_password" in kwargs and kwargs["registry_password"] is not None:
+        command.append("--password")
+        command.append(kwargs["registry_password"])
+
+    response = subprocess.run(command)
+
+    # Since we are using a subprocess, we cannot be very specific about the type of failure we get
+    if response.returncode != 0:
+        raise LoginError
+
+    return container_registry
+
+
+def init() -> DockerClient:
+    """Tries to establish a connection with the docker daemon via unix socket.
+
+    If the connection fails, the error message is parsed to find a common error message that could indicate that the
+    daemon isn't running.
+    If the message does not match the common error message, then the error is appended to another
+    error message.
+
+    :return:  A Docker Client that communicates with the Docker daemon
+    """
+    try:
+        client = docker.from_env()
+
+        return client
+    except docker.errors.DockerException as e:
+        # FileNotFoundError(Mac OS and Linux): When the port is not accessible because the advanced setting isn't enabled or the service is not running.
+        # ConnectionRefusedError (Linux): When the docker service isn't running on the machine
+        # CreateFile (Windows): When docker isn't running in the machine
+        if any(
+            m in e.args[0]
+            for m in ("FileNotFoundError", "ConnectionRefusedError", "CreateFile")
+        ):
+            logger.debug(e, exc_info=True)
+
+            if platform.system() == "Windows":
+                host_os_port_path = r"C:\ProgramData\docker"
+            else:
+                host_os_port_path = "/var/run/docker.sock"
+
+            raise InitError(
+                message="Cannot connect to the Docker daemon",
+                recommendation=f"Ensure the docker daemon is running and the default socket at {host_os_port_path} is accessible",
+            )
+        elif "PermissionError" in e.args[0]:
+            logger.debug(e, exc_info=True)
+            raise InitError(
+                message="Cannot run docker commands.",
+                recommendation=f"Make sure the user '{os.getlogin()}' has permissions to run docker",
+            )
+        else:
+            raise InitError(e)
+
+
+def push_image(client: DockerClient, repository: str, tag: str) -> str:
+    """
+    Pushes the given image tag and returns the images digest.
+
+    If there is an error during while pushing the image, then it will generate a
+    PushError, that the user can handle
+
+    NOTE: An alternate method of parsing the digest from an image would be to
+    parse the attributes of an image and then check if the image has repoDigests
+    attribute, then we could parse the repo digest (different from digest) to get the digest.
+
+
+    :param client: the docker client that communicates to the docker daemon
+    :param image_tag: An image tag that identifies the image to be pushed
+    :return: A string version of the SHA256 digest
+    """
+    response = client.images.push(
+        repository=repository, tag=tag, stream=True, decode=True
+    )
+
+    image_digest = ""
+
+    for line in response:
+        if "aux" in line:
+            try:
+                image_digest = line["aux"]["Digest"]
+            except KeyError:
+                raise PushError("Image digest was not found in response from server")
+
+        elif "status" in line and "digest" in line["status"]:
+            try:
+                image_digest = re.search(r"sha256:[0-9a-f]{64}", line["status"]).group(
+                    0
+                )
+            except KeyError:
+                raise PushError("Image digest was not found in response from server")
+
+        elif "errorDetail" in line:
+            message = line["errorDetail"]["message"]
+            # Clean the error message
+            if "unknown: bad request: invalid repository name" in message:
+                message = f"Invalid repository name: {message.split(':')[-1]}"
+            raise PushError(message)
+
+    return image_digest
+
+
+def build_image(
+    client: DockerClient,
+    path: str,
+    nocache: bool = True,
+    labels: Optional[Dict[str, str]] = None,
+    **kwargs: Any,
+) -> Tuple[Image, Any]:
+    """
+    Wraps the docker clients images.build method with some appropriate default values
+    :param client: Docker client
+    :param path: path to the directory containing the dockerfile
+    :param tag: Tag for the image
+    :param nocache: Do not use the cache when building if this is set. Defaults to true (set)
+    :param labels: dict of labels. Defaults to empty dict
+    :return:
+    """
+    dockerfile_path = os.path.join(path, "Dockerfile")
+    if os.path.exists(dockerfile_path):
+        with open(dockerfile_path, "r") as f:
+            for line in f:
+                if line.startswith("FROM ") and "base-adapter" in line:
+                    match = re.search(r"base-adapter:([a-zA-Z]+)-", line)
+                    if match:
+                        language = match.group(1)
+                        ensure_base_image_exists(language)
+                        break
+
+    context = _get_docker_context(path)
+    if labels is None:
+        labels = dict()
+    try:
+        return client.images.build(  # type: ignore
+            fileobj=context,
+            nocache=nocache,
+            rm=True,
+            labels=labels,
+            custom_context=True,
+            encoding="gzip",
+            **kwargs,
+        )
+    except docker.errors.BuildError as error:
+        error_message = f"{error}"
+        for log in error.build_log:
+            if "stream" in log:
+                line = log["stream"]
+                if "* Try:" in line:
+                    break
+                elif line.strip() != "":
+                    error_message += "\n" + line
+
+        raise BuildError(
+            message=f"ERROR: Unable to build Docker file at {path}:\n {error_message}"
+        )
+
+
+def _get_docker_context(directory: str) -> io.BytesIO:
+    # In-memory file-like-object for creating the context
+    docker_context = io.BytesIO()
+    working_directory = os.getcwd()
+    try:
+        os.chdir(directory)
+        with tarfile.open(fileobj=docker_context, mode="w:gz") as context:
+            for file in files_in_directory(".", _docker_context_inclusion_func):
+                logger.debug(f"Adding '{file}' to image build context")
+                context.add(file, recursive=False)
+    finally:
+        os.chdir(working_directory)
+    # In order to read, we have to reset the cursor to the start of the stream
+    docker_context.seek(0)
+    return docker_context
+
+
+def _docker_context_inclusion_func(file: str) -> bool:
+    excludes = ["build", "content", "logs", "resources"]
+    if os.path.dirname(file) == "." and os.path.basename(file) in excludes:
+        logger.debug(f"Skipping directory '{file}': Excluded by SDK")
+        return False
+    elif _is_hidden(file):
+        logger.debug(f"Skipping directory '{file}': Hidden")
+        return False
+    elif _dir_is_venv(file):
+        logger.debug(f"Skipping directory '{file}': Virtual Environment")
+        return False
+    return True
+
+
+def _is_hidden(file: str) -> bool:
+    name = os.path.basename(file)
+    # *nix hidden file/dir convention
+    if name.startswith("."):
+        return True
+    # Determine if the file/dir is hidden in Windows
+    if sys.platform == "win32":
+        if os.stat(file).st_file_attributes & stat.FILE_ATTRIBUTE_HIDDEN:
+            return True
+    # Otherwise it isn't hidden
+    return False
+
+
+def _dir_is_venv(directory: str) -> bool:
+    if not os.path.isdir(directory):
+        return False
+    # To determine if a directory is a virtual environment, we look for
+    # the 'activate' and 'python' executables. These are in different
+    # locations depending on the OS.
+    return (  # *nix executable locations
+        os.path.exists(os.path.join(directory, "bin", "activate"))
+        and os.path.exists(os.path.join(directory, "bin", "python"))
+    ) or (  # Windows executable locations
+        os.path.exists(os.path.join(directory, "Scripts", "activate.bat"))
+        and os.path.exists(os.path.join(directory, "Scripts", "python.exe"))
+    )
+
+
+@threaded
+def get_container_image(client: DockerClient, build_path: str) -> Image:
+    with open(os.path.join(build_path, "manifest.txt")) as manifest_file:
+        manifest = json.load(manifest_file)
+
+    docker_image_tag = manifest["name"].lower() + "-test:" + manifest["version"]
+
+    build_image(
+        client,
+        path=build_path,
+        tag=docker_image_tag,
+        nocache=False,
+        labels={"mp-test": f"{time.time()}"},
+    )
+
+    return docker_image_tag
+
+
+def run_image(
+    client: DockerClient,
+    image: Image,
+    path: str,
+    container_memory_limit: Optional[int] = DEFAULT_MEMORY_LIMIT,
+    exposed_port: Optional[int] = DEFAULT_PORT,
+) -> Container:
+    # Note: errors from running image (e.g., if there is a process using port 8080 it will cause an error) are handled
+    # by the try/except block in the 'main' function
+
+    memory_limit = DEFAULT_MEMORY_LIMIT
+    if container_memory_limit:
+        memory_limit = container_memory_limit
+
+    port = DEFAULT_PORT
+    if exposed_port:
+        port = exposed_port
+
+    if not os.access(f"{path}/logs", os.W_OK):
+        logger.warn(f"{path}/logs directory is not writable.")
+
+    # Docker memory parameters expect a unit ('m' is 'MB'), or the number will be interpreted as bytes
+    # vROps sets the swap memory limit to the memory limit + 512MB, so we will also. The swap memory
+    # setting is a combination of memory and swap, so this will limit swap space to a max of 512MB regardless
+    # of the memory limit.
+    return client.containers.run(
+        image,
+        detach=True,
+        ports={"8080/tcp": port},
+        mem_limit=f"{memory_limit}m",
+        memswap_limit=f"{memory_limit + 512}m",
+        volumes={f"{path}/logs": {"bind": "/var/log/", "mode": "rw"}},
+    )
+
+
+def stop_container(container: Container) -> None:
+    container.kill()
+    container.remove()
+
+
+class ContainerStats:
+    def __init__(self, container: Container) -> None:
+        self.current_memory_usage: List[int] = []
+        self.memory_percent_usage: List[float] = []
+        self.cpu_percent_usage: List[float] = []
+        self.previous_stats: Optional[Dict] = None
+        self.container: Container = container
+        self._recording: bool = False
+
+    async def __aenter__(self) -> None:
+        self.previous_stats = self.container.stats(stream=False)
+        self._recording = True
+        self._recording_task = asyncio.wrap_future(self._record())
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]] = None,
+        exc_value: Optional[BaseException] = None,
+        traceback: Optional[TracebackType] = None,
+    ) -> None:
+        self._recording = False
+        await self._recording_task
+        self.add(self.container.stats(stream=False))
+
+    @threaded
+    def _record(self) -> None:
+        last_collection_time = time.perf_counter()
+        while self._recording:
+            current_time = time.perf_counter()
+            if current_time >= last_collection_time + 0.5:
+                self.add(self.container.stats(stream=False))
+                last_collection_time = current_time
+            time.sleep(0.05)
+
+    def add(self, current_stats: Dict) -> None:
+        self.block_read, self.block_write = calculate_blkio_bytes(current_stats)
+        self.network_read, self.network_write = calculate_network_bytes(current_stats)
+        self.total_memory = current_stats["memory_stats"]["limit"]
+        current_memory_usage = current_stats["memory_stats"]["usage"]
+        self.current_memory_usage.append(current_memory_usage)
+        self.memory_percent_usage.append(
+            (current_memory_usage / self.total_memory) * 100.0
+        )
+        cpu = calculate_cpu_percent_latest_unix(self.previous_stats, current_stats)
+        if cpu:
+            self.cpu_percent_usage.append(cpu)
+
+        self.previous_stats = current_stats
+
+    @classmethod
+    def get_summary_headers(cls) -> List[str]:
+        """
+        Returns an array with the column names for the statistics about the container:
+        """
+        return [
+            "Avg CPU %",
+            "Avg Memory Usage %",
+            "Memory Limit",
+            "Network I/O",
+            "Block I/O",
+        ]
+
+    def get_summary(self) -> List:
+        """
+        Returns an array with the statistics about the container:
+
+        :return: ["Avg CPU %", "Avg Memory Usage %", "Memory Limit", "Network I/O", "Block I/O"]
+        """
+        return [
+            LongRunStats(self.cpu_percent_usage, "%"),
+            LongRunStats(self.memory_percent_usage, "%"),
+            convert_bytes(self.total_memory),
+            f"{convert_bytes(self.network_read)} / {convert_bytes(self.network_write)}",
+            f"{convert_bytes(self.block_read)} / {convert_bytes(self.block_write)}",
+        ]
+
+    def get_table(self) -> Table:
+        headers = self.get_summary_headers()
+        data = [self.get_summary()]
+        return Table(headers, data)
+
+
+# This code is transcribed from docker's code
+# https://github.com/docker/cli/blob/2bfac7fcdafeafbd2f450abb6d1bb3106e4f3ccb/cli/command/container/stats_helpers.go#L168
+def calculate_cpu_percent_latest_unix(
+    previous_stats: Optional[Dict], current_stats: Dict
+) -> Optional[float]:
+    if not previous_stats:
+        return None
+
+    previous_cpu = previous_stats["cpu_stats"]["cpu_usage"]["total_usage"]
+    previous_system = previous_stats["cpu_stats"]["system_cpu_usage"]
+
+    current_cpu = current_stats["cpu_stats"]["cpu_usage"]["total_usage"]
+    current_system = current_stats["cpu_stats"]["system_cpu_usage"]
+
+    online_cpus = current_stats["cpu_stats"]["online_cpus"]
+
+    cpu_percent = 0.0
+    cpu_delta = current_cpu - previous_cpu
+    system_delta = current_system - previous_system
+
+    if system_delta > 0.0 and cpu_delta > 0.0:
+        cpu_percent = (cpu_delta / system_delta) * online_cpus * 100
+
+    return cpu_percent
+
+
+class DockerWrapperError(Exception):
+    def __init__(self, message: str = "", recommendation: str = "") -> None:
+        self.message = message
+        self.recommendation = recommendation
+
+
+class LoginError(DockerWrapperError):
+    """Raised when there is an error logging into docker"""
+
+
+class InitError(DockerWrapperError):
+    """Raised when there is an error starting the docker client"""
+
+
+class PushError(DockerWrapperError):
+    """Raised when the registry server sends back an error"""
+
+
+class BuildError(DockerWrapperError):
+    """Raised when and error occurs while building the Docker image"""
+
+
+def ensure_base_image_exists(language: str) -> None:
+    client = init()
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    version_file = os.path.join(current_dir, "container_versions.json")
+    try:
+        with open(version_file, "r") as f:
+            versions = json.load(f)
+    except FileNotFoundError:
+        raise BuildError(
+            message=f"Could not find container_versions.json at {version_file}"
+        )
+
+    version = ""
+    if language.lower() == "python":
+        version = versions["base_image"]["version"]
+    else:
+        for img in versions.get("secondary_images", []):
+            if img["language"].lower() == language.lower():
+                version = img["version"]
+                break
+
+    if not version:
+        raise BuildError(
+            message=f"Could not find version for language '{language}' in container_versions.json"
+        )
+
+    from vmware_aria_operations_integration_sdk.constant import CONTAINER_BASE_NAME
+
+    image_tag = f"{CONTAINER_BASE_NAME}:{language.lower()}-{version}"
+
+    try:
+        client.images.get(image_tag)
+        logger.debug(f"Base image {image_tag} already exists locally.")
+        return
+    except docker.errors.ImageNotFound:
+        possible_image_dirs = [
+            os.path.join(current_dir, "..", "images"),
+            os.path.join(current_dir, "..", "..", "images"),
+        ]
+
+        images_dir = None
+        for p in possible_image_dirs:
+            if os.path.isdir(p) and os.path.exists(
+                os.path.join(p, "base-python-adapter")
+            ):
+                images_dir = p
+                break
+
+        if not images_dir:
+            raise BuildError(
+                message=f"Could not find bundled 'images' directory to build {image_tag}"
+            )
+
+        path = ""
+        if language.lower() == "python":
+            path = os.path.join(images_dir, "base-python-adapter")
+        elif language.lower() == "java":
+            ensure_base_image_exists("python")
+            path = os.path.join(images_dir, "java-adapter")
+        elif language.lower() == "powershell":
+            ensure_base_image_exists("python")
+            path = os.path.join(images_dir, "powershell-adapter")
+        else:
+            raise BuildError(message=f"Unknown language {language}")
+
+        logger.info(f"Building base image {image_tag}...")
+        build_image(client, path=path, tag=image_tag, nocache=False)
