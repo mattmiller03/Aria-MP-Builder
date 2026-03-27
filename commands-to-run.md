@@ -51,3 +51,8 @@ sudo docker run --rm azuregovcloud-test:1.0.0 pip list | grep aria
 ```
 
 ## Step 5: Paste all output into ErrorFile.txt
+
+
+sudo find /usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/ -name "Dockerfile*" 2>/dev/null
+sudo cat /usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/container_versions.json 2>/dev/null
+sudo find /usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/ -type d -name "images" 2>/dev/null
