@@ -1,5 +1,4 @@
-sudo mp-test
-[sudo] password for vropsssh: 
+vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo mp-test --port 8181
 /usr/lib/python3.11/site-packages/paramiko/pkey.py:83: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
   "cipher": algorithms.TripleDES,
 /usr/lib/python3.11/site-packages/paramiko/transport.py:254: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
@@ -8,8 +7,9 @@ Building base image [Finished]
 Choose a connection:  Azure Gov Test
 Choose a method to test: Test Connection
 Building adapter [Finished]
-Caught exception when retrieving SSL certificates: 500 Server Error for http+docker://localhost/v1.42/containers/7eb5fe4a6950db88766e683b7e68a673be6254711f8a8599a3d58b9578a49396/start: Internal Server Error ("driver failed programming external connectivity on endpoint fervent_cray (02903a2bfbffe65d4917801477ccac7bdfe58e2cb589f2722a7960e948972d64): Error starting userland proxy: listen tcp4 0.0.0.0:8080: bind: address already in use").
-Error retrieving SSL certificates from 'endpointURLs'. Proceeding without certificates.
-Building adapter [Finished]
+Waiting for adapter to start [Finished]
 Unable to run container
-SDK message: 500 Server Error for http+docker://localhost/v1.42/containers/7eb5fe4a6950db88766e683b7e68a673be6254711f8a8599a3d58b9578a49396/start: Internal Server Error ("driver failed programming external connectivity on endpoint fervent_cray (02903a2bfbffe65d4917801477ccac7bdfe58e2cb589f2722a7960e948972d64): Error starting userland proxy: listen tcp4 0.0.0.0:8080: bind: address already in use")
+SDK message: 409 Client Error for http+docker://localhost/v1.42/containers/89856885a2b89eed4d49f015c6cb8763b521dc2ca53745c8882dd560896d7e4d/kill: Conflict ("Cannot kill container: 89856885a2b89eed4d49f015c6cb8763b521dc2ca53745c8882dd560896d7e4d: Container 89856885a2b89eed4d49f015c6cb8763b521dc2ca53745c8882dd560896d7e4d is not running")
+vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker ps -a
+CONTAINER ID   IMAGE                      COMMAND               CREATED          STATUS                      PORTS     NAMES
+89856885a2b8   azuregovcloud-test:1.0.0   "python adapter.py"   35 seconds ago   Exited (0) 33 seconds ago             clever_cerf
