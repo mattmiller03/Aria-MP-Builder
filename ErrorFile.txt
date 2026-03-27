@@ -1,7 +1,37 @@
+sudo docker rmi azuregovcloud-test:1.0.0 2>/dev/null
+Untagged: azuregovcloud-test:1.0.0
+Deleted: sha256:d3a7126ae13efa24f6f04619e6f345909fd9ee2cbb3a825fc4da022589d63a77
+Deleted: sha256:c2ca1f08de195f9b059434dcd0d2edf58f44c23879acf71cbf471a96d732d66a
+Deleted: sha256:dc8672232892ebf05a1146227ae14519a455cfb2b9b921c8efa4c221b10dd2f7
+Deleted: sha256:97b822acc85069321c01fb80a82a42ac70ff425890c0d85976b62700c755c0c3
+Deleted: sha256:a51d1af60ad22fe15f07cb1f0b99ddba832e77b39184b68ed6ee9208902e3e73
+Deleted: sha256:cd2e49e8b9fa6be488ff78fc7507839a3c162e5c87739ede64fc0752873277b4
+Deleted: sha256:857475853fcd6ae5d7a7d38d554bd934e56a21236619a00d4e98112391808190
+Deleted: sha256:2b8fec898c9989694904cc2c806c1abce2f993242db0734d435b2db6b31e23fb
+Deleted: sha256:f498a3dfeadfcb1e322940d4728cf21a165ffb8b3c7a1f579caabddab72e8bcb
+Deleted: sha256:c5dc45cc662a504ac877f0c85ba5f62b17bd155ab95e355927d9f54cc191b6ce
+vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker ps -a
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo mp-test --port 8181
+/usr/lib/python3.11/site-packages/paramiko/pkey.py:83: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
+  "cipher": algorithms.TripleDES,
+/usr/lib/python3.11/site-packages/paramiko/transport.py:254: CryptographyDeprecationWarning: TripleDES has been moved to cryptography.hazmat.decrepit.ciphers.algorithms.TripleDES and will be removed from cryptography.hazmat.primitives.ciphers.algorithms in 48.0.0.
+  "class": algorithms.TripleDES,
+Building base image [Finished]
+Choose a connection:  Azure Gov Test
+Choose a method to test: Test Connection
+Building adapter [Finished]
 Waiting for adapter to start [Finished]
 500 Internal Server Error
 {"type": "about:blank", "title": "Internal Server Error", "detail": "The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.", "status": 500}
 adapterDefinition endpoint returned 500.
 Running Endpoint URLs [Finished]
-Caught exception when retrieving SSL certificates: 404 Client Error for http+docker://localhost/v1.42/containers/9bfee4a5959d5981ac398f9803c78c48fb6ee63b7f61f1cec83dacd33797a20e/stats?stream=False: Not Found ("No such container: 9bfee4a5959d5981ac398f9803c78c48fb6ee63b7f61f1cec83dacd33797a20e").
+Caught exception when retrieving SSL certificates: 404 Client Error for http+docker://localhost/v1.42/containers/33d9a98ab246e2f8b28d89adf1ee9607404292937d87561a1d6ed01ae7996522/stats?stream=False: Not Found ("No such container: 33d9a98ab246e2f8b28d89adf1ee9607404292937d87561a1d6ed01ae7996522").
 Error retrieving SSL certificates from 'endpointURLs'. Proceeding without certificates.
+
+^C^C
+Testing cancelled
+vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ ^C
+vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker ps -a
+[sudo] password for vropsssh: 
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
