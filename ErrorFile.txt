@@ -1,28 +1,8 @@
-Running Endpoint URLs [Finished]
-Caught exception when retrieving SSL certificates: No adapter instance found in describe. Ensure that an adapter instance resource kind (with attribute type=7) exists..
-Error retrieving SSL certificates from 'endpointURLs'. Proceeding without certificates.
-Running Connect [Finished]
-Unexpected error
-No adapter instance found in describe. Ensure that an adapter instance resource kind (with attribute type=7) exists.
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 938, in main
-    asyncio.run(run(parser.parse_args()))
-  File "/usr/lib/python3.11/asyncio/runners.py", line 190, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/asyncio/runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 406, in run
-    result_bundle = await method(
-                    ^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 241, in run_connect
-    request, response, elapsed_time = await send_post_to_adapter(
-                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/containerized_adapter_rest_api.py", line 50, in send_post_to_adapter
-    json=await get_request_body(port, connection, send_cluster_connection_info),
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/containerized_adapter_rest_api.py", line 94, in get_request_body
-    raise Exception(
+vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo grep -n "describe\|conf/" /usr/lib/python3.11/site-packages/vmware_aria_operations_integration_sdk/containerized_adapter_rest_api.py
+14:from vmware_aria_operations_integration_sdk.describe import Describe
+15:from vmware_aria_operations_integration_sdk.describe import get_adapter_instance
+91:    describe, resources = await Describe.get(port)
+92:    adapter_instance = get_adapter_instance(describe)
+95:            "No adapter instance found in describe. Ensure that an "
+134:            "adapterKind": describe.get("key"),
+ run --rm azuregovcloud-test:1.0.0 find / -name "describe.xml" 2>/dev/null
