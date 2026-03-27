@@ -7,5 +7,3 @@ RUN pip install --no-cache-dir --no-index --find-links /tmp/wheels/ -r /tmp/whee
 
 COPY app/ /adapter
 WORKDIR /adapter
-
-ENTRYPOINT ["python", "adapter.py"]
