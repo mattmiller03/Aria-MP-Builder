@@ -22,6 +22,16 @@
     <enum value="commercial"/>
   </ResourceIdentifier>
 
+  <!-- ==================== Adapter Instance ==================== -->
+
+  <!-- The adapter instance resource kind (type=7) is required by the SDK -->
+  <ResourceKind key="AzureGovAdapter_adapter_instance" nameKey="199" resourceKindType="7">
+    <ResourceIdentifier key="cloud_environment" nameKey="110" dispOrder="1" required="true" type="string" default="government" enum="true">
+      <enum default="true" value="government"/>
+      <enum value="commercial"/>
+    </ResourceIdentifier>
+  </ResourceKind>
+
   <!-- ==================== Resource Kinds ==================== -->
 
   <!-- Subscription -->
