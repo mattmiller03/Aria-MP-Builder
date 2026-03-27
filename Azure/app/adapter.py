@@ -478,3 +478,17 @@ def test(adapter_instance):
         result.with_error(f"Connection test failed: {e}")
 
     return result
+
+
+# ---------------------------------------------------------------------------
+# SDK Entry Point
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    from aria.ops.adapter import start_adapter
+
+    start_adapter(
+        get_adapter_definition,
+        test,
+        collect,
+    )
