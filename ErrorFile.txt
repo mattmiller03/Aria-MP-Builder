@@ -1,38 +1,27 @@
-18:04:59,113 docker.utils.config DEBUG Trying paths: ['/root/.docker/config.json', '/root/.dockercfg']
-18:04:59,131 docker.utils.config DEBUG No config file found
-18:04:59,131 asyncio DEBUG Using selector: EpollSelector
-18:04:59,151 docker.utils.config DEBUG Trying paths: ['/root/.docker/config.json', '/root/.dockercfg']
-18:04:59,194 docker.utils.config DEBUG No config file found
-18:04:59,214 urllib3.connectionpool DEBUG http://localhost:None "GET /version HTTP/1.1" 200 797
-18:04:59,218 urllib3.connectionpool DEBUG http://localhost:None "GET /v1.42/images/base-adapter:python-1.2.0/json HTTP/1.1" 200 None
-18:05:00,878 docker.api.build DEBUG Looking for auth config
-18:05:00,878 docker.api.build DEBUG No auth config in memory - loading from filesystem
-18:05:00,878 docker.utils.config DEBUG Trying paths: ['/root/.docker/config.json', '/root/.dockercfg']
-18:05:00,878 docker.utils.config DEBUG No config file found
-18:05:00,878 docker.api.build DEBUG Sending auth config ()
-18:05:01,353 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.42/build?t=azuregovcloud-test%3A1.0.0&q=False&nocache=False&rm=True&forcerm=False&pull=False&labels=%7B%22mp-test%22%3A+%221774634699.1122127%22%7D HTTP/1.1" 200 None
-18:05:01,484 urllib3.connectionpool DEBUG http://localhost:None "GET /v1.42/images/ba0e2056d8ca/json HTTP/1.1" 200 None
-18:05:01,579 asyncio DEBUG Using selector: EpollSelector
-18:05:02,506 asyncio DEBUG Using selector: EpollSelector
-18:05:04,868 asyncio DEBUG Using selector: EpollSelector
-18:05:04,934 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.42/containers/create HTTP/1.1" 201 88
-18:05:04,935 urllib3.connectionpool DEBUG http://localhost:None "GET /v1.42/containers/92e044a3617491eb0eba3acfc9a69249ad749935deebb9d526ffc75aba430a77/json HTTP/1.1" 200 None
-18:05:05,236 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.42/containers/92e044a3617491eb0eba3acfc9a69249ad749935deebb9d526ffc75aba430a77/start HTTP/1.1" 204 0
-18:05:05,439 asyncio DEBUG Using selector: EpollSelector
-18:05:06,244 httpx._client DEBUG HTTP Request: GET http://localhost:8181/apiVersion "HTTP/1.1 200 OK"
-18:05:06,270 asyncio DEBUG Using selector: EpollSelector
-18:05:07,367 urllib3.connectionpool DEBUG http://localhost:None "GET /v1.42/containers/92e044a3617491eb0eba3acfc9a69249ad749935deebb9d526ffc75aba430a77/stats?stream=False HTTP/1.1" 200 1826
-18:05:07,421 httpx._client DEBUG HTTP Request: GET http://localhost:8181/adapterDefinition "HTTP/1.1 500 Internal Server Error"
-18:05:07,422 vmware_aria_operations_integration_sdk.describe ERROR 500 Internal Server Error
-{"type": "about:blank", "title": "Internal Server Error", "detail": "The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.", "status": 500}
-18:05:07,423 vmware_aria_operations_integration_sdk.describe ERROR adapterDefinition endpoint returned 500.
-18:05:07,599 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.42/containers/92e044a3617491eb0eba3acfc9a69249ad749935deebb9d526ffc75aba430a77/kill HTTP/1.1" 204 0
-18:05:07,606 urllib3.connectionpool DEBUG http://localhost:None "DELETE /v1.42/containers/92e044a3617491eb0eba3acfc9a69249ad749935deebb9d526ffc75aba430a77?v=False&link=False&force=False HTTP/1.1" 204 0
-18:05:07,612 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.42/images/prune?filters=%7B%22label%22%3A+%5B%22mp-test%22%5D%7D HTTP/1.1" 200 125
-18:05:07,620 urllib3.connectionpool DEBUG http://localhost:None "GET /v1.42/containers/92e044a3617491eb0eba3acfc9a69249ad749935deebb9d526ffc75aba430a77/stats?stream=False HTTP/1.1" 404 98
-18:05:07,737 vmware_aria_operations_integration_sdk.mp_test WARNING Caught exception when retrieving SSL certificates: 404 Client Error for http+docker://localhost/v1.42/containers/92e044a3617491eb0eba3acfc9a69249ad749935deebb9d526ffc75aba430a77/stats?stream=False: Not Found ("No such container: 92e044a3617491eb0eba3acfc9a69249ad749935deebb9d526ffc75aba430a77").
-18:05:07,740 vmware_aria_operations_integration_sdk.mp_test WARNING Error retrieving SSL certificates from 'endpointURLs'. Proceeding without certificates.
-18:05:07,759 asyncio DEBUG Using selector: EpollSelector
-18:05:19,569 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.42/images/prune?filters=%7B%22label%22%3A+%5B%22mp-test%22%5D%7D HTTP/1.1" 200 42
-18:05:19,570 vmware_aria_operations_integration_sdk.mp_test DEBUG Ctrl C pressed by user
-18:05:19,572 vmware_aria_operations_integration_sdk.mp_test INFO Testing cancelled
+vropsssh@daisv0tp003 [ ~/Aria-MP-Builder/Azure ]$ sudo docker build -t azuregovcloud-test:1.0.0 .DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  53.21MB
+Step 1/7 : FROM base-adapter:python-1.2.0
+ ---> 23597e988b10
+Step 2/7 : USER root
+ ---> Using cache
+ ---> f85a5c0fd276
+Step 3/7 : COPY app/wheels/ /tmp/wheels/
+ ---> Using cache
+ ---> 9e53d0295b36
+Step 4/7 : RUN pip install --no-cache-dir --no-index --find-links /tmp/wheels/ requests vmware-aria-operations-integration-sdk-lib && rm -rf /tmp/wheels
+ ---> Using cache
+ ---> 070cd40a1fc4
+Step 5/7 : USER aria-ops-adapter-user
+ ---> Using cache
+ ---> ecca744e1721
+Step 6/7 : COPY app/ /home/aria-ops-adapter-user/src/app/
+ ---> Using cache
+ ---> 8fabae129bfe
+Step 7/7 : WORKDIR /home/aria-ops-adapter-user/src/app
+ ---> Using cache
+ ---> 21757270ac62
+Successfully built 21757270ac62
+Successfully tagged azuregovcloud-test:1.0.0
