@@ -5,16 +5,52 @@ Run these in order.
 
 ---
 
-## Phase 1: System Packages (on Photon server)
+## Phase 1: Configure Local Repo and Install System Packages (on Photon server)
+
+### 1a: Mount the Photon OS ISO and configure local repo
 
 ```bash
-sudo tdnf install -y docker git gcc python3-devel libjpeg-turbo-devel zlib-devel libffi-devel openssl-devel make
+sudo mkdir -p /mnt/cdrom
+sudo mount /dev/cdrom /mnt/cdrom
+
+# Disable all online repos
+sudo sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/*.repo
+
+# Create local repo pointing to mounted ISO
+sudo tee /etc/yum.repos.d/cdrom.repo <<EOF
+[cdrom-x86_64]
+name=Photon OS CDROM x86_64
+baseurl=file:///mnt/cdrom/RPMS/x86_64
+gpgcheck=0
+enabled=1
+
+[cdrom-noarch]
+name=Photon OS CDROM noarch
+baseurl=file:///mnt/cdrom/RPMS/noarch
+gpgcheck=0
+enabled=1
+EOF
+
+sudo tdnf clean all
+sudo tdnf makecache
+```
+
+### 1b: Install system packages
+
+```bash
+sudo tdnf install -y docker git gcc python3-devel libjpeg-turbo-devel zlib-devel libffi-devel openssl-devel make icu libunwind
 sudo systemctl enable docker
 sudo systemctl start docker
 sudo usermod -aG docker $USER
 ```
 
 Log out and back in for the Docker group to take effect.
+
+### 1c: Re-enable online repos when done (optional, if server has internet later)
+
+```bash
+sudo sed -i 's/enabled=0/enabled=1/g' /etc/yum.repos.d/*.repo
+```
 
 ---
 
