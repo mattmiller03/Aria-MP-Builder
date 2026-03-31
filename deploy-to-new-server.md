@@ -45,7 +45,18 @@ docker pull python:3.11-slim
 docker save python:3.11-slim -o C:\python311slim.tar
 ```
 
-### 2d: Download all Python wheels for offline install
+### 2d: Download PowerShell RPM and Az module
+
+```powershell
+# Download PowerShell RPM for Linux x64 (check https://github.com/PowerShell/PowerShell/releases for latest)
+curl -L -o C:\powershell.rpm https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-1.rh.x86_64.rpm
+
+# Download Az.Accounts module for Azure Gov connectivity testing
+mkdir C:\AzModules
+Save-Module -Name Az.Accounts -Path C:\AzModules -Repository PSGallery
+```
+
+### 2e: Download all Python wheels for offline install
 
 ```powershell
 mkdir C:\aria-wheels
@@ -67,7 +78,7 @@ pip download "validators==0.18.2" -d C:\aria-wheels --no-deps
 pip download "aenum==3.1.11" -d C:\aria-wheels --no-deps
 ```
 
-### 2e: Create target directory on Photon server
+### 2f: Create target directory on Photon server
 
 ```bash
 # SSH to the server first and create the directory
@@ -75,17 +86,64 @@ sudo mkdir -p /opt/aria
 sudo chmod 777 /opt/aria
 ```
 
-### 2f: Transfer everything to the Photon server
+### 2g: Transfer everything to the Photon server
 
 ```powershell
 scp -r C:\aria-wheels user@<NEW-SERVER>:/opt/aria/wheels
 scp C:\base-adapter.tar user@<NEW-SERVER>:/opt/aria/base-adapter.tar
 scp C:\python311slim.tar user@<NEW-SERVER>:/opt/aria/python311slim.tar
+scp C:\powershell.rpm user@<NEW-SERVER>:/opt/aria/powershell.rpm
+scp -r C:\AzModules user@<NEW-SERVER>:/opt/aria/AzModules
 ```
 
 ---
 
-## Phase 3: Install SDK (on Photon server)
+## Phase 3: Install PowerShell and Test Azure Connectivity (on Photon server)
+
+```bash
+# Install PowerShell dependencies
+sudo tdnf install -y icu libunwind openssl
+
+# Install PowerShell RPM
+sudo tdnf install -y /opt/aria/powershell.rpm
+# If tdnf complains, use: sudo rpm -ivh /opt/aria/powershell.rpm
+
+# Verify
+pwsh --version
+
+# Install Az.Accounts module
+sudo mkdir -p /opt/microsoft/powershell/7/Modules
+sudo cp -r /opt/aria/AzModules/* /opt/microsoft/powershell/7/Modules/
+```
+
+### Test Azure Gov connectivity
+
+```bash
+pwsh
+```
+
+Inside PowerShell:
+
+```powershell
+Import-Module Az.Accounts
+
+$secret = ConvertTo-SecureString "YOUR_CLIENT_SECRET" -AsPlainText -Force
+$cred = New-Object PSCredential("YOUR_CLIENT_ID", $secret)
+
+Connect-AzAccount -Environment AzureUSGovernment -ServicePrincipal -TenantId "YOUR_TENANT_ID" -Credential $cred
+
+# If this returns subscription info, credentials and network connectivity are good
+Get-AzSubscription
+
+# Exit PowerShell
+exit
+```
+
+If this fails, resolve the credential or firewall issue before proceeding — the management pack uses the same endpoints.
+
+---
+
+## Phase 4: Install Aria SDK (on Photon server)
 
 ```bash
 # Load Docker images
@@ -106,7 +164,7 @@ mp-test --version
 
 ---
 
-## Phase 4: Clone and Configure the Management Pack (on Photon server)
+## Phase 5: Clone and Configure the Management Pack (on Photon server)
 
 ```bash
 cd /opt/aria
@@ -138,7 +196,7 @@ Replace the YOUR_* placeholders:
 
 ---
 
-## Phase 5: Create the logs directory
+## Phase 6: Create the logs directory
 
 ```bash
 mkdir -p /opt/aria/Aria-MP-Builder/Azure/logs
@@ -147,7 +205,7 @@ chmod 777 /opt/aria/Aria-MP-Builder/Azure/logs
 
 ---
 
-## Phase 6: Test
+## Phase 7: Test
 
 ```bash
 cd /opt/aria/Aria-MP-Builder/Azure
@@ -173,7 +231,7 @@ Successfully connected. Found X subscription(s).
 
 ---
 
-## Phase 7: Build the .pak file
+## Phase 8: Build the .pak file
 
 ```bash
 cd /opt/aria/Aria-MP-Builder/Azure
@@ -182,7 +240,7 @@ sudo mp-build
 
 ---
 
-## Phase 8: Deploy to Aria Operations
+## Phase 9: Deploy to Aria Operations
 
 1. Download the generated `.pak` file from the server
 2. In Aria Operations: **Administration > Integrations > Add**
