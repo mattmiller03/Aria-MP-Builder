@@ -1,0 +1,10 @@
+sudo tdnf install -y docker git gcc python3-devel libjpeg-turbo-devel zlib-devel libffi-devel openssl-devel make icu libunwind
+Refreshing metadata for: 'Photon OS CDROM'
+Package docker is already installed.    190511 100%
+marking gcc as user installed
+Package gcc is already installed.
+Package python3-devel is already installed.
+1. package openssl-devel-1.1.1i-2.ph4.x86_64 requires openssl = 1.1.1i-2.ph4, but none of the providers can be installed
+2. package git-2.30.0-2.ph4.x86_64 requires libcrypto.so.1.1()(64bit), but none of the providers can be installed
+Found 2 problem(s) while resolving
+Error(1301) : Solv general runtime error

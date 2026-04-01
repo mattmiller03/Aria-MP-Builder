@@ -18,15 +18,9 @@ sudo sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/*.repo
 
 # Create local repo pointing to mounted ISO
 sudo tee /etc/yum.repos.d/cdrom.repo <<EOF
-[cdrom-x86_64]
-name=Photon OS CDROM x86_64
-baseurl=file:///mnt/cdrom/RPMS/x86_64
-gpgcheck=0
-enabled=1
-
-[cdrom-noarch]
-name=Photon OS CDROM noarch
-baseurl=file:///mnt/cdrom/RPMS/noarch
+[cdrom]
+name=Photon OS CDROM
+baseurl=file:///mnt/cdrom/RPMS
 gpgcheck=0
 enabled=1
 EOF
