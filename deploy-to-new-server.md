@@ -1,11 +1,14 @@
-# Full Deployment Guide — Fresh Photon OS 5.0 Server
+# Full Deployment Guide — MP Builder OVA (Photon OS 4.0)
 
-Everything needed to deploy the Azure Gov management pack from scratch.
-Run these in order.
+Everything needed to deploy the Azure Gov management pack from scratch
+on the MP Builder 2.0 OVA appliance (Photon 4.0, Python 3.10).
 
 ---
 
-## Phase 1: Configure Local Repo and Install System Packages (on Photon server)
+## Phase 1: Install Missing System Packages (on Photon server)
+
+The MP Builder OVA comes with most packages pre-installed (docker, gcc, python3,
+python3-devel, make, and many Python libraries). Only a few are missing.
 
 ### 1a: Mount the Photon OS ISO and configure local repo
 
@@ -29,10 +32,19 @@ sudo tdnf clean all
 sudo tdnf makecache
 ```
 
-### 1b: Install system packages
+### 1b: Install remaining system packages
 
 ```bash
-sudo tdnf install -y docker git gcc python3-devel libjpeg-turbo-devel zlib-devel libffi-devel openssl-devel make icu libunwind
+# These may already be installed — tdnf will skip them
+sudo tdnf install -y libjpeg-turbo-devel zlib-devel libffi-devel make icu libunwind
+```
+
+> **Note:** `git` and `openssl-devel` from the ISO conflict with the OVA's newer OpenSSL 3.0.
+> We'll skip git and use SCP to transfer project files instead.
+
+### 1c: Enable and start Docker
+
+```bash
 sudo systemctl enable docker
 sudo systemctl start docker
 sudo usermod -aG docker $USER
@@ -40,10 +52,11 @@ sudo usermod -aG docker $USER
 
 Log out and back in for the Docker group to take effect.
 
-### 1c: Re-enable online repos when done (optional, if server has internet later)
+### 1d: Create the project directory
 
 ```bash
-sudo sed -i 's/enabled=0/enabled=1/g' /etc/yum.repos.d/*.repo
+sudo mkdir -p /opt/aria
+sudo chmod 777 /opt/aria
 ```
 
 ---
@@ -53,10 +66,7 @@ sudo sed -i 's/enabled=0/enabled=1/g' /etc/yum.repos.d/*.repo
 ### 2a: Clone the repo and the SDK source
 
 ```powershell
-# Clone our management pack repo
 git clone https://github.com/mattmiller03/Aria-MP-Builder.git C:\Aria-MP-Builder
-
-# Clone the SDK repo (needed for the base Docker image)
 git clone https://github.com/vmware/vmware-aria-operations-integration-sdk.git C:\aria-sdk
 ```
 
@@ -68,7 +78,7 @@ docker build -t base-adapter:python-1.2.0 .
 docker save base-adapter:python-1.2.0 -o C:\base-adapter.tar
 ```
 
-### 2c: Save the Python 3.11 base image
+### 2c: Save the Python 3.11 base image (used inside the adapter container)
 
 ```powershell
 docker pull python:3.11-slim
@@ -78,52 +88,87 @@ docker save python:3.11-slim -o C:\python311slim.tar
 ### 2d: Download PowerShell RPM and Az module
 
 ```powershell
-# Download PowerShell RPM for Linux x64 (check https://github.com/PowerShell/PowerShell/releases for latest)
+# Download PowerShell RPM for Linux x64
+# Check https://github.com/PowerShell/PowerShell/releases for latest version
 curl -L -o C:\powershell.rpm https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-1.rh.x86_64.rpm
 
-# Download Az.Accounts module for Azure Gov connectivity testing
+# Download Az.Accounts module for Azure Gov connectivity testing (run in PowerShell)
 mkdir C:\AzModules
 Save-Module -Name Az.Accounts -Path C:\AzModules -Repository PSGallery
 ```
 
 ### 2e: Download all Python wheels for offline install
 
+> **Important:** The MP Builder OVA runs Python **3.10**, not 3.11.
+> All wheels with `--python-version` must target 3.10.
+
 ```powershell
 mkdir C:\aria-wheels
 
-# SDK packages
-pip download vmware-aria-operations-integration-sdk --python-version 3.11 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
-pip download vmware-aria-operations-integration-sdk-lib --python-version 3.11 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+# SDK packages (pure Python — no platform restriction needed)
+pip download vmware-aria-operations-integration-sdk -d C:\aria-wheels --no-deps
+pip download vmware-aria-operations-integration-sdk-lib -d C:\aria-wheels --no-deps
 
-# C extension wheels
-pip download "lxml>=4.9.2,<5.0.0" --python-version 3.11 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
-pip download "Pillow>=9.3,<11.0" --python-version 3.11 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
-pip download "cryptography==44.0.0" --python-version 3.11 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
-pip download "cffi" --python-version 3.11 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
-pip download "pyyaml" --python-version 3.11 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+# SDK dependencies — C extensions for Python 3.10 Linux
+pip download "lxml>=4.9.2,<5.0.0" --python-version 3.10 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+pip download "Pillow>=9.3,<11.0" --python-version 3.10 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+pip download "cryptography==44.0.0" --python-version 3.10 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+pip download "cffi" --python-version 3.10 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+pip download "pyyaml" --python-version 3.10 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+pip download "markupsafe" --python-version 3.10 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
 
-# Pure Python packages
+# SDK dependencies — pure Python packages
 pip download "pycparser" -d C:\aria-wheels --no-deps
 pip download "validators==0.18.2" -d C:\aria-wheels --no-deps
 pip download "aenum==3.1.11" -d C:\aria-wheels --no-deps
+pip download "gitpython" -d C:\aria-wheels --no-deps
+pip download "gitdb" -d C:\aria-wheels --no-deps
+pip download "smmap" -d C:\aria-wheels --no-deps
+pip download "docker>=7.1.0,<8.0.0" -d C:\aria-wheels --no-deps
+pip download "httpx>=0.23.0,<0.24.0" -d C:\aria-wheels --no-deps
+pip download "httpcore" -d C:\aria-wheels --no-deps
+pip download "h11" -d C:\aria-wheels --no-deps
+pip download "sniffio" -d C:\aria-wheels --no-deps
+pip download "rfc3986" -d C:\aria-wheels --no-deps
+pip download "anyio" -d C:\aria-wheels --no-deps
+pip download "importlib-metadata>=5.0.0,<6.0.0" -d C:\aria-wheels --no-deps
+pip download "importlib-resources" -d C:\aria-wheels --no-deps
+pip download "zipp" -d C:\aria-wheels --no-deps
+pip download "jsonschema-spec" -d C:\aria-wheels --no-deps
+pip download "pathable" -d C:\aria-wheels --no-deps
+pip download "openapi-core>=0.15.0,<0.16.0" -d C:\aria-wheels --no-deps
+pip download "openapi-schema-validator" -d C:\aria-wheels --no-deps
+pip download "openapi-spec-validator" -d C:\aria-wheels --no-deps
+pip download "isodate" -d C:\aria-wheels --no-deps
+pip download "more-itertools" -d C:\aria-wheels --no-deps
+pip download "parse" -d C:\aria-wheels --no-deps
+pip download "werkzeug" -d C:\aria-wheels --no-deps
+pip download "prompt-toolkit" -d C:\aria-wheels --no-deps
+pip download "sen" -d C:\aria-wheels --no-deps
+pip download "urwid" -d C:\aria-wheels --no-deps
+pip download "urwidtrees" -d C:\aria-wheels --no-deps
+pip download "wcwidth" -d C:\aria-wheels --no-deps
+pip download "decorator" -d C:\aria-wheels --no-deps
+pip download "typing-extensions" -d C:\aria-wheels --no-deps
+pip download "xmlschema" -d C:\aria-wheels --no-deps
+pip download "elementpath" -d C:\aria-wheels --no-deps
 ```
 
-### 2f: Create target directory on Photon server
-
-```bash
-# SSH to the server first and create the directory
-sudo mkdir -p /opt/aria
-sudo chmod 777 /opt/aria
-```
-
-### 2g: Transfer everything to the Photon server
+### 2f: Transfer everything to the Photon server
 
 ```powershell
-scp -r C:\aria-wheels user@<NEW-SERVER>:/opt/aria/wheels
-scp C:\base-adapter.tar user@<NEW-SERVER>:/opt/aria/base-adapter.tar
-scp C:\python311slim.tar user@<NEW-SERVER>:/opt/aria/python311slim.tar
-scp C:\powershell.rpm user@<NEW-SERVER>:/opt/aria/powershell.rpm
-scp -r C:\AzModules user@<NEW-SERVER>:/opt/aria/AzModules
+# Project files (no git needed on server)
+scp -r C:\Aria-MP-Builder\Azure user@<SERVER>:/opt/aria/Aria-MP-Builder/Azure
+scp C:\Aria-MP-Builder\CLAUDE.md user@<SERVER>:/opt/aria/Aria-MP-Builder/
+scp C:\Aria-MP-Builder\README.md user@<SERVER>:/opt/aria/Aria-MP-Builder/
+scp C:\Aria-MP-Builder\deploy-to-new-server.md user@<SERVER>:/opt/aria/Aria-MP-Builder/
+
+# Offline packages
+scp -r C:\aria-wheels user@<SERVER>:/opt/aria/wheels
+scp C:\base-adapter.tar user@<SERVER>:/opt/aria/base-adapter.tar
+scp C:\python311slim.tar user@<SERVER>:/opt/aria/python311slim.tar
+scp C:\powershell.rpm user@<SERVER>:/opt/aria/powershell.rpm
+scp -r C:\AzModules user@<SERVER>:/opt/aria/AzModules
 ```
 
 ---
@@ -131,12 +176,8 @@ scp -r C:\AzModules user@<NEW-SERVER>:/opt/aria/AzModules
 ## Phase 3: Install PowerShell and Test Azure Connectivity (on Photon server)
 
 ```bash
-# Install PowerShell dependencies
-sudo tdnf install -y icu libunwind openssl
-
 # Install PowerShell RPM
-sudo tdnf install -y /opt/aria/powershell.rpm
-# If tdnf complains, use: sudo rpm -ivh /opt/aria/powershell.rpm
+sudo rpm -ivh /opt/aria/powershell.rpm
 
 # Verify
 pwsh --version
@@ -192,27 +233,29 @@ mp-build --version
 mp-test --version
 ```
 
+If pip fails with a missing package, see the Troubleshooting section at the bottom.
+
 ---
 
-## Phase 5: Clone and Configure the Management Pack (on Photon server)
+## Phase 5: Fix Line Endings, Permissions, and Configure Credentials (on Photon server)
 
 ```bash
-cd /opt/aria
-git clone https://github.com/mattmiller03/Aria-MP-Builder.git
-cd Aria-MP-Builder
+cd /opt/aria/Aria-MP-Builder
 
-# Fix line endings and permissions
+# Fix CRLF line endings (files come from Windows)
 find . -name "*.py" -exec sed -i 's/\r$//' {} +
 find . -name "*.sh" -exec sed -i 's/\r$//' {} +
 find . -name "*.cfg" -exec sed -i 's/\r$//' {} +
 sed -i 's/\r$//' Azure/Dockerfile
+
+# Fix permissions
 chmod -R 755 Azure/
 
 # Create connections.json from template
 cp Azure/connections.json.example Azure/connections.json
 ```
 
-### Edit connections.json with your real Azure Gov credentials:
+### Edit connections.json with your real Azure Gov credentials
 
 ```bash
 vi Azure/connections.json
@@ -287,9 +330,12 @@ sudo mp-build
 
 | Issue | Fix |
 |-------|-----|
-| `pip install` fails with missing package | Download the specific wheel on Windows PC and transfer |
+| `pip install` fails with missing package | Download the specific wheel on Windows PC: `pip download "<package>==<version>" -d C:\aria-wheels --no-deps` then SCP to server |
+| `pip install` fails with wrong Python version | Re-download with `--python-version 3.10` instead of 3.11 |
 | Docker `permission denied` | `sudo usermod -aG docker $USER` then log out/in |
 | Port 8080 in use | Use `--port 8181` with mp-test |
-| `400 Bad Request` on Azure login | Check credentials in connections.json |
+| `400 Bad Request` on Azure login | Check credentials in connections.json; test with PowerShell first |
 | File permission errors in container | Run `chmod -R 755 Azure/` before mp-test |
-| CRLF line ending issues | Run the `sed -i 's/\r$//'` commands from Phase 4 |
+| CRLF line ending issues | Run the `sed -i 's/\r$//'` commands from Phase 5 |
+| ISO mount says "write-protected" | Normal — ISOs are read-only, the mount worked |
+| `git` won't install from ISO | ISO packages conflict with OVA's OpenSSL 3.0; use SCP instead |
