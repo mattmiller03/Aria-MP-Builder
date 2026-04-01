@@ -1,7 +1,8 @@
 # Full Deployment Guide — MP Builder OVA (Photon OS 4.0)
 
 Everything needed to deploy the Azure Gov management pack from scratch
-on the MP Builder 2.0 OVA appliance (Photon 4.0, Python 3.10).
+on the MP Builder 2.0 OVA appliance (Photon 4.0). Installs Python 3.12
+alongside the system Python 3.10 for security and SDK compatibility.
 
 ---
 
@@ -61,16 +62,63 @@ sudo chmod 777 /opt/aria
 
 ---
 
-## Phase 2: Download Offline Packages (on Windows PC with internet)
+## Phase 2: Install Python 3.12 Alongside System Python (on Photon server)
 
-### 2a: Clone the repo and the SDK source
+The OVA ships with Python 3.10. We install 3.12 in `/opt/python312` without
+touching the system Python (which the MP Builder appliance depends on).
+
+### 2a: Download Python 3.12 source on Windows PC and transfer
+
+```powershell
+curl -L -o C:\Python-3.12.11.tar.xz https://www.python.org/ftp/python/3.12.11/Python-3.12.11.tar.xz
+scp C:\Python-3.12.11.tar.xz user@<SERVER>:/opt/aria/Python-3.12.11.tar.xz
+```
+
+### 2b: Build and install Python 3.12 on the Photon server
+
+```bash
+cd /opt/aria
+
+# Extract
+tar xf Python-3.12.11.tar.xz
+cd Python-3.12.11
+
+# Build (uses gcc and dev libraries from Phase 1)
+./configure --prefix=/opt/python312 --enable-optimizations --with-openssl=/usr
+make -j$(nproc)
+sudo make altinstall
+
+# Create convenient symlinks
+sudo ln -sf /opt/python312/bin/python3.12 /usr/local/bin/python3.12
+sudo ln -sf /opt/python312/bin/pip3.12 /usr/local/bin/pip3.12
+
+# Verify
+python3.12 --version
+pip3.12 --version
+```
+
+### 2c: Clean up build files
+
+```bash
+cd /opt/aria
+rm -rf Python-3.12.11 Python-3.12.11.tar.xz
+```
+
+> **Important:** The system `python3` (3.10) is untouched. Always use `python3.12`
+> or `pip3.12` explicitly for SDK installs.
+
+---
+
+## Phase 3: Download Offline Packages (on Windows PC with internet)
+
+### 3a: Clone the repo and the SDK source
 
 ```powershell
 git clone https://github.com/mattmiller03/Aria-MP-Builder.git C:\Aria-MP-Builder
 git clone https://github.com/vmware/vmware-aria-operations-integration-sdk.git C:\aria-sdk
 ```
 
-### 2b: Build and save the base adapter Docker image
+### 3b: Build and save the base adapter Docker image
 
 ```powershell
 cd C:\aria-sdk\images\base-python-adapter
@@ -78,14 +126,14 @@ docker build -t base-adapter:python-1.2.0 .
 docker save base-adapter:python-1.2.0 -o C:\base-adapter.tar
 ```
 
-### 2c: Save the Python 3.11 base image (used inside the adapter container)
+### 3c: Save the Python base image (used inside the adapter container)
 
 ```powershell
 docker pull python:3.11-slim
 docker save python:3.11-slim -o C:\python311slim.tar
 ```
 
-### 2d: Download PowerShell RPM and Az module
+### 3d: Download PowerShell RPM and Az module
 
 ```powershell
 # Download PowerShell RPM for Linux x64
@@ -97,10 +145,10 @@ mkdir C:\AzModules
 Save-Module -Name Az.Accounts -Path C:\AzModules -Repository PSGallery
 ```
 
-### 2e: Download all Python wheels for offline install
+### 3e: Download all Python wheels for offline install
 
-> **Important:** The MP Builder OVA runs Python **3.10**, not 3.11.
-> All wheels with `--python-version` must target 3.10.
+> **Important:** We installed Python **3.12** on the server.
+> All wheels with `--python-version` must target 3.12.
 
 ```powershell
 mkdir C:\aria-wheels
@@ -109,13 +157,13 @@ mkdir C:\aria-wheels
 pip download vmware-aria-operations-integration-sdk -d C:\aria-wheels --no-deps
 pip download vmware-aria-operations-integration-sdk-lib -d C:\aria-wheels --no-deps
 
-# SDK dependencies — C extensions for Python 3.10 Linux
-pip download "lxml>=4.9.2,<5.0.0" --python-version 3.10 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
-pip download "Pillow>=9.3,<11.0" --python-version 3.10 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
-pip download "cryptography==44.0.0" --python-version 3.10 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
-pip download "cffi" --python-version 3.10 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
-pip download "pyyaml" --python-version 3.10 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
-pip download "markupsafe" --python-version 3.10 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+# SDK dependencies — C extensions for Python 3.12 Linux
+pip download "lxml>=4.9.2,<5.0.0" --python-version 3.12 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+pip download "Pillow>=9.3,<11.0" --python-version 3.12 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+pip download "cryptography==44.0.0" --python-version 3.12 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+pip download "cffi" --python-version 3.12 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+pip download "pyyaml" --python-version 3.12 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
+pip download "markupsafe" --python-version 3.12 --platform manylinux2014_x86_64 --only-binary=:all: -d C:\aria-wheels
 
 # SDK dependencies — pure Python packages
 pip download "pycparser" -d C:\aria-wheels --no-deps
@@ -154,7 +202,7 @@ pip download "xmlschema" -d C:\aria-wheels --no-deps
 pip download "elementpath" -d C:\aria-wheels --no-deps
 ```
 
-### 2f: Transfer everything to the Photon server
+### 3f: Transfer everything to the Photon server
 
 ```powershell
 # Project files (no git needed on server)
@@ -173,7 +221,7 @@ scp -r C:\AzModules user@<SERVER>:/opt/aria/AzModules
 
 ---
 
-## Phase 3: Install PowerShell and Test Azure Connectivity (on Photon server)
+## Phase 4: Install PowerShell and Test Azure Connectivity (on Photon server)
 
 ```bash
 # Install PowerShell RPM
@@ -214,7 +262,7 @@ If this fails, resolve the credential or firewall issue before proceeding — th
 
 ---
 
-## Phase 4: Install Aria SDK (on Photon server)
+## Phase 5: Install Aria SDK (on Photon server)
 
 ```bash
 # Load Docker images
@@ -224,9 +272,14 @@ sudo docker load -i /opt/aria/base-adapter.tar
 # Verify images loaded
 sudo docker images
 
-# Install the SDK and runtime library
-sudo pip install --no-index --find-links /opt/aria/wheels vmware-aria-operations-integration-sdk
-sudo pip install --no-index --find-links /opt/aria/wheels vmware-aria-operations-integration-sdk-lib
+# Install the SDK and runtime library using Python 3.12
+sudo pip3.12 install --no-index --find-links /opt/aria/wheels vmware-aria-operations-integration-sdk
+sudo pip3.12 install --no-index --find-links /opt/aria/wheels vmware-aria-operations-integration-sdk-lib
+
+# The SDK installs mp-build/mp-test to Python 3.12's bin — add to PATH
+sudo ln -sf /opt/python312/bin/mp-build /usr/local/bin/mp-build
+sudo ln -sf /opt/python312/bin/mp-test /usr/local/bin/mp-test
+sudo ln -sf /opt/python312/bin/mp-init /usr/local/bin/mp-init
 
 # Verify
 mp-build --version
@@ -237,7 +290,7 @@ If pip fails with a missing package, see the Troubleshooting section at the bott
 
 ---
 
-## Phase 5: Fix Line Endings, Permissions, and Configure Credentials (on Photon server)
+## Phase 6: Fix Line Endings, Permissions, and Configure Credentials (on Photon server)
 
 ```bash
 cd /opt/aria/Aria-MP-Builder
@@ -269,7 +322,7 @@ Replace the YOUR_* placeholders:
 
 ---
 
-## Phase 6: Create the logs directory
+## Phase 7: Create the logs directory
 
 ```bash
 mkdir -p /opt/aria/Aria-MP-Builder/Azure/logs
@@ -278,7 +331,7 @@ chmod 777 /opt/aria/Aria-MP-Builder/Azure/logs
 
 ---
 
-## Phase 7: Test
+## Phase 8: Test
 
 ```bash
 cd /opt/aria/Aria-MP-Builder/Azure
@@ -304,7 +357,7 @@ Successfully connected. Found X subscription(s).
 
 ---
 
-## Phase 8: Build the .pak file
+## Phase 9: Build the .pak file
 
 ```bash
 cd /opt/aria/Aria-MP-Builder/Azure
@@ -313,7 +366,7 @@ sudo mp-build
 
 ---
 
-## Phase 9: Deploy to Aria Operations
+## Phase 10: Deploy to Aria Operations
 
 1. Download the generated `.pak` file from the server
 2. In Aria Operations: **Administration > Integrations > Add**
@@ -331,11 +384,13 @@ sudo mp-build
 | Issue | Fix |
 |-------|-----|
 | `pip install` fails with missing package | Download the specific wheel on Windows PC: `pip download "<package>==<version>" -d C:\aria-wheels --no-deps` then SCP to server |
-| `pip install` fails with wrong Python version | Re-download with `--python-version 3.10` instead of 3.11 |
+| `pip install` fails with wrong Python version | Re-download with `--python-version 3.12` |
+| SDK commands not found after install | Symlink from `/opt/python312/bin/` to `/usr/local/bin/` |
+| `python3` still shows 3.10 | Correct — use `python3.12` or `pip3.12` explicitly; don't replace system Python |
 | Docker `permission denied` | `sudo usermod -aG docker $USER` then log out/in |
 | Port 8080 in use | Use `--port 8181` with mp-test |
 | `400 Bad Request` on Azure login | Check credentials in connections.json; test with PowerShell first |
 | File permission errors in container | Run `chmod -R 755 Azure/` before mp-test |
-| CRLF line ending issues | Run the `sed -i 's/\r$//'` commands from Phase 5 |
+| CRLF line ending issues | Run the `sed -i 's/\r$//'` commands from Phase 6 |
 | ISO mount says "write-protected" | Normal — ISOs are read-only, the mount worked |
 | `git` won't install from ISO | ISO packages conflict with OVA's OpenSSL 3.0; use SCP instead |
