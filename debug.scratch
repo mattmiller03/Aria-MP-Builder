@@ -1,5 +1,23 @@
-root@photon [ ~ ]# rpm -qa | grep openssl-devel
-root@photon [ ~ ]# rpm -qa | grep openssl
-openssl-3.0.9-8.ph4.x86_64
-openssl-fips-provider-3.0.8-1.ph4.x86_64
-openssl-c_rehash-3.0.9-8.ph4.x86_64
+root@photon [ /opt/aria/Python-3.12.11 ]# python3.12 -c "import ssl; print(ssl.OPENSSL_VERSION)"
+OpenSSL 3.0.9 30 May 2023
+root@photon [ /opt/aria/Python-3.12.11 ]# sudo mp-build --version
+Traceback (most recent call last):
+  File "/usr/local/bin/mp-build", line 5, in <module>
+    from vmware_aria_operations_integration_sdk.mp_build import main
+  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_build.py", line 21, in <module>
+    import pkg_resources
+ModuleNotFoundError: No module named 'pkg_resources'
+root@photon [ /opt/aria/Python-3.12.11 ]# mp-build --version
+Traceback (most recent call last):
+  File "/usr/local/bin/mp-build", line 5, in <module>
+    from vmware_aria_operations_integration_sdk.mp_build import main
+  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_build.py", line 21, in <module>
+    import pkg_resources
+ModuleNotFoundError: No module named 'pkg_resources'
+root@photon [ /opt/aria/Python-3.12.11 ]# mp-test --version
+Traceback (most recent call last):
+  File "/usr/local/bin/mp-test", line 5, in <module>
+    from vmware_aria_operations_integration_sdk.mp_test import main
+  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 19, in <module>
+    import pkg_resources
+ModuleNotFoundError: No module named 'pkg_resources'
