@@ -1,51 +1,48 @@
-root@photon [ /opt/aria/Python-3.12.11 ]# pip3.12 install --force-reinstall --no-index --find-links /opt/aria/wheels/ Pillow prompt-toolkit sen validators xmlschema
-Looking in links: /opt/aria/wheels/
-Processing /opt/aria/wheels/pillow-10.4.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-Processing /opt/aria/wheels/prompt_toolkit-3.0.52-py3-none-any.whl
-Processing /opt/aria/wheels/sen-0.8.1-py3-none-any.whl
-Processing /opt/aria/wheels/validators-0.18.2-py3-none-any.whl
-Processing /opt/aria/wheels/xmlschema-4.3.1-py3-none-any.whl
-Processing /opt/aria/wheels/wcwidth-0.6.0-py3-none-any.whl (from prompt-toolkit)
-Processing /opt/aria/wheels/urwid-4.0.0-py3-none-any.whl (from sen)
-Processing /opt/aria/wheels/docker-7.1.0-py3-none-any.whl (from sen)
-Processing /opt/aria/wheels/urwidtrees-1.0.4-py3-none-any.whl (from sen)
-Processing /opt/aria/wheels/six-1.17.0-py2.py3-none-any.whl (from validators)
-Processing /opt/aria/wheels/decorator-5.2.1-py3-none-any.whl (from validators)
-Processing /opt/aria/wheels/elementpath-5.1.1-py3-none-any.whl (from xmlschema)
-Processing /opt/aria/wheels/requests-2.33.1-py3-none-any.whl (from docker->sen)
-Processing /opt/aria/wheels/urllib3-2.6.3-py3-none-any.whl (from docker->sen)
-Processing /opt/aria/wheels/charset_normalizer-2.0.0-py3-none-any.whl (from requests>=2.26.0->docker->sen)
-Processing /opt/aria/wheels/idna-3.11-py3-none-any.whl (from requests>=2.26.0->docker->sen)
-Processing /opt/aria/wheels/certifi-2026.2.25-py3-none-any.whl (from requests>=2.26.0->docker->sen)
-Installing collected packages: wcwidth, urllib3, six, Pillow, idna, elementpath, decorator, charset_normalizer, certifi, xmlschema, validators, urwid, requests, prompt-toolkit, urwidtrees, docker, sen
-  Attempting uninstall: urllib3
-    Found existing installation: urllib3 2.6.3
-    Uninstalling urllib3-2.6.3:
-      Successfully uninstalled urllib3-2.6.3
-  Attempting uninstall: idna
-    Found existing installation: idna 3.11
-    Uninstalling idna-3.11:
-      Successfully uninstalled idna-3.11
-  Attempting uninstall: charset_normalizer
-    Found existing installation: charset-normalizer 2.0.0
-    Uninstalling charset-normalizer-2.0.0:
-      Successfully uninstalled charset-normalizer-2.0.0
-  Attempting uninstall: certifi
-    Found existing installation: certifi 2026.2.25
-    Uninstalling certifi-2026.2.25:
-      Successfully uninstalled certifi-2026.2.25
-  Attempting uninstall: requests
-    Found existing installation: requests 2.33.1
-    Uninstalling requests-2.33.1:
-      Successfully uninstalled requests-2.33.1
-  Attempting uninstall: docker
-    Found existing installation: docker 7.1.0
-    Uninstalling docker-7.1.0:
-      Successfully uninstalled docker-7.1.0
+root@photon [ ~ ]# pip3.12 install --force-reinstall --no-index --find-links /opt/aria/wheels "xmlschema==2.4.0"
+Looking in links: /opt/aria/wheels
+Processing /opt/aria/wheels/xmlschema-2.4.0-py3-none-any.whl
+Processing /opt/aria/wheels/elementpath-4.4.0-py3-none-any.whl (from xmlschema==2.4.0)
+Installing collected packages: elementpath, xmlschema
+  Attempting uninstall: elementpath
+    Found existing installation: elementpath 5.1.1
+    Uninstalling elementpath-5.1.1:
+      Successfully uninstalled elementpath-5.1.1
+  Attempting uninstall: xmlschema
+    Found existing installation: xmlschema 4.3.1
+    Uninstalling xmlschema-4.3.1:
+      Successfully uninstalled xmlschema-4.3.1
 ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
 vmware-aria-operations-integration-sdk 1.3.1 requires lxml<5.0.0,>=4.9.2, but you have lxml 5.0.0 which is incompatible.
-vmware-aria-operations-integration-sdk 1.3.1 requires sen<0.7.0,>=0.6.2, but you have sen 0.8.1 which is incompatible.
-vmware-aria-operations-integration-sdk 1.3.1 requires validators<0.21.0,>=0.20.0, but you have validators 0.18.2 which is incompatible.
-vmware-aria-operations-integration-sdk 1.3.1 requires xmlschema<2.5.0, but you have xmlschema 4.3.1 which is incompatible.
-Successfully installed Pillow-10.4.0 certifi-2026.2.25 charset_normalizer-2.0.0 decorator-5.2.1 docker-7.1.0 elementpath-5.1.1 idna-3.11 prompt-toolkit-3.0.52 requests-2.33.1 sen-0.8.1 six-1.17.0 urllib3-2.6.3 urwid-4.0.0 urwidtrees-1.0.4 validators-0.18.2 wcwidth-0.6.0 xmlschema-4.3.1
+Successfully installed elementpath-4.4.0 xmlschema-2.4.0
 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+root@photon [ ~ ]# pip3.12 install --force-reinstall --no-index --find-links /opt/aria/wheels "setuptools==78.1.1"
+Looking in links: /opt/aria/wheels
+Processing /opt/aria/wheels/setuptools-78.1.1-py3-none-any.whl
+Installing collected packages: setuptools
+  Attempting uninstall: setuptools
+    Found existing installation: setuptools 78.1.1
+    Uninstalling setuptools-78.1.1:
+      Successfully uninstalled setuptools-78.1.1
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+vmware-aria-operations-integration-sdk 1.3.1 requires lxml<5.0.0,>=4.9.2, but you have lxml 5.0.0 which is incompatible.
+Successfully installed setuptools-78.1.1
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+root@photon [ ~ ]# mp-build --version
+1.3.1
+root@photon [ ~ ]# mp-test --version
+Traceback (most recent call last):
+  File "/usr/local/bin/mp-test", line 5, in <module>
+    from vmware_aria_operations_integration_sdk.mp_test import main
+  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 79, in <module>
+    from vmware_aria_operations_integration_sdk.serialization import AdapterDefinitionBundle
+  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/serialization.py", line 35, in <module>
+    from vmware_aria_operations_integration_sdk.validation.api_response_validation import (
+  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/validation/api_response_validation.py", line 7, in <module>
+    import openapi_core
+  File "/opt/python312/lib/python3.12/site-packages/openapi_core/__init__.py", line 2, in <module>
+    from openapi_core.spec import Spec
+  File "/opt/python312/lib/python3.12/site-packages/openapi_core/spec/__init__.py", line 1, in <module>
+    from openapi_core.spec.paths import Spec
+  File "/opt/python312/lib/python3.12/site-packages/openapi_core/spec/paths.py", line 6, in <module>
+    from jsonschema.protocols import Validator
+ModuleNotFoundError: No module named 'jsonschema.protocols'
