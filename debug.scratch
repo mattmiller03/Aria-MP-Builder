@@ -5,38 +5,14 @@ Choose a method to test: Test Connection
 Building adapter [Finished]
 Waiting for adapter to start [Finished]
 Running Endpoint URLs [Finished]
-Caught exception when retrieving SSL certificates: [Errno 2] No such file or directory: '/opt/aria/Aria-MP-Builder/Azure/conf'.
-Error retrieving SSL certificates from 'endpointURLs'. Proceeding without certificates.
 Running Connect [Finished]
-Unexpected error
-[Errno 2] No such file or directory: '/opt/aria/Aria-MP-Builder/Azure/conf'
-  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 938, in main
-    asyncio.run(run(parser.parse_args()))
-  File "/opt/python312/lib/python3.12/asyncio/runners.py", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/asyncio/runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 406, in run
-    result_bundle = await method(
-                    ^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_test.py", line 241, in run_connect
-    request, response, elapsed_time = await send_post_to_adapter(
-                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/containerized_adapter_rest_api.py", line 50, in send_post_to_adapter
-    json=await get_request_body(port, connection, send_cluster_connection_info),
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/containerized_adapter_rest_api.py", line 91, in get_request_body
-    describe, resources = await Describe.get(port)
-                          ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/describe.py", line 83, in get
-    await cls._get_adapter_definition(port)
-  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/describe.py", line 118, in _get_adapter_definition
-    cls.merge_xml_fragments(describe, names)
-  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/describe.py", line 136, in merge_xml_fragments
-    for file in os.listdir(os.path.join(cls._path, "conf")):
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Failed: Connection test failed: 'TestResult' object has no attribute 'with_message'
+
+Avg CPU %                     | Avg Memory Usage %         | Memory Limit | Network I/O           | Block I/O    
+------------------------------+----------------------------+--------------+-----------------------+--------------
+10.0 % (0.1% / 10.0% / 19.8%) | 4.3 % (4.3% / 4.3% / 4.3%) | 1.0 GiB      | 20.94 KiB / 76.57 KiB | 0.0 B / 0.0 B
+
+Request completed in 1.43 seconds.
+
+Connect attempt failed: Connection test failed: 'TestResult' object has no attribute 'with_message'
+All validation logs written to '/opt/aria/Aria-MP-Builder/Azure/logs/validation.log'
