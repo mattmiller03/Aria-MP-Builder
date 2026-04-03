@@ -1,0 +1,18 @@
+root@photon [ /opt/aria/Aria-MP-Builder/Azure ]# sudo mp-test --port 8080
+Building base image [Finished]
+Choose a connection:  Azure Gov Test
+Choose a method to test: Collect
+Building adapter [Finished]
+Waiting for adapter to start [Finished]
+Running Collect [Finished]
+Collection Failed: Collection failed: 502 Server Error: Bad Gateway for url: https://management.usgovcloudapi.net/subscriptions/988779d0-a914-4d28-8db2-56ae35c26853/providers/Microsoft.Compute/virtualMachines?api-version=2024-07-01&%24expand=instanceView
+
+Avg CPU %                   | Avg Memory Usage %         | Memory Limit | Network I/O             | Block I/O    
+----------------------------+----------------------------+--------------+-------------------------+--------------
+6.9 % (0.1% / 2.6% / 34.4%) | 6.3 % (4.3% / 7.1% / 7.1%) | 1.0 GiB      | 222.25 KiB / 103.81 KiB | 0.0 B / 0.0 B
+
+Collection completed in 10.61 seconds.
+
+No collection result was found.
+No collection result was found.
+All validation logs written to '/opt/aria/Aria-MP-Builder/Azure/logs/validation.log'
