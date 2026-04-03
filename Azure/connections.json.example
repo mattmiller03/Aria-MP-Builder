@@ -17,22 +17,22 @@
       "credential": {
         "credential_kind_key": "azure_gov_credential",
         "tenant_id": {
-          "value": "YOUR_TENANT_ID",
+          "value": "<your Tenant ID>",
           "required": true,
           "password": false
         },
         "client_id": {
-          "value": "YOUR_CLIENT_ID",
+          "value": "<your App ID>",
           "required": true,
           "password": false
         },
         "client_secret": {
-          "value": "YOUR_CLIENT_SECRET",
+          "value": "<the secret PASSWORD/VALUE, not the secret ID>",
           "required": true,
           "password": true
         },
         "subscription_id": {
-          "value": "YOUR_SUBSCRIPTION_ID",
+          "value": "",
           "required": false,
           "password": false
         }
