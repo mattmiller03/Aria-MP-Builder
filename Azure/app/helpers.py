@@ -27,9 +27,13 @@ def extract_resource_group(resource_id):
 def safe_property(obj, key, value):
     """Set a property on an object, converting None to empty string.
 
-    The SDK schema requires non-null string values for all properties.
+    The SDK schema requires non-null values for all properties.
     Azure APIs sometimes return null for optional fields.
+    Numeric values (int, float) are preserved as-is for numeric properties.
     """
     if value is None:
         value = ""
+    elif isinstance(value, (int, float)):
+        obj.with_property(key, value)
+        return
     obj.with_property(key, str(value))
