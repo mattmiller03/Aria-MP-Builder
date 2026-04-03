@@ -4,7 +4,7 @@ import logging
 
 from azure_client import AzureClient
 from constants import API_VERSIONS, OBJ_STORAGE_ACCOUNT, OBJ_RESOURCE_GROUP
-from helpers import make_identifiers, extract_resource_group
+from helpers import make_identifiers, extract_resource_group, safe_property
 
 logger = logging.getLogger(__name__)
 
@@ -39,47 +39,47 @@ def collect_storage_accounts(client: AzureClient, result, adapter_kind: str,
                 ]),
             )
 
-            obj.with_property("account_name", acct_name)
-            obj.with_property("resource_id", acct.get("id", ""))
-            obj.with_property("location", acct.get("location", ""))
-            obj.with_property("subscription_id", sub_id)
-            obj.with_property("resource_group", rg_name)
-            obj.with_property("kind", acct.get("kind", ""))
-            obj.with_property("sku_name", sku.get("name", ""))
-            obj.with_property("sku_tier", sku.get("tier", ""))
-            obj.with_property("provisioning_state",
-                              props.get("provisioningState", ""))
-            obj.with_property("creation_time", props.get("creationTime", ""))
-            obj.with_property("access_tier", props.get("accessTier", ""))
-            obj.with_property("https_only",
-                              str(props.get("supportsHttpsTrafficOnly", "")))
-            obj.with_property("minimum_tls_version",
-                              props.get("minimumTlsVersion", ""))
-            obj.with_property("allow_blob_public_access",
-                              str(props.get("allowBlobPublicAccess", "")))
+            safe_property(obj, "account_name", acct_name)
+            safe_property(obj, "resource_id", acct.get("id", ""))
+            safe_property(obj, "location", acct.get("location", ""))
+            safe_property(obj, "subscription_id", sub_id)
+            safe_property(obj, "resource_group", rg_name)
+            safe_property(obj, "kind", acct.get("kind", ""))
+            safe_property(obj, "sku_name", sku.get("name", ""))
+            safe_property(obj, "sku_tier", sku.get("tier", ""))
+            safe_property(obj, "provisioning_state",
+                          props.get("provisioningState", ""))
+            safe_property(obj, "creation_time", props.get("creationTime", ""))
+            safe_property(obj, "access_tier", props.get("accessTier", ""))
+            safe_property(obj, "https_only",
+                          str(props.get("supportsHttpsTrafficOnly", "")))
+            safe_property(obj, "minimum_tls_version",
+                          props.get("minimumTlsVersion", ""))
+            safe_property(obj, "allow_blob_public_access",
+                          str(props.get("allowBlobPublicAccess", "")))
 
             # Primary endpoints
             endpoints = props.get("primaryEndpoints", {})
-            obj.with_property("endpoint_blob", endpoints.get("blob", ""))
-            obj.with_property("endpoint_queue", endpoints.get("queue", ""))
-            obj.with_property("endpoint_table", endpoints.get("table", ""))
-            obj.with_property("endpoint_file", endpoints.get("file", ""))
+            safe_property(obj, "endpoint_blob", endpoints.get("blob", ""))
+            safe_property(obj, "endpoint_queue", endpoints.get("queue", ""))
+            safe_property(obj, "endpoint_table", endpoints.get("table", ""))
+            safe_property(obj, "endpoint_file", endpoints.get("file", ""))
 
             # Encryption
             enc = props.get("encryption", {})
-            obj.with_property("encryption_key_source",
-                              enc.get("keySource", ""))
+            safe_property(obj, "encryption_key_source",
+                          enc.get("keySource", ""))
 
             # Network rules
             net_rules = props.get("networkAcls", {})
-            obj.with_property("network_default_action",
-                              net_rules.get("defaultAction", ""))
+            safe_property(obj, "network_default_action",
+                          net_rules.get("defaultAction", ""))
 
             # Tags
             tags = acct.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    obj.with_property(f"tag_{key}", value)
+                    safe_property(obj, f"tag_{key}", value)
 
             # Relationship: Storage Account -> Resource Group
             if rg_name:

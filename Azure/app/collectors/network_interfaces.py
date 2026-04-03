@@ -4,7 +4,7 @@ import logging
 
 from azure_client import AzureClient
 from constants import API_VERSIONS, OBJ_NETWORK_INTERFACE, OBJ_RESOURCE_GROUP
-from helpers import make_identifiers, extract_resource_group
+from helpers import make_identifiers, extract_resource_group, safe_property
 
 logger = logging.getLogger(__name__)
 
@@ -38,25 +38,25 @@ def collect_network_interfaces(client: AzureClient, result, adapter_kind: str,
                 ]),
             )
 
-            obj.with_property("nic_name", nic_name)
-            obj.with_property("resource_id", nic.get("id", ""))
-            obj.with_property("location", nic.get("location", ""))
-            obj.with_property("subscription_id", sub_id)
-            obj.with_property("resource_group", rg_name)
-            obj.with_property("mac_address", props.get("macAddress", ""))
-            obj.with_property("is_primary", str(props.get("primary", "")))
-            obj.with_property("enable_ip_forwarding",
-                              str(props.get("enableIPForwarding", "")))
-            obj.with_property("provisioning_state",
-                              props.get("provisioningState", ""))
+            safe_property(obj, "nic_name", nic_name)
+            safe_property(obj, "resource_id", nic.get("id", ""))
+            safe_property(obj, "location", nic.get("location", ""))
+            safe_property(obj, "subscription_id", sub_id)
+            safe_property(obj, "resource_group", rg_name)
+            safe_property(obj, "mac_address", props.get("macAddress", ""))
+            safe_property(obj, "is_primary", str(props.get("primary", "")))
+            safe_property(obj, "enable_ip_forwarding",
+                          str(props.get("enableIPForwarding", "")))
+            safe_property(obj, "provisioning_state",
+                          props.get("provisioningState", ""))
 
             # NSG
             nsg = props.get("networkSecurityGroup", {})
-            obj.with_property("nsg_id", nsg.get("id", ""))
+            safe_property(obj, "nsg_id", nsg.get("id", ""))
 
             # Associated VM
             vm_ref = props.get("virtualMachine", {})
-            obj.with_property("attached_vm_id", vm_ref.get("id", ""))
+            safe_property(obj, "attached_vm_id", vm_ref.get("id", ""))
 
             # IP configurations
             ip_configs = props.get("ipConfigurations", [])
@@ -78,26 +78,26 @@ def collect_network_interfaces(client: AzureClient, result, adapter_kind: str,
                 if public_ip.get("id"):
                     public_ip_ids.append(public_ip["id"])
 
-                obj.with_property("private_ip_allocation_method",
-                                  ip_props.get("privateIPAllocationMethod", ""))
+                safe_property(obj, "private_ip_allocation_method",
+                              ip_props.get("privateIPAllocationMethod", ""))
 
-            obj.with_property("private_ip_addresses", ", ".join(private_ips))
-            obj.with_property("subnet_ids", ", ".join(subnet_ids))
-            obj.with_property("public_ip_ids", ", ".join(public_ip_ids))
-            obj.with_property("ip_config_count", len(ip_configs))
+            safe_property(obj, "private_ip_addresses", ", ".join(private_ips))
+            safe_property(obj, "subnet_ids", ", ".join(subnet_ids))
+            safe_property(obj, "public_ip_ids", ", ".join(public_ip_ids))
+            safe_property(obj, "ip_config_count", len(ip_configs))
 
             # DNS
             dns = props.get("dnsSettings", {})
-            obj.with_property("dns_servers",
-                              ", ".join(dns.get("dnsServers", [])))
-            obj.with_property("applied_dns_servers",
-                              ", ".join(dns.get("appliedDnsServers", [])))
+            safe_property(obj, "dns_servers",
+                          ", ".join(dns.get("dnsServers", [])))
+            safe_property(obj, "applied_dns_servers",
+                          ", ".join(dns.get("appliedDnsServers", [])))
 
             # Tags
             tags = nic.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    obj.with_property(f"tag_{key}", value)
+                    safe_property(obj, f"tag_{key}", value)
 
             # Relationship: NIC -> Resource Group
             if rg_name:

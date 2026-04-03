@@ -4,7 +4,7 @@ import logging
 
 from azure_client import AzureClient
 from constants import API_VERSIONS, OBJ_SUBSCRIPTION
-from helpers import make_identifiers
+from helpers import make_identifiers, safe_property
 
 logger = logging.getLogger(__name__)
 
@@ -30,21 +30,21 @@ def collect_subscriptions(client: AzureClient, result, adapter_kind: str):
             identifiers=make_identifiers([("subscription_id", sub_id)]),
         )
 
-        obj.with_property("subscription_id", sub_id)
-        obj.with_property("display_name", sub.get("displayName", ""))
-        obj.with_property("state", sub.get("state", ""))
-        obj.with_property("tenant_id", sub.get("tenantId", ""))
+        safe_property(obj, "subscription_id", sub_id)
+        safe_property(obj, "display_name", sub.get("displayName", ""))
+        safe_property(obj, "state", sub.get("state", ""))
+        safe_property(obj, "tenant_id", sub.get("tenantId", ""))
 
         policies = sub.get("subscriptionPolicies", {})
-        obj.with_property("location_placement_id",
-                          policies.get("locationPlacementId", ""))
-        obj.with_property("quota_id", policies.get("quotaId", ""))
-        obj.with_property("spending_limit", policies.get("spendingLimit", ""))
+        safe_property(obj, "location_placement_id",
+                      policies.get("locationPlacementId", ""))
+        safe_property(obj, "quota_id", policies.get("quotaId", ""))
+        safe_property(obj, "spending_limit", policies.get("spendingLimit", ""))
 
         tags = sub.get("tags", {})
         if tags:
             for key, value in tags.items():
-                obj.with_property(f"tag_{key}", value)
+                safe_property(obj, f"tag_{key}", value)
 
     logger.info("Collected %d subscriptions", len(subscriptions))
     return subscriptions

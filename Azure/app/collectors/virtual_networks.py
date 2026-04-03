@@ -6,7 +6,7 @@ from azure_client import AzureClient
 from constants import (
     API_VERSIONS, OBJ_VIRTUAL_NETWORK, OBJ_SUBNET, OBJ_RESOURCE_GROUP,
 )
-from helpers import make_identifiers, extract_resource_group
+from helpers import make_identifiers, extract_resource_group, safe_property
 
 logger = logging.getLogger(__name__)
 
@@ -41,33 +41,33 @@ def collect_virtual_networks(client: AzureClient, result, adapter_kind: str,
                 ]),
             )
 
-            vnet_obj.with_property("vnet_name", vnet_name)
-            vnet_obj.with_property("resource_id", vnet.get("id", ""))
-            vnet_obj.with_property("location", vnet.get("location", ""))
-            vnet_obj.with_property("subscription_id", sub_id)
-            vnet_obj.with_property("resource_group", rg_name)
-            vnet_obj.with_property("provisioning_state",
-                                   props.get("provisioningState", ""))
+            safe_property(vnet_obj, "vnet_name", vnet_name)
+            safe_property(vnet_obj, "resource_id", vnet.get("id", ""))
+            safe_property(vnet_obj, "location", vnet.get("location", ""))
+            safe_property(vnet_obj, "subscription_id", sub_id)
+            safe_property(vnet_obj, "resource_group", rg_name)
+            safe_property(vnet_obj, "provisioning_state",
+                          props.get("provisioningState", ""))
 
             # Address space
             addr_space = props.get("addressSpace", {})
             prefixes = addr_space.get("addressPrefixes", [])
-            vnet_obj.with_property("address_prefixes", ", ".join(prefixes))
+            safe_property(vnet_obj, "address_prefixes", ", ".join(prefixes))
 
             # DHCP options / DNS
             dhcp = props.get("dhcpOptions", {})
             dns = dhcp.get("dnsServers", [])
-            vnet_obj.with_property("dns_servers", ", ".join(dns))
+            safe_property(vnet_obj, "dns_servers", ", ".join(dns))
 
             # Enable DDoS protection
-            vnet_obj.with_property("ddos_protection_enabled",
-                                   str(props.get("enableDdosProtection", "")))
+            safe_property(vnet_obj, "ddos_protection_enabled",
+                          str(props.get("enableDdosProtection", "")))
 
             # Tags
             tags = vnet.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    vnet_obj.with_property(f"tag_{key}", value)
+                    safe_property(vnet_obj, f"tag_{key}", value)
 
             # Relationship: VNet -> Resource Group
             if rg_name:
@@ -99,26 +99,26 @@ def collect_virtual_networks(client: AzureClient, result, adapter_kind: str,
                     ]),
                 )
 
-                subnet_obj.with_property("subnet_name", subnet_name)
-                subnet_obj.with_property("resource_id", subnet.get("id", ""))
-                subnet_obj.with_property("address_prefix",
-                                         subnet_props.get("addressPrefix", ""))
-                subnet_obj.with_property("provisioning_state",
-                                         subnet_props.get("provisioningState", ""))
+                safe_property(subnet_obj, "subnet_name", subnet_name)
+                safe_property(subnet_obj, "resource_id", subnet.get("id", ""))
+                safe_property(subnet_obj, "address_prefix",
+                              subnet_props.get("addressPrefix", ""))
+                safe_property(subnet_obj, "provisioning_state",
+                              subnet_props.get("provisioningState", ""))
 
                 # NSG
                 nsg = subnet_props.get("networkSecurityGroup", {})
-                subnet_obj.with_property("nsg_id", nsg.get("id", ""))
+                safe_property(subnet_obj, "nsg_id", nsg.get("id", ""))
 
                 # Route table
                 rt = subnet_props.get("routeTable", {})
-                subnet_obj.with_property("route_table_id", rt.get("id", ""))
+                safe_property(subnet_obj, "route_table_id", rt.get("id", ""))
 
                 # Service endpoints
                 svc_eps = subnet_props.get("serviceEndpoints", [])
                 svc_names = [ep.get("service", "") for ep in svc_eps]
-                subnet_obj.with_property("service_endpoints",
-                                         ", ".join(svc_names))
+                safe_property(subnet_obj, "service_endpoints",
+                              ", ".join(svc_names))
 
                 # Relationship: Subnet -> VNet (parent)
                 subnet_obj.add_parent(vnet_obj)

@@ -4,7 +4,7 @@ import logging
 
 from azure_client import AzureClient
 from constants import API_VERSIONS, OBJ_RESOURCE_GROUP, OBJ_SUBSCRIPTION
-from helpers import make_identifiers
+from helpers import make_identifiers, safe_property
 
 logger = logging.getLogger(__name__)
 
@@ -39,17 +39,17 @@ def collect_resource_groups(client: AzureClient, result, adapter_kind: str,
                 ]),
             )
 
-            obj.with_property("name", rg_name)
-            obj.with_property("location", rg.get("location", ""))
-            obj.with_property("provisioning_state",
-                              rg.get("properties", {}).get("provisioningState", ""))
-            obj.with_property("subscription_id", sub_id)
-            obj.with_property("resource_id", rg.get("id", ""))
+            safe_property(obj, "name", rg_name)
+            safe_property(obj, "location", rg.get("location", ""))
+            safe_property(obj, "provisioning_state",
+                          rg.get("properties", {}).get("provisioningState", ""))
+            safe_property(obj, "subscription_id", sub_id)
+            safe_property(obj, "resource_id", rg.get("id", ""))
 
             tags = rg.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    obj.with_property(f"tag_{key}", value)
+                    safe_property(obj, f"tag_{key}", value)
 
             # Relationship: Resource Group -> Subscription (parent)
             sub_obj = result.object(

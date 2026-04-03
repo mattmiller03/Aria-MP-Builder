@@ -22,3 +22,14 @@ def extract_resource_group(resource_id):
         if part.lower() == "resourcegroups" and i + 1 < len(parts):
             return parts[i + 1]
     return ""
+
+
+def safe_property(obj, key, value):
+    """Set a property on an object, converting None to empty string.
+
+    The SDK schema requires non-null string values for all properties.
+    Azure APIs sometimes return null for optional fields.
+    """
+    if value is None:
+        value = ""
+    obj.with_property(key, str(value))

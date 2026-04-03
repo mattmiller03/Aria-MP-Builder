@@ -4,7 +4,7 @@ import logging
 
 from azure_client import AzureClient
 from constants import API_VERSIONS, OBJ_APP_SERVICE, OBJ_RESOURCE_GROUP
-from helpers import make_identifiers, extract_resource_group
+from helpers import make_identifiers, extract_resource_group, safe_property
 
 logger = logging.getLogger(__name__)
 
@@ -38,50 +38,50 @@ def collect_app_services(client: AzureClient, result, adapter_kind: str,
                 ]),
             )
 
-            obj.with_property("app_name", app_name)
-            obj.with_property("resource_id", app.get("id", ""))
-            obj.with_property("location", app.get("location", ""))
-            obj.with_property("subscription_id", sub_id)
-            obj.with_property("resource_group", rg_name)
+            safe_property(obj, "app_name", app_name)
+            safe_property(obj, "resource_id", app.get("id", ""))
+            safe_property(obj, "location", app.get("location", ""))
+            safe_property(obj, "subscription_id", sub_id)
+            safe_property(obj, "resource_group", rg_name)
 
             # Kind: "app", "functionapp", "functionapp,linux", etc.
             kind = app.get("kind", "")
-            obj.with_property("kind", kind)
-            obj.with_property("is_function_app",
-                              str("functionapp" in kind.lower()))
+            safe_property(obj, "kind", kind)
+            safe_property(obj, "is_function_app",
+                          str("functionapp" in kind.lower()))
 
-            obj.with_property("state", props.get("state", ""))
-            obj.with_property("default_host_name",
-                              props.get("defaultHostName", ""))
-            obj.with_property("https_only",
-                              str(props.get("httpsOnly", "")))
-            obj.with_property("enabled", str(props.get("enabled", "")))
+            safe_property(obj, "state", props.get("state", ""))
+            safe_property(obj, "default_host_name",
+                          props.get("defaultHostName", ""))
+            safe_property(obj, "https_only",
+                          str(props.get("httpsOnly", "")))
+            safe_property(obj, "enabled", str(props.get("enabled", "")))
 
             # Host names
             host_names = props.get("hostNames", [])
-            obj.with_property("host_names", ", ".join(host_names))
+            safe_property(obj, "host_names", ", ".join(host_names))
 
             # App Service Plan
-            obj.with_property("server_farm_id",
-                              props.get("serverFarmId", ""))
+            safe_property(obj, "server_farm_id",
+                          props.get("serverFarmId", ""))
 
             # Availability state
-            obj.with_property("availability_state",
-                              props.get("availabilityState", ""))
+            safe_property(obj, "availability_state",
+                          props.get("availabilityState", ""))
 
             # Last modified
-            obj.with_property("last_modified_time",
-                              props.get("lastModifiedTimeUtc", ""))
+            safe_property(obj, "last_modified_time",
+                          props.get("lastModifiedTimeUtc", ""))
 
             # Outbound IPs
-            obj.with_property("outbound_ip_addresses",
-                              props.get("outboundIpAddresses", ""))
+            safe_property(obj, "outbound_ip_addresses",
+                          props.get("outboundIpAddresses", ""))
 
             # Tags
             tags = app.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    obj.with_property(f"tag_{key}", value)
+                    safe_property(obj, f"tag_{key}", value)
 
             # Relationship: App -> Resource Group
             if rg_name:

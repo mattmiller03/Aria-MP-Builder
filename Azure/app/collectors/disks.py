@@ -4,7 +4,7 @@ import logging
 
 from azure_client import AzureClient
 from constants import API_VERSIONS, OBJ_DISK, OBJ_RESOURCE_GROUP
-from helpers import make_identifiers, extract_resource_group
+from helpers import make_identifiers, extract_resource_group, safe_property
 
 logger = logging.getLogger(__name__)
 
@@ -39,38 +39,38 @@ def collect_disks(client: AzureClient, result, adapter_kind: str,
                 ]),
             )
 
-            obj.with_property("disk_name", disk_name)
-            obj.with_property("resource_id", disk.get("id", ""))
-            obj.with_property("location", disk.get("location", ""))
-            obj.with_property("subscription_id", sub_id)
-            obj.with_property("resource_group", rg_name)
-            obj.with_property("sku_name", sku.get("name", ""))
-            obj.with_property("sku_tier", sku.get("tier", ""))
-            obj.with_property("disk_size_gb", props.get("diskSizeGB", ""))
-            obj.with_property("disk_iops_read_write",
-                              props.get("diskIOPSReadWrite", ""))
-            obj.with_property("disk_mbps_read_write",
-                              props.get("diskMBpsReadWrite", ""))
-            obj.with_property("disk_state", props.get("diskState", ""))
-            obj.with_property("os_type", props.get("osType", ""))
-            obj.with_property("time_created", props.get("timeCreated", ""))
-            obj.with_property("provisioning_state",
-                              props.get("provisioningState", ""))
-            obj.with_property("encryption_type",
-                              props.get("encryption", {}).get("type", ""))
-            obj.with_property("network_access_policy",
-                              props.get("networkAccessPolicy", ""))
+            safe_property(obj, "disk_name", disk_name)
+            safe_property(obj, "resource_id", disk.get("id", ""))
+            safe_property(obj, "location", disk.get("location", ""))
+            safe_property(obj, "subscription_id", sub_id)
+            safe_property(obj, "resource_group", rg_name)
+            safe_property(obj, "sku_name", sku.get("name", ""))
+            safe_property(obj, "sku_tier", sku.get("tier", ""))
+            safe_property(obj, "disk_size_gb", props.get("diskSizeGB", ""))
+            safe_property(obj, "disk_iops_read_write",
+                          props.get("diskIOPSReadWrite", ""))
+            safe_property(obj, "disk_mbps_read_write",
+                          props.get("diskMBpsReadWrite", ""))
+            safe_property(obj, "disk_state", props.get("diskState", ""))
+            safe_property(obj, "os_type", props.get("osType", ""))
+            safe_property(obj, "time_created", props.get("timeCreated", ""))
+            safe_property(obj, "provisioning_state",
+                          props.get("provisioningState", ""))
+            safe_property(obj, "encryption_type",
+                          props.get("encryption", {}).get("type", ""))
+            safe_property(obj, "network_access_policy",
+                          props.get("networkAccessPolicy", ""))
 
             # Tags
             tags = disk.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    obj.with_property(f"tag_{key}", value)
+                    safe_property(obj, f"tag_{key}", value)
 
             # Zones
             zones = disk.get("zones", [])
             if zones:
-                obj.with_property("availability_zone", ", ".join(zones))
+                safe_property(obj, "availability_zone", ", ".join(zones))
 
             # Relationship: Disk -> Resource Group
             if rg_name:

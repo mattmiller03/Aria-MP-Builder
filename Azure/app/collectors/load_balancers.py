@@ -4,7 +4,7 @@ import logging
 
 from azure_client import AzureClient
 from constants import API_VERSIONS, OBJ_LOAD_BALANCER, OBJ_RESOURCE_GROUP
-from helpers import make_identifiers, extract_resource_group
+from helpers import make_identifiers, extract_resource_group, safe_property
 
 logger = logging.getLogger(__name__)
 
@@ -39,45 +39,45 @@ def collect_load_balancers(client: AzureClient, result, adapter_kind: str,
                 ]),
             )
 
-            obj.with_property("lb_name", lb_name)
-            obj.with_property("resource_id", lb.get("id", ""))
-            obj.with_property("location", lb.get("location", ""))
-            obj.with_property("subscription_id", sub_id)
-            obj.with_property("resource_group", rg_name)
-            obj.with_property("sku_name", sku.get("name", ""))
-            obj.with_property("sku_tier", sku.get("tier", ""))
-            obj.with_property("provisioning_state",
-                              props.get("provisioningState", ""))
+            safe_property(obj, "lb_name", lb_name)
+            safe_property(obj, "resource_id", lb.get("id", ""))
+            safe_property(obj, "location", lb.get("location", ""))
+            safe_property(obj, "subscription_id", sub_id)
+            safe_property(obj, "resource_group", rg_name)
+            safe_property(obj, "sku_name", sku.get("name", ""))
+            safe_property(obj, "sku_tier", sku.get("tier", ""))
+            safe_property(obj, "provisioning_state",
+                          props.get("provisioningState", ""))
 
             # Frontend IP configs
             frontends = props.get("frontendIPConfigurations", [])
-            obj.with_property("frontend_ip_count", len(frontends))
+            safe_property(obj, "frontend_ip_count", len(frontends))
             frontend_names = [f.get("name", "") for f in frontends]
-            obj.with_property("frontend_names", ", ".join(frontend_names))
+            safe_property(obj, "frontend_names", ", ".join(frontend_names))
 
             # Backend pools
             backends = props.get("backendAddressPools", [])
-            obj.with_property("backend_pool_count", len(backends))
+            safe_property(obj, "backend_pool_count", len(backends))
             backend_names = [b.get("name", "") for b in backends]
-            obj.with_property("backend_pool_names", ", ".join(backend_names))
+            safe_property(obj, "backend_pool_names", ", ".join(backend_names))
 
             # Load balancing rules
             rules = props.get("loadBalancingRules", [])
-            obj.with_property("rule_count", len(rules))
+            safe_property(obj, "rule_count", len(rules))
 
             # Probes
             probes = props.get("probes", [])
-            obj.with_property("probe_count", len(probes))
+            safe_property(obj, "probe_count", len(probes))
 
             # Inbound NAT rules
             nat_rules = props.get("inboundNatRules", [])
-            obj.with_property("inbound_nat_rule_count", len(nat_rules))
+            safe_property(obj, "inbound_nat_rule_count", len(nat_rules))
 
             # Tags
             tags = lb.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    obj.with_property(f"tag_{key}", value)
+                    safe_property(obj, f"tag_{key}", value)
 
             # Relationship: LB -> Resource Group
             if rg_name:

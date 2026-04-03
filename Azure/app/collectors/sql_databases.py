@@ -6,7 +6,7 @@ from azure_client import AzureClient
 from constants import (
     API_VERSIONS, OBJ_SQL_SERVER, OBJ_SQL_DATABASE, OBJ_RESOURCE_GROUP,
 )
-from helpers import make_identifiers, extract_resource_group
+from helpers import make_identifiers, extract_resource_group, safe_property
 
 logger = logging.getLogger(__name__)
 
@@ -43,27 +43,27 @@ def collect_sql_servers_and_databases(client: AzureClient, result,
                 ]),
             )
 
-            srv_obj.with_property("server_name", srv_name)
-            srv_obj.with_property("resource_id", server.get("id", ""))
-            srv_obj.with_property("location", server.get("location", ""))
-            srv_obj.with_property("subscription_id", sub_id)
-            srv_obj.with_property("resource_group", rg_name)
-            srv_obj.with_property("fqdn",
-                                  srv_props.get("fullyQualifiedDomainName", ""))
-            srv_obj.with_property("state", srv_props.get("state", ""))
-            srv_obj.with_property("version", srv_props.get("version", ""))
-            srv_obj.with_property("admin_login",
-                                  srv_props.get("administratorLogin", ""))
-            srv_obj.with_property("public_network_access",
-                                  srv_props.get("publicNetworkAccess", ""))
-            srv_obj.with_property("minimal_tls_version",
-                                  srv_props.get("minimalTlsVersion", ""))
+            safe_property(srv_obj, "server_name", srv_name)
+            safe_property(srv_obj, "resource_id", server.get("id", ""))
+            safe_property(srv_obj, "location", server.get("location", ""))
+            safe_property(srv_obj, "subscription_id", sub_id)
+            safe_property(srv_obj, "resource_group", rg_name)
+            safe_property(srv_obj, "fqdn",
+                          srv_props.get("fullyQualifiedDomainName", ""))
+            safe_property(srv_obj, "state", srv_props.get("state", ""))
+            safe_property(srv_obj, "version", srv_props.get("version", ""))
+            safe_property(srv_obj, "admin_login",
+                          srv_props.get("administratorLogin", ""))
+            safe_property(srv_obj, "public_network_access",
+                          srv_props.get("publicNetworkAccess", ""))
+            safe_property(srv_obj, "minimal_tls_version",
+                          srv_props.get("minimalTlsVersion", ""))
 
             # Tags
             tags = server.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    srv_obj.with_property(f"tag_{key}", value)
+                    safe_property(srv_obj, f"tag_{key}", value)
 
             # Relationship: SQL Server -> Resource Group
             if rg_name:
@@ -105,34 +105,34 @@ def collect_sql_servers_and_databases(client: AzureClient, result,
                     ]),
                 )
 
-                db_obj.with_property("database_name", db_name)
-                db_obj.with_property("resource_id", db.get("id", ""))
-                db_obj.with_property("location", db.get("location", ""))
-                db_obj.with_property("subscription_id", sub_id)
-                db_obj.with_property("server_name", srv_name)
-                db_obj.with_property("status", db_props.get("status", ""))
-                db_obj.with_property("database_id",
-                                     db_props.get("databaseId", ""))
-                db_obj.with_property("sku_name", db_sku.get("name", ""))
-                db_obj.with_property("sku_tier", db_sku.get("tier", ""))
-                db_obj.with_property("sku_capacity",
-                                     str(db_sku.get("capacity", "")))
-                db_obj.with_property("max_size_bytes",
-                                     str(db_props.get("maxSizeBytes", "")))
-                db_obj.with_property("collation",
-                                     db_props.get("collation", ""))
-                db_obj.with_property("creation_date",
-                                     db_props.get("creationDate", ""))
-                db_obj.with_property("current_service_objective",
-                                     db_props.get("currentServiceObjectiveName", ""))
-                db_obj.with_property("zone_redundant",
-                                     str(db_props.get("zoneRedundant", "")))
+                safe_property(db_obj, "database_name", db_name)
+                safe_property(db_obj, "resource_id", db.get("id", ""))
+                safe_property(db_obj, "location", db.get("location", ""))
+                safe_property(db_obj, "subscription_id", sub_id)
+                safe_property(db_obj, "server_name", srv_name)
+                safe_property(db_obj, "status", db_props.get("status", ""))
+                safe_property(db_obj, "database_id",
+                              db_props.get("databaseId", ""))
+                safe_property(db_obj, "sku_name", db_sku.get("name", ""))
+                safe_property(db_obj, "sku_tier", db_sku.get("tier", ""))
+                safe_property(db_obj, "sku_capacity",
+                              str(db_sku.get("capacity", "")))
+                safe_property(db_obj, "max_size_bytes",
+                              str(db_props.get("maxSizeBytes", "")))
+                safe_property(db_obj, "collation",
+                              db_props.get("collation", ""))
+                safe_property(db_obj, "creation_date",
+                              db_props.get("creationDate", ""))
+                safe_property(db_obj, "current_service_objective",
+                              db_props.get("currentServiceObjectiveName", ""))
+                safe_property(db_obj, "zone_redundant",
+                              str(db_props.get("zoneRedundant", "")))
 
                 # Tags
                 db_tags = db.get("tags", {})
                 if db_tags:
                     for key, value in db_tags.items():
-                        db_obj.with_property(f"tag_{key}", value)
+                        safe_property(db_obj, f"tag_{key}", value)
 
                 # Relationship: Database -> SQL Server (parent)
                 db_obj.add_parent(srv_obj)

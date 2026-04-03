@@ -4,7 +4,7 @@ import logging
 
 from azure_client import AzureClient
 from constants import API_VERSIONS, OBJ_KEY_VAULT, OBJ_RESOURCE_GROUP
-from helpers import make_identifiers
+from helpers import make_identifiers, safe_property
 
 logger = logging.getLogger(__name__)
 
@@ -46,37 +46,37 @@ def collect_key_vaults(client: AzureClient, result, adapter_kind: str,
                     ]),
                 )
 
-                obj.with_property("vault_name", vault_name)
-                obj.with_property("resource_id", vault.get("id", ""))
-                obj.with_property("location", vault.get("location", ""))
-                obj.with_property("subscription_id", sub_id)
-                obj.with_property("resource_group", rg_name)
-                obj.with_property("vault_uri", props.get("vaultUri", ""))
-                obj.with_property("tenant_id", props.get("tenantId", ""))
+                safe_property(obj, "vault_name", vault_name)
+                safe_property(obj, "resource_id", vault.get("id", ""))
+                safe_property(obj, "location", vault.get("location", ""))
+                safe_property(obj, "subscription_id", sub_id)
+                safe_property(obj, "resource_group", rg_name)
+                safe_property(obj, "vault_uri", props.get("vaultUri", ""))
+                safe_property(obj, "tenant_id", props.get("tenantId", ""))
 
                 sku = props.get("sku", {})
-                obj.with_property("sku_family", sku.get("family", ""))
-                obj.with_property("sku_name", sku.get("name", ""))
+                safe_property(obj, "sku_family", sku.get("family", ""))
+                safe_property(obj, "sku_name", sku.get("name", ""))
 
-                obj.with_property("soft_delete_enabled",
-                                  str(props.get("enableSoftDelete", "")))
-                obj.with_property("purge_protection_enabled",
-                                  str(props.get("enablePurgeProtection", "")))
-                obj.with_property("rbac_authorization_enabled",
-                                  str(props.get("enableRbacAuthorization", "")))
-                obj.with_property("soft_delete_retention_days",
-                                  str(props.get("softDeleteRetentionInDays", "")))
+                safe_property(obj, "soft_delete_enabled",
+                              str(props.get("enableSoftDelete", "")))
+                safe_property(obj, "purge_protection_enabled",
+                              str(props.get("enablePurgeProtection", "")))
+                safe_property(obj, "rbac_authorization_enabled",
+                              str(props.get("enableRbacAuthorization", "")))
+                safe_property(obj, "soft_delete_retention_days",
+                              str(props.get("softDeleteRetentionInDays", "")))
 
                 # Network ACLs
                 net_acls = props.get("networkAcls", {})
-                obj.with_property("network_default_action",
-                                  net_acls.get("defaultAction", ""))
+                safe_property(obj, "network_default_action",
+                              net_acls.get("defaultAction", ""))
 
                 # Tags
                 tags = vault.get("tags", {})
                 if tags:
                     for key, value in tags.items():
-                        obj.with_property(f"tag_{key}", value)
+                        safe_property(obj, f"tag_{key}", value)
 
                 # Relationship: Key Vault -> Resource Group
                 rg_obj = result.object(
