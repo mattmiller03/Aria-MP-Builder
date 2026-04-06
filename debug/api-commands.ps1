@@ -85,3 +85,16 @@ try {
 # ============================================================
 # $pakId = "<pak_id_from_response>"
 # Invoke-RestMethod -Uri "$ariaOps/suite-api/api/solutions/pak/$pakId/status" -Method Get -Headers $headers -SkipCertificateCheck
+
+
+# Check what API endpoints exist for solutions
+$headers = @{ "Authorization" = "vRealizeOpsToken $token"; "Accept" = "application/json" }
+
+# List solution API options
+try { Invoke-RestMethod -Uri "$ariaOps/suite-api/api/solutions" -Method Options -Headers $headers -SkipCertificateCheck } catch { $_.Exception.Message }
+
+# Check if there's a container adapter endpoint
+try { Invoke-RestMethod -Uri "$ariaOps/suite-api/api/adapters" -Method Get -Headers $headers -SkipCertificateCheck } catch { $_.Exception.Message }
+
+# Try the internal API endpoint
+try { Invoke-RestMethod -Uri "$ariaOps/casa/pak/upload" -Method Post -Headers @{ "Authorization" = "vRealizeOpsToken $token"; "Content-Type" = "application/octet-stream" } -InFile "C:\Users\mille\OneDrive\Documents\GitHub\Aria\MP Builder\Azure\build\AzureGovCloud_1.0.0.pak" -SkipCertificateCheck -Verbose } catch { Write-Host "casa: $($_.Exception.Message)"; Write-Host "Details: $($_.ErrorDetails.Message)" }
