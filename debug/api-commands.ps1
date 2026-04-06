@@ -122,3 +122,25 @@ sudo docker start registry
 
 # Retry the push
 sudo docker push <MP-BUILDER-IP>:5000/azuregovcloud-adapter:1.0.0
+
+
+
+cd /opt/aria/Aria-MP-Builder/Azure
+
+# Update config.json to point at local registry
+cat > config.json <<EOF
+{
+    "container_push_repository": null,
+    "container_repository": "<MP-BUILDER-IP>:5000/azuregovcloud-adapter",
+    "default_memory_limit": 1024,
+    "use_default_registry": false
+}
+EOF
+
+# Patch mp-build to skip login (we already pushed the image)
+sudo sed -i 's/login(\*\*kwargs)/pass  # login skipped/' /opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_build.py
+sudo sed -i 's/login(container_registry=container_registry, \*\*kwargs)/pass  # login skipped/' /opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_build.py
+
+# Clean and rebuild
+rm -rf build
+sudo mp-build --no-ttl --registry-tag "<MP-BUILDER-IP>:5000/azuregovcloud-adapter" -P 8080
