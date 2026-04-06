@@ -104,3 +104,21 @@ try { Invoke-RestMethod -Uri "$ariaOps/casa/pak/upload" -Method Post -Headers @{
 $headers = @{ "Authorization" = "vRealizeOpsToken $token"; "Accept" = "application/json" }
 $adapters = Invoke-RestMethod -Uri "$ariaOps/suite-api/api/adapters" -Method Get -Headers $headers -SkipCertificateCheck
 $adapters.adapterInstancesInfoDto | Select-Object -First 3 | ConvertTo-Json -Depth 5
+
+
+
+# Add the insecure registry
+sudo tee /etc/docker/daemon.json <<EOF
+{
+  "insecure-registries": ["<MP-BUILDER-IP>:5000"]
+}
+EOF
+
+# Restart Docker
+sudo systemctl restart docker
+
+# Re-start the registry container (it stopped when Docker restarted)
+sudo docker start registry
+
+# Retry the push
+sudo docker push <MP-BUILDER-IP>:5000/azuregovcloud-adapter:1.0.0
