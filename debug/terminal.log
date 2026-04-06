@@ -31,3 +31,9 @@ AzureGovAdapter::azure_resource_group  | AzureGovAdapter::azure_app_service     
 AzureGovAdapter::azure_resource_group  | AzureGovAdapter::azure_sql_server        | 12   
 AzureGovAdapter::azure_virtual_network | AzureGovAdapter::azure_subnet            | 335  
 AzureGovAdapter::azure_sql_server      | AzureGovAdapter::azure_sql_database      | 75 
+
+
+
+/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/adapter_configurations/traversalSpecsSchema.xsd
+/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/adapter_configurations/describeSchema.xsd
+/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/adapter_configurations/alertDefinitionSchema.xsd
