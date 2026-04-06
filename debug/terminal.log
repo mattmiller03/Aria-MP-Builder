@@ -37,3 +37,31 @@ AzureGovAdapter::azure_sql_server      | AzureGovAdapter::azure_sql_database    
 /opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/adapter_configurations/traversalSpecsSchema.xsd
 /opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/adapter_configurations/describeSchema.xsd
 /opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/adapter_configurations/alertDefinitionSchema.xsd
+
+
+sudo mp-build --help
+usage: mp-build [-h] [-V] [-p PATH] [-P [0, 65536]] [-r [REGISTRY_TAG]] [--push-registry [PUSH_REGISTRY]] [--use-default-registry] [--registry-username REGISTRY_USERNAME] [--registry-password REGISTRY_PASSWORD] [-i] [--no-ttl]
+
+Tool for building a pak file for a project.
+
+options:
+  -h, --help            show this help message and exit
+  -V, --version         show program's version number and exit
+  -p PATH, --path PATH  Path to root directory of project. Defaults to the current directory, or prompts if current directory is not a project.
+  -P [0, 65536], --port [0, 65536]
+                        Set the port number that the container exposes/uses
+  -r [REGISTRY_TAG], --registry-tag [REGISTRY_TAG]
+                        The full container registry tag where the container image will be stored (overwrites config file).
+  --push-registry [PUSH_REGISTRY]
+                        The full container registry tag where the container image will be pushed to (overwrites config file).
+  --use-default-registry
+                        If this flag is present, the Management Pack will use the default registry in VMware Aria Operations for pulling the adapter container image.
+  --registry-username REGISTRY_USERNAME
+                        The container registry username.
+  --registry-password REGISTRY_PASSWORD
+                        The container registry password.
+  -i, --insecure-collector-communication
+                        If this flag is present, communication between the collector (Cloud Proxy) and the adapter will be unencrypted. If using a custom server with this option, the server must be configured to listen on port
+                        8080.
+  --no-ttl              If this flag is present, certain features dependent on having a TTL will be disabled. All arguments will need to be passed as command line options. This is useful for running mp-build on a headless build
+                        server
