@@ -50,3 +50,22 @@ chmod -R 755 /opt/aria/Aria-MP-Builder/Azure/
 # Retry
 cd /opt/aria/Aria-MP-Builder/Azure
 sudo mp-test --port 8080
+
+
+The build needs the conf/ directory with the XSD schema file. The SDK uses this for validation during build. Create the directory and let the build generate what it needs:
+
+
+mkdir -p /opt/aria/Aria-MP-Builder/Azure/conf
+Then check if the SDK has the schema file bundled somewhere:
+
+
+sudo find /opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/ -name "*.xsd" 2>/dev/null
+If it finds a describeSchema.xsd, copy it:
+
+
+sudo cp <path_from_above>/describeSchema.xsd /opt/aria/Aria-MP-Builder/Azure/conf/
+If no XSD exists, the build should still work — it's just a validation step. Try the build again:
+
+
+cd /opt/aria/Aria-MP-Builder/Azure
+sudo mp-build
