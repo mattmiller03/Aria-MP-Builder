@@ -107,3 +107,19 @@ echo '{"auths":{"https://index.docker.io/v1/":{"auth":"ZmFrZTpmYWtl"}}}' > /root
 cd /opt/aria/Aria-MP-Builder/Azure
 sudo mp-build --no-ttl --registry-tag "azuregovcloud/adapter" --use-default-registry -P 8080
 The ZmFrZTpmYWtl is just base64 of fake:fake — the push will fail but by then the .pak should already be generated since --use-default-registry tells the pack to pull from Aria's internal registry at runtime anyway. The push step happens after the .pak is created.
+
+
+
+The SDK always tries to login to a registry before building — can't skip it on an air-gapped server. Let me check the source to find a way around this:
+
+
+sudo grep -n "login\|Login\|registry\|Registry" /opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_build.py | head -30
+Share that output. In the meantime, the alternative is to build the .pak on your Windows PC (which has internet) instead of the air-gapped server. You have Docker Desktop there and it can reach Docker Hub.
+
+On your Windows PC:
+
+
+cd "C:\Users\mille\OneDrive\Documents\GitHub\Aria\MP Builder\Azure"
+pip install vmware-aria-operations-integration-sdk
+mp-build --use-default-registry -P 8080
+This might be the path of least resistance since Docker Hub login will work from your Windows PC.
