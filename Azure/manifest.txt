@@ -7,7 +7,17 @@
   "vendor": "Custom",
   "eula_file": "eula.txt",
   "pak_icon": "icon.png",
-  "pak_validation_script": "",
-  "install_script": "",
+  "pak_validation_script": {
+    "script": "",
+    "script_timeout": 360
+  },
+  "adapter_pre_script": {
+    "script": "",
+    "script_timeout": 360
+  },
+  "adapter_post_script": {
+    "script": "",
+    "script_timeout": 360
+  },
   "platform": ["Linux"]
 }
