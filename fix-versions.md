@@ -146,3 +146,18 @@ Then provide a local registry tag and fake credentials:
 cd /opt/aria/Aria-MP-Builder/Azure
 sudo mp-build --no-ttl --registry-tag "localhost:5000/azuregovcloud" --registry-username "fake" --registry-password "fake" --use-default-registry -P 8080
 The login calls are now no-ops, so it won't try to reach Docker Hub or any registry. The --use-default-registry flag means the .pak tells Aria Operations to use its built-in registry anyway.
+
+
+
+# Get auth token
+$body = '{"username":"admin","password":"YOUR_PASSWORD"}'
+$token = (Invoke-RestMethod -Uri "https://<aria-ops-fqdn>/suite-api/api/auth/token/acquire" -Method Post -Body $body -ContentType "application/json" -SkipCertificateCheck).token
+
+# Upload pak and capture full response
+$headers = @{ "Authorization" = "vRealizeOpsToken $token"; "Content-Type" = "application/octet-stream" }
+try {
+    Invoke-RestMethod -Uri "https://<aria-ops-fqdn>/suite-api/api/solutions/pak" -Method Post -Headers $headers -InFile "C:\path\to\AzureGovCloud_1.0.0.pak" -SkipCertificateCheck -Verbose
+} catch {
+    $_.Exception.Message
+    $_.ErrorDetails.Message
+}
