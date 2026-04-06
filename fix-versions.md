@@ -35,3 +35,18 @@ pip3.12 install --force-reinstall --no-index --find-links /opt/aria/wheels "setu
 mp-build --version
 mp-test --version
 ```
+
+
+
+sudo docker rmi azuregovcloud-test:1.0.0 2>/dev/null
+sudo docker rmi $(sudo docker images -q --filter "label=mp-test") 2>/dev/null
+
+# Verify latest files have correct permissions and line endings
+find /opt/aria/Aria-MP-Builder/Azure -name "*.py" -exec sed -i 's/\r$//' {} +
+sed -i 's/\r$//' /opt/aria/Aria-MP-Builder/Azure/Dockerfile
+sed -i 's/\r$//' /opt/aria/Aria-MP-Builder/Azure/commands.cfg
+chmod -R 755 /opt/aria/Aria-MP-Builder/Azure/
+
+# Retry
+cd /opt/aria/Aria-MP-Builder/Azure
+sudo mp-test --port 8080
