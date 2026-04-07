@@ -12,3 +12,7 @@ EOF
 
 rm -rf build
 sudo mp-build --no-ttl --registry-tag "<MP-BUILDER-IP>:5000/azuregovcloud-adapter" --use-default-registry -P 8080
+
+
+
+
