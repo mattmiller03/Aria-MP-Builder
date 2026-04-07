@@ -1,10 +1,97 @@
-/usr/lib/chromium-browser/headless_lib_strings.pak
-/usr/lib/chromium-browser/headless_lib_data.pak
-/storage/db/proxyrc/pak/vRealize-Operations-Cloud-Proxy-8.18.6.25211476.pak
-/storage/db/casa/pak/to_install/VMwareAriaOperationsCompliancePackfor-HIPAA-8.18.6.25209822.pak
-/storage/db/casa/pak/to_install/vmware-GCVEAdapter-8.18.6-25211486.pak
-/storage/db/casa/pak/to_install/VMwareAriaOperationsCompliancePackfor-CIS-8.18.6.25209822.pak
-/storage/db/casa/pak/to_install/vmware-vcops-8.18.6-MPVOAAdapter-8.18.6-25211490.pak
-/storage/db/casa/pak/to_install/vmware-AVSAdapter-8.18.6-25211519.pak
-/storage/db/casa/pak/to_install/VMwareAriaOperationsCompliancePackfor-FISMA-8.18.6.25209822.pak
-/storage/db/casa/pak/to_install/VMwareAriaOperationsCompliancePackfor-PCI-8.18.6.25209822.pak
+root@daisv0tp003 [ /tmp ]# unzip -o avs.zip -d avs-check
+Archive:  avs.zip
+  inflating: avs-check/signature.cert  
+  inflating: avs-check/signature.mf  
+   creating: avs-check/content/
+   creating: avs-check/content/dashboards/
+   creating: avs-check/content/dashboards/launchpad/
+   creating: avs-check/content/dashboards/launchpad/resources/
+   creating: avs-check/content/regions/
+   creating: avs-check/content/reports/
+   creating: avs-check/content/reports/launchpad/
+   creating: avs-check/content/resources/
+   creating: avs-check/content/traversalspecs/
+   creating: avs-check/resources/
+  inflating: avs-check/AVSAdapter.svg  
+  inflating: avs-check/AVSAdapter.zip  
+  inflating: avs-check/content/dashboards/launchpad/dashboard.json  
+  inflating: avs-check/content/dashboards/launchpad/resources/resources.properties  
+  inflating: avs-check/content/dashboards/launchpad/resources/resources_de.properties  
+  inflating: avs-check/content/dashboards/launchpad/resources/resources_es.properties  
+  inflating: avs-check/content/dashboards/launchpad/resources/resources_fr.properties  
+  inflating: avs-check/content/dashboards/launchpad/resources/resources_ja.properties  
+  inflating: avs-check/content/dashboards/launchpad/resources/resources_ko.properties  
+  inflating: avs-check/content/dashboards/launchpad/resources/resources_zh_cn.properties  
+  inflating: avs-check/content/dashboards/launchpad/resources/resources_zh_tw.properties  
+  inflating: avs-check/content/regions/avsregions.json  
+  inflating: avs-check/content/reports/launchpad/content.xml  
+  inflating: avs-check/content/resources/resources.properties  
+  inflating: avs-check/content/resources/resources_de.properties  
+  inflating: avs-check/content/resources/resources_es.properties  
+  inflating: avs-check/content/resources/resources_fr.properties  
+  inflating: avs-check/content/resources/resources_ja.properties  
+  inflating: avs-check/content/resources/resources_ko.properties  
+  inflating: avs-check/content/resources/resources_zh_CN.properties  
+  inflating: avs-check/content/resources/resources_zh_TW.properties  
+  inflating: avs-check/content/traversalspecs/AVSTraversalSpecs.xml  
+  inflating: avs-check/empty.txt     
+  inflating: avs-check/eula.txt      
+  inflating: avs-check/eula_ja.txt   
+  inflating: avs-check/manifest.txt  
+  inflating: avs-check/overview.packed  
+  inflating: avs-check/resources/resources.properties  
+  inflating: avs-check/resources/resources_de.properties  
+  inflating: avs-check/resources/resources_es.properties  
+  inflating: avs-check/resources/resources_fr.properties  
+  inflating: avs-check/resources/resources_ja.properties  
+  inflating: avs-check/resources/resources_ko.properties  
+  inflating: avs-check/resources/resources_zh_CN.properties  
+  inflating: avs-check/resources/resources_zh_TW.properties  
+root@daisv0tp003 [ /tmp ]# ls -la avs-check/
+total 44196
+drwxr-x---  4 root root      260 Apr  7 13:53 .
+drwxrwxrwt 11 root root      360 Apr  7 13:53 ..
+-rw-r--r--  1 root root     4014 Feb  6 02:12 AVSAdapter.svg
+-rw-r--r--  1 root root 44994904 Feb  6 02:12 AVSAdapter.zip
+drwxr-xr-x  7 root root      140 Feb  6 02:12 content
+-rw-r--r--  1 root root       31 Feb  6 02:12 empty.txt
+-rw-r--r--  1 root root   124810 Feb  6 02:12 eula_ja.txt
+-rw-r--r--  1 root root    96126 Feb  6 02:12 eula.txt
+-rw-r--r--  1 root root      650 Feb  6 02:12 manifest.txt
+-rw-r--r--  1 root root     9020 Feb  6 02:12 overview.packed
+drwxr-xr-x  2 root root      200 Feb  6 02:12 resources
+-rw-r--r--  1 root root     1908 Feb  6 02:12 signature.cert
+-rw-r--r--  1 root root     3050 Feb  6 02:12 signature.mf
+root@daisv0tp003 [ /tmp ]# cat avs-check/manifest.txt 
+{
+    "display_name": "DISPLAY_NAME",
+    "name": "avs",
+    "description": "DESCRIPTION",
+    "version": "8.18.6.25211519",
+    "vcops_minimum_version": "8.18.6",
+    "disk_space_required": 500,
+    "eula_file": "eula.txt",
+    "platform": [
+        "Linux Non-VA",
+        "Linux VA"
+    ],
+    "vendor": "VENDOR",
+    "pak_icon": "AVSAdapter.svg",
+    "pak_validation_script": {
+        "script": ""
+    },
+    "adapter_pre_script": {
+        "script": ""
+    },
+    "adapter_post_script": {
+        "script": ""
+    },
+    "adapters": [
+        "AVSAdapter.zip"
+    ],
+    "adapter_kinds": [
+        "AVSAdapter"
+    ],
+    "license_type": " "
+}
+root@daisv0tp003 [ /tmp ]# cat avs-check/*.conf 2>/dev/null
