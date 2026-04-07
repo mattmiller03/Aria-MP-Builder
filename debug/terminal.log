@@ -1,18 +1,14 @@
-
-[ /opt/aria/Aria-MP-Builder/Azure ]# sudo mp-build --no-ttl --registry-tag "ipaddr:5000/azuregovcloud-adapter" -P 8080
-Unexpected exception occurred while trying to build pak file
-string indices must be integers, not 'str'
-  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_build.py", line 713, in main
-    pak_file = asyncio.run(
-               ^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/asyncio/runners.py", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/asyncio/runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_build.py", line 545, in build_pak_file
-    pak_validation_script = manifest["pak_validation_script"]["script"]
+root@photon [ ~ ]# sudo docker ps -a
+CONTAINER ID   IMAGE        COMMAND                  CREATED        STATUS              PORTS                                       NAMES
+f2ba0b2682d3   registry:2   "/entrypoint.sh /etc…"   16 hours ago   Up About a minute   0.0.0.0:5000->5000/tcp, :::5000->5000/tcp   registry
+root@photon [ ~ ]# find / -name "docker-compose*" -path "*mp-builder*" 2>/dev/null
+root@photon [ ~ ]# find / -name "docker-compose*" -path "*mp-builder*" 2>/dev/null
+root@photon [ ~ ]# find / -name "docker-compose*" -path "*vmware*" 2>/dev/null
+root@photon [ ~ ]# systemvtl list-units | grep -i mp-builder
+-bash: systemvtl: command not found
+root@photon [ ~ ]# systemctl list-units | grep -i mp-builder
+root@photon [ ~ ]# systemctl list-units | grep -i vmware
+  sys-devices-pci0000:00-0000:00:11.0-0000:02:00.0-ata1-host0-target0:0:0-0:0:0:0-block-sr0.device      loaded active plugged   VMware_Virtual_SATA_CDRW_Drive PHOTON_20210225                                                  
+  vmtoolsd.service                                                                                      loaded active running   Service for virtual machines hosted on VMware                                                   
+root@photon [ ~ ]# find / -name "*mp-builder*" -type f 2>/dev/null | head -10
+/opt/vmware/mp-builder.tar.gz
