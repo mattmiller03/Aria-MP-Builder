@@ -11,4 +11,12 @@ cat > config.json <<EOF
 EOF
 
 rm -rf build
+<<<<<<< HEAD
 sudo mp-build --no-ttl --registry-tag "214.73.76.134:5000/azuregovcloud-adapter" --use-default-registry -P 8080
+=======
+sudo mp-build --no-ttl --registry-tag "<MP-BUILDER-IP>:5000/azuregovcloud-adapter" --use-default-registry -P 8080
+
+
+
+
+>>>>>>> a7425274f074b9afbb78c00d756c351147e8505c
