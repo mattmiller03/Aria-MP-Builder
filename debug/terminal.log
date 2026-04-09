@@ -1,9 +1,249 @@
-root@photon [ /tmp ]# cat /tmp/adapter-check/AzureGovAdapter.conf 
-KINDKEY=AzureGovAdapter
-API_VERSION=1.0.0
-API_PROTOCOL=https
-API_PORT=443
-REPOSITORY=/azuregovcloud-adapter
-DIGEST=sha256:6790dec0b225de242c15f5a53d513f63a5e78d8875eb1f606dcff1901bc35db9
-root@photon [ /tmp ]# curl -k -H "Accept: application/vnd.docker.distribution.manifest.v2+json" https://214.73.76.134:5000/v2/azuregovcloud-adapter/manifests/latest -I 2>/dev/null | grep Docker-Content-Digest
-Docker-Content-Digest: sha256:acf7a92840373749ec39b25db308553453330206d8d99496b836a3b3a5c4af3c
+root@cloudproxysvrname [ ~ ]# Apr 09 14:21:30 cloudproxysvrname kernel: audit: audit_lost=44174 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:21:30 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:21:30 cloudproxysvrname kernel: audit: type=1327 audit(1775744490.497:11096): proctitle=7375646F002F62696E2F62617368002F7573722F6C69622F766D776172652D76636F707373756974652F7574696C69746965732F62696E2F6670696E675F6578656375746F722E7368002D71002D690031002D43003230002D700032303030002D62003536002D66002F7573722F6C69622F766D776172652D76636F70732F75
+Apr 09 14:21:30 cloudproxysvrname kernel: audit: audit_lost=44175 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:21:30 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:21:30 cloudproxysvrname kernel: audit: audit_lost=44176 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:21:31 cloudproxysvrname sudo[768725]:     root : TTY=pts/0 ; PWD=/root ; USER=root ; COMMAND=/usr/bin/docker events
+Apr 09 14:21:31 cloudproxysvrname sudo[768725]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
+Apr 09 14:21:46 cloudproxysvrname sudo[768916]:     root : TTY=pts/0 ; PWD=/root ; USER=root ; COMMAND=/usr/bin/journalctl -f
+Apr 09 14:21:46 cloudproxysvrname sudo[768916]: pam_unix(sudo:session): session opened for user root(uid=0) by root(uid=0)
+Apr 09 14:21:47 cloudproxysvrname sudo[768460]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:21:47 cloudproxysvrname systemd[1]: session-c10600.scope: Deactivated successfully.
+Apr 09 14:21:47 cloudproxysvrname sudo[768920]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/Ping-test-for-DAISV0TP003.dat
+Apr 09 14:21:47 cloudproxysvrname sudo[768920]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:21:47 cloudproxysvrname systemd[1]: Started Session c10605 of User root.
+Apr 09 14:21:47 cloudproxysvrname kernel: kauditd_printk_skb: 1 callbacks suppressed
+Apr 09 14:21:47 cloudproxysvrname kernel: audit: type=1006 audit(1775744507.659:11097): pid=768920 uid=1000 subj=unconfined old-auid=4294967295 auid=0 tty=(none) old-ses=4294967295 ses=10727 res=1
+Apr 09 14:21:47 cloudproxysvrname kernel: audit: audit_lost=44177 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:21:47 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:21:47 cloudproxysvrname kernel: audit: type=1300 audit(1775744507.659:11097): arch=c000003e syscall=1 success=yes exit=1 a0=7 a1=7ffc374801b0 a2=1 a3=7f1cf1a384f0 items=0 ppid=8074 pid=768920 auid=0 uid=1000 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=10727 comm="sudo" exe="/usr/bin/sudo" subj=unconfined key=(null)
+Apr 09 14:21:47 cloudproxysvrname kernel: audit: audit_lost=44178 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:21:47 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:21:47 cloudproxysvrname kernel: audit: type=1327 audit(1775744507.659:11097): proctitle=7375646F002F62696E2F62617368002F7573722F6C69622F766D776172652D76636F707373756974652F7574696C69746965732F62696E2F6670696E675F6578656375746F722E7368002D71002D690031002D43003230002D700032303030002D62003536002D66002F7573722F6C69622F766D776172652D76636F70732F75
+Apr 09 14:21:47 cloudproxysvrname kernel: audit: audit_lost=44179 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:21:47 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:21:47 cloudproxysvrname kernel: audit: audit_lost=44180 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:21:51 cloudproxysvrname sudo[768594]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:21:51 cloudproxysvrname systemd[1]: session-c10601.scope: Deactivated successfully.
+Apr 09 14:21:51 cloudproxysvrname sudo[768925]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/Ping-test-for-DEV-DAYTON-DNS-Servers.dat
+Apr 09 14:21:51 cloudproxysvrname sudo[768925]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:21:51 cloudproxysvrname systemd[1]: Started Session c10606 of User root.
+Apr 09 14:21:56 cloudproxysvrname dockerd[5430]: time="2026-04-09T14:21:56.763606820Z" level=warning msg="Error getting v2 registry: Get \"https://harbor-repo.vmware.com/v2/\": dial tcp: lookup harbor-repo.vmware.com on 131.78.255.253:53: no such host"
+Apr 09 14:21:56 cloudproxysvrname dockerd[5430]: time="2026-04-09T14:21:56.763638111Z" level=info msg="Attempting next endpoint for pull after error: Get \"https://harbor-repo.vmware.com/v2/\": dial tcp: lookup harbor-repo.vmware.com on 131.78.255.253:53: no such host"
+Apr 09 14:21:56 cloudproxysvrname dockerd[5430]: time="2026-04-09T14:21:56.764731549Z" level=error msg="unexpected HTTP error handling" error="<nil>"
+Apr 09 14:21:56 cloudproxysvrname dockerd[5430]: time="2026-04-09T14:21:56.764751214Z" level=error msg="Handler for POST /images/create returned error: Get \"https://harbor-repo.vmware.com/v2/\": dial tcp: lookup harbor-repo.vmware.com on 131.78.255.253:53: no such host"
+Apr 09 14:22:00 cloudproxysvrname dockerd[5430]: time="2026-04-09T14:22:00.441120244Z" level=warning msg="Error getting v2 registry: Get \"https://harbor-repo.vmware.com/v2/\": dial tcp: lookup harbor-repo.vmware.com on 131.78.255.253:53: no such host"
+Apr 09 14:22:00 cloudproxysvrname dockerd[5430]: time="2026-04-09T14:22:00.441153620Z" level=info msg="Attempting next endpoint for pull after error: Get \"https://harbor-repo.vmware.com/v2/\": dial tcp: lookup harbor-repo.vmware.com on 131.78.255.253:53: no such host"
+Apr 09 14:22:00 cloudproxysvrname dockerd[5430]: time="2026-04-09T14:22:00.442177154Z" level=error msg="unexpected HTTP error handling" error="<nil>"
+Apr 09 14:22:00 cloudproxysvrname dockerd[5430]: time="2026-04-09T14:22:00.442213278Z" level=error msg="Handler for POST /images/create returned error: Get \"https://harbor-repo.vmware.com/v2/\": dial tcp: lookup harbor-repo.vmware.com on 131.78.255.253:53: no such host"
+Apr 09 14:22:03 cloudproxysvrname sudo[768711]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:22:03 cloudproxysvrname systemd[1]: session-c10603.scope: Deactivated successfully.
+Apr 09 14:22:03 cloudproxysvrname sudo[769051]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/ping-day1s-esx-ucd01-day1s-esx-ucd09.dat
+Apr 09 14:22:03 cloudproxysvrname sudo[769051]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:22:03 cloudproxysvrname systemd[1]: Started Session c10607 of User root.
+Apr 09 14:22:03 cloudproxysvrname kernel: kauditd_printk_skb: 12 callbacks suppressed
+Apr 09 14:22:03 cloudproxysvrname kernel: audit: type=1006 audit(1775744523.561:11099): pid=769051 uid=1000 subj=unconfined old-auid=4294967295 auid=0 tty=(none) old-ses=4294967295 ses=10729 res=1
+Apr 09 14:22:03 cloudproxysvrname kernel: audit: audit_lost=44185 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:03 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:03 cloudproxysvrname kernel: audit: type=1300 audit(1775744523.561:11099): arch=c000003e syscall=1 success=yes exit=1 a0=7 a1=7ffda9e1ee70 a2=1 a3=7f0ddce384f0 items=0 ppid=8074 pid=769051 auid=0 uid=1000 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=10729 comm="sudo" exe="/usr/bin/sudo" subj=unconfined key=(null)
+Apr 09 14:22:03 cloudproxysvrname kernel: audit: audit_lost=44186 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:03 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:03 cloudproxysvrname kernel: audit: type=1327 audit(1775744523.561:11099): proctitle=7375646F002F62696E2F62617368002F7573722F6C69622F766D776172652D76636F707373756974652F7574696C69746965732F62696E2F6670696E675F6578656375746F722E7368002D71002D690031002D43003230002D700032303030002D62003536002D66002F7573722F6C69622F766D776172652D76636F70732F75
+Apr 09 14:22:03 cloudproxysvrname kernel: audit: audit_lost=44187 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:03 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:03 cloudproxysvrname kernel: audit: audit_lost=44188 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:03 cloudproxysvrname sudo[768706]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:22:03 cloudproxysvrname systemd[1]: session-c10602.scope: Deactivated successfully.
+Apr 09 14:22:03 cloudproxysvrname sudo[769056]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/ping-ncb1sdesx105-ncb1sdesx106.dat
+Apr 09 14:22:03 cloudproxysvrname sudo[769056]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:22:03 cloudproxysvrname systemd[1]: Started Session c10608 of User root.
+Apr 09 14:22:10 cloudproxysvrname sudo[768720]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:22:10 cloudproxysvrname systemd[1]: session-c10604.scope: Deactivated successfully.
+Apr 09 14:22:10 cloudproxysvrname sudo[769108]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/Ping-test-for-NTP.dat
+Apr 09 14:22:10 cloudproxysvrname sudo[769108]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:22:10 cloudproxysvrname systemd[1]: Started Session c10609 of User root.
+Apr 09 14:22:10 cloudproxysvrname kernel: kauditd_printk_skb: 12 callbacks suppressed
+Apr 09 14:22:10 cloudproxysvrname kernel: audit: type=1006 audit(1775744530.661:11101): pid=769108 uid=1000 subj=unconfined old-auid=4294967295 auid=0 tty=(none) old-ses=4294967295 ses=10731 res=1
+Apr 09 14:22:10 cloudproxysvrname kernel: audit: audit_lost=44193 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:10 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:10 cloudproxysvrname kernel: audit: type=1300 audit(1775744530.661:11101): arch=c000003e syscall=1 success=yes exit=1 a0=7 a1=7ffd066d7c90 a2=1 a3=7f5fb9c384f0 items=0 ppid=8074 pid=769108 auid=0 uid=1000 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=10731 comm="sudo" exe="/usr/bin/sudo" subj=unconfined key=(null)
+Apr 09 14:22:10 cloudproxysvrname kernel: audit: audit_lost=44194 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:10 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:10 cloudproxysvrname kernel: audit: type=1327 audit(1775744530.661:11101): proctitle=7375646F002F62696E2F62617368002F7573722F6C69622F766D776172652D76636F707373756974652F7574696C69746965732F62696E2F6670696E675F6578656375746F722E7368002D71002D690031002D43003230002D700032303030002D62003536002D66002F7573722F6C69622F766D776172652D76636F70732F75
+Apr 09 14:22:10 cloudproxysvrname kernel: audit: audit_lost=44195 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:10 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:10 cloudproxysvrname kernel: audit: audit_lost=44196 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:13 cloudproxysvrname sudo[769256]:    admin : PWD=/ ; USER=root ; COMMAND=/usr/lib/vmware-casa/bin/ntp_list.py
+Apr 09 14:22:13 cloudproxysvrname sudo[769256]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:22:13 cloudproxysvrname systemd[1]: Started Session c10610 of User root.
+Apr 09 14:22:13 cloudproxysvrname sudo[769256]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:22:13 cloudproxysvrname systemd[1]: session-c10610.scope: Deactivated successfully.
+Apr 09 14:22:17 cloudproxysvrname sudo[769268]:    admin : PWD=/ ; USER=root ; COMMAND=/usr/bin/python /usr/lib/vmware-vrops-cprc/bin/python/cprcHAProxyServiceController.py
+Apr 09 14:22:17 cloudproxysvrname sudo[769268]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:22:17 cloudproxysvrname systemd[1]: Started Session c10611 of User root.
+Apr 09 14:22:17 cloudproxysvrname kernel: kauditd_printk_skb: 12 callbacks suppressed
+Apr 09 14:22:17 cloudproxysvrname kernel: audit: type=1006 audit(1775744537.278:11103): pid=769268 uid=1000 subj=unconfined old-auid=4294967295 auid=0 tty=(none) old-ses=4294967295 ses=10733 res=1
+Apr 09 14:22:17 cloudproxysvrname kernel: audit: audit_lost=44201 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:17 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:17 cloudproxysvrname kernel: audit: type=1300 audit(1775744537.278:11103): arch=c000003e syscall=1 success=yes exit=1 a0=7 a1=7ffc847278e0 a2=1 a3=7f0b32e384f0 items=0 ppid=1200 pid=769268 auid=0 uid=1000 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=10733 comm="sudo" exe="/usr/bin/sudo" subj=unconfined key=(null)
+Apr 09 14:22:17 cloudproxysvrname kernel: audit: audit_lost=44202 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:17 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:17 cloudproxysvrname kernel: audit: type=1327 audit(1775744537.278:11103): proctitle=2F7573722F62696E2F7375646F002D6E002F7573722F62696E2F707974686F6E002F7573722F6C69622F766D776172652D76726F70732D637072632F62696E2F707974686F6E2F63707263484150726F787953657276696365436F6E74726F6C6C65722E7079
+Apr 09 14:22:17 cloudproxysvrname kernel: audit: audit_lost=44203 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:17 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:17 cloudproxysvrname kernel: audit: audit_lost=44204 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:17 cloudproxysvrname sudo[769268]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:22:17 cloudproxysvrname systemd[1]: session-c10611.scope: Deactivated successfully.
+Apr 09 14:22:25 cloudproxysvrname sudo[768920]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:22:25 cloudproxysvrname systemd[1]: session-c10605.scope: Deactivated successfully.
+Apr 09 14:22:25 cloudproxysvrname sudo[769406]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/Ping-test-for-DAISV0TP003.dat
+Apr 09 14:22:25 cloudproxysvrname sudo[769406]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:22:25 cloudproxysvrname systemd[1]: Started Session c10612 of User root.
+Apr 09 14:22:25 cloudproxysvrname kernel: kauditd_printk_skb: 1 callbacks suppressed
+Apr 09 14:22:25 cloudproxysvrname kernel: audit: type=1006 audit(1775744545.791:11104): pid=769406 uid=1000 subj=unconfined old-auid=4294967295 auid=0 tty=(none) old-ses=4294967295 ses=10734 res=1
+Apr 09 14:22:25 cloudproxysvrname kernel: audit: audit_lost=44205 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:25 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:25 cloudproxysvrname kernel: audit: type=1300 audit(1775744545.791:11104): arch=c000003e syscall=1 success=yes exit=1 a0=7 a1=7ffeb2573a90 a2=1 a3=7f9ec62384f0 items=0 ppid=8074 pid=769406 auid=0 uid=1000 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=10734 comm="sudo" exe="/usr/bin/sudo" subj=unconfined key=(null)
+Apr 09 14:22:25 cloudproxysvrname kernel: audit: audit_lost=44206 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:25 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:25 cloudproxysvrname kernel: audit: type=1327 audit(1775744545.791:11104): proctitle=7375646F002F62696E2F62617368002F7573722F6C69622F766D776172652D76636F707373756974652F7574696C69746965732F62696E2F6670696E675F6578656375746F722E7368002D71002D690031002D43003230002D700032303030002D62003536002D66002F7573722F6C69622F766D776172652D76636F70732F75
+Apr 09 14:22:25 cloudproxysvrname kernel: audit: audit_lost=44207 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:25 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:25 cloudproxysvrname kernel: audit: audit_lost=44208 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:29 cloudproxysvrname sudo[768925]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:22:29 cloudproxysvrname systemd[1]: session-c10606.scope: Deactivated successfully.
+Apr 09 14:22:29 cloudproxysvrname sudo[769411]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/Ping-test-for-DEV-DAYTON-DNS-Servers.dat
+Apr 09 14:22:29 cloudproxysvrname sudo[769411]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:22:29 cloudproxysvrname systemd[1]: Started Session c10613 of User root.
+Apr 09 14:22:41 cloudproxysvrname sudo[769051]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:22:41 cloudproxysvrname systemd[1]: session-c10607.scope: Deactivated successfully.
+Apr 09 14:22:41 cloudproxysvrname sudo[769466]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/ping-day1s-esx-ucd01-day1s-esx-ucd09.dat
+Apr 09 14:22:41 cloudproxysvrname sudo[769466]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:22:41 cloudproxysvrname systemd[1]: Started Session c10614 of User root.
+Apr 09 14:22:41 cloudproxysvrname kernel: kauditd_printk_skb: 12 callbacks suppressed
+Apr 09 14:22:41 cloudproxysvrname kernel: audit: type=1006 audit(1775744561.720:11106): pid=769466 uid=1000 subj=unconfined old-auid=4294967295 auid=0 tty=(none) old-ses=4294967295 ses=10736 res=1
+Apr 09 14:22:41 cloudproxysvrname kernel: audit: audit_lost=44213 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:41 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:41 cloudproxysvrname kernel: audit: type=1300 audit(1775744561.720:11106): arch=c000003e syscall=1 success=yes exit=1 a0=7 a1=7fffbc5ba250 a2=1 a3=7f76fbc384f0 items=0 ppid=8074 pid=769466 auid=0 uid=1000 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=10736 comm="sudo" exe="/usr/bin/sudo" subj=unconfined key=(null)
+Apr 09 14:22:41 cloudproxysvrname kernel: audit: audit_lost=44214 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:41 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:41 cloudproxysvrname kernel: audit: type=1327 audit(1775744561.720:11106): proctitle=7375646F002F62696E2F62617368002F7573722F6C69622F766D776172652D76636F707373756974652F7574696C69746965732F62696E2F6670696E675F6578656375746F722E7368002D71002D690031002D43003230002D700032303030002D62003536002D66002F7573722F6C69622F766D776172652D76636F70732F75
+Apr 09 14:22:41 cloudproxysvrname kernel: audit: audit_lost=44215 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:41 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:41 cloudproxysvrname kernel: audit: audit_lost=44216 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:43 cloudproxysvrname sudo[769056]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:22:43 cloudproxysvrname systemd[1]: session-c10608.scope: Deactivated successfully.
+Apr 09 14:22:44 cloudproxysvrname sudo[769585]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/ping-ncb1sdesx105-ncb1sdesx106.dat
+Apr 09 14:22:44 cloudproxysvrname sudo[769585]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:22:44 cloudproxysvrname systemd[1]: Started Session c10615 of User root.
+Apr 09 14:22:50 cloudproxysvrname sudo[769108]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:22:50 cloudproxysvrname systemd[1]: session-c10609.scope: Deactivated successfully.
+Apr 09 14:22:50 cloudproxysvrname sudo[769590]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/Ping-test-for-NTP.dat
+Apr 09 14:22:50 cloudproxysvrname sudo[769590]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:22:50 cloudproxysvrname systemd[1]: Started Session c10616 of User root.
+Apr 09 14:22:50 cloudproxysvrname kernel: kauditd_printk_skb: 12 callbacks suppressed
+Apr 09 14:22:50 cloudproxysvrname kernel: audit: type=1006 audit(1775744570.805:11108): pid=769590 uid=1000 subj=unconfined old-auid=4294967295 auid=0 tty=(none) old-ses=4294967295 ses=10738 res=1
+Apr 09 14:22:50 cloudproxysvrname kernel: audit: audit_lost=44221 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:50 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:50 cloudproxysvrname kernel: audit: type=1300 audit(1775744570.805:11108): arch=c000003e syscall=1 success=yes exit=1 a0=7 a1=7fff41452cf0 a2=1 a3=7fb138a384f0 items=0 ppid=8074 pid=769590 auid=0 uid=1000 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=10738 comm="sudo" exe="/usr/bin/sudo" subj=unconfined key=(null)
+Apr 09 14:22:50 cloudproxysvrname kernel: audit: audit_lost=44222 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:50 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:50 cloudproxysvrname kernel: audit: type=1327 audit(1775744570.805:11108): proctitle=7375646F002F62696E2F62617368002F7573722F6C69622F766D776172652D76636F707373756974652F7574696C69746965732F62696E2F6670696E675F6578656375746F722E7368002D71002D690031002D43003230002D700032303030002D62003536002D66002F7573722F6C69622F766D776172652D76636F70732F75
+Apr 09 14:22:50 cloudproxysvrname kernel: audit: audit_lost=44223 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:22:50 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:22:50 cloudproxysvrname kernel: audit: audit_lost=44224 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:00 cloudproxysvrname dockerd[5430]: time="2026-04-09T14:23:00.730984904Z" level=warning msg="Error getting v2 registry: Get \"https://harbor-repo.vmware.com/v2/\": dial tcp: lookup harbor-repo.vmware.com on 131.78.255.253:53: no such host"
+Apr 09 14:23:00 cloudproxysvrname dockerd[5430]: time="2026-04-09T14:23:00.731026047Z" level=info msg="Attempting next endpoint for pull after error: Get \"https://harbor-repo.vmware.com/v2/\": dial tcp: lookup harbor-repo.vmware.com on 131.78.255.253:53: no such host"
+Apr 09 14:23:00 cloudproxysvrname dockerd[5430]: time="2026-04-09T14:23:00.732801576Z" level=error msg="unexpected HTTP error handling" error="<nil>"
+Apr 09 14:23:00 cloudproxysvrname dockerd[5430]: time="2026-04-09T14:23:00.732862715Z" level=error msg="Handler for POST /images/create returned error: Get \"https://harbor-repo.vmware.com/v2/\": dial tcp: lookup harbor-repo.vmware.com on 131.78.255.253:53: no such host"
+Apr 09 14:23:03 cloudproxysvrname sudo[769406]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:23:03 cloudproxysvrname systemd[1]: session-c10612.scope: Deactivated successfully.
+Apr 09 14:23:03 cloudproxysvrname sudo[769696]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/Ping-test-for-DAISV0TP003.dat
+Apr 09 14:23:03 cloudproxysvrname sudo[769696]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:23:03 cloudproxysvrname systemd[1]: Started Session c10617 of User root.
+Apr 09 14:23:03 cloudproxysvrname kernel: kauditd_printk_skb: 1 callbacks suppressed
+Apr 09 14:23:03 cloudproxysvrname kernel: audit: type=1006 audit(1775744583.922:11109): pid=769696 uid=1000 subj=unconfined old-auid=4294967295 auid=0 tty=(none) old-ses=4294967295 ses=10739 res=1
+Apr 09 14:23:03 cloudproxysvrname kernel: audit: audit_lost=44225 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:03 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:23:03 cloudproxysvrname kernel: audit: type=1300 audit(1775744583.922:11109): arch=c000003e syscall=1 success=yes exit=1 a0=7 a1=7fffcbafd3c0 a2=1 a3=7f38da2384f0 items=0 ppid=8074 pid=769696 auid=0 uid=1000 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=10739 comm="sudo" exe="/usr/bin/sudo" subj=unconfined key=(null)
+Apr 09 14:23:03 cloudproxysvrname kernel: audit: audit_lost=44226 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:03 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:23:03 cloudproxysvrname kernel: audit: type=1327 audit(1775744583.922:11109): proctitle=7375646F002F62696E2F62617368002F7573722F6C69622F766D776172652D76636F707373756974652F7574696C69746965732F62696E2F6670696E675F6578656375746F722E7368002D71002D690031002D43003230002D700032303030002D62003536002D66002F7573722F6C69622F766D776172652D76636F70732F75
+Apr 09 14:23:03 cloudproxysvrname kernel: audit: audit_lost=44227 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:03 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:23:03 cloudproxysvrname kernel: audit: audit_lost=44228 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:07 cloudproxysvrname sudo[769411]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:23:07 cloudproxysvrname systemd[1]: session-c10613.scope: Deactivated successfully.
+Apr 09 14:23:07 cloudproxysvrname sudo[769701]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/Ping-test-for-DEV-DAYTON-DNS-Servers.dat
+Apr 09 14:23:07 cloudproxysvrname sudo[769701]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:23:07 cloudproxysvrname systemd[1]: Started Session c10618 of User root.
+Apr 09 14:23:19 cloudproxysvrname sudo[769466]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:23:19 cloudproxysvrname systemd[1]: session-c10614.scope: Deactivated successfully.
+Apr 09 14:23:19 cloudproxysvrname sudo[769863]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/ping-day1s-esx-ucd01-day1s-esx-ucd09.dat
+Apr 09 14:23:19 cloudproxysvrname sudo[769863]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:23:19 cloudproxysvrname systemd[1]: Started Session c10619 of User root.
+Apr 09 14:23:19 cloudproxysvrname kernel: kauditd_printk_skb: 12 callbacks suppressed
+Apr 09 14:23:19 cloudproxysvrname kernel: audit: type=1006 audit(1775744599.880:11111): pid=769863 uid=1000 subj=unconfined old-auid=4294967295 auid=0 tty=(none) old-ses=4294967295 ses=10741 res=1
+Apr 09 14:23:19 cloudproxysvrname kernel: audit: audit_lost=44233 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:19 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:23:19 cloudproxysvrname kernel: audit: type=1300 audit(1775744599.880:11111): arch=c000003e syscall=1 success=yes exit=1 a0=7 a1=7ffced2b7c50 a2=1 a3=7fc0084384f0 items=0 ppid=8074 pid=769863 auid=0 uid=1000 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=10741 comm="sudo" exe="/usr/bin/sudo" subj=unconfined key=(null)
+Apr 09 14:23:19 cloudproxysvrname kernel: audit: audit_lost=44234 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:19 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:23:19 cloudproxysvrname kernel: audit: type=1327 audit(1775744599.880:11111): proctitle=7375646F002F62696E2F62617368002F7573722F6C69622F766D776172652D76636F707373756974652F7574696C69746965732F62696E2F6670696E675F6578656375746F722E7368002D71002D690031002D43003230002D700032303030002D62003536002D66002F7573722F6C69622F766D776172652D76636F70732F75
+Apr 09 14:23:19 cloudproxysvrname kernel: audit: audit_lost=44235 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:19 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:23:19 cloudproxysvrname kernel: audit: audit_lost=44236 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:24 cloudproxysvrname sudo[769585]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:23:24 cloudproxysvrname systemd[1]: session-c10615.scope: Deactivated successfully.
+Apr 09 14:23:24 cloudproxysvrname sudo[769976]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/ping-ncb1sdesx105-ncb1sdesx106.dat
+Apr 09 14:23:24 cloudproxysvrname sudo[769976]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:23:24 cloudproxysvrname systemd[1]: Started Session c10620 of User root.
+Apr 09 14:23:30 cloudproxysvrname sudo[769590]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:23:30 cloudproxysvrname systemd[1]: session-c10616.scope: Deactivated successfully.
+Apr 09 14:23:30 cloudproxysvrname sudo[769982]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/Ping-test-for-NTP.dat
+Apr 09 14:23:30 cloudproxysvrname sudo[769982]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:23:30 cloudproxysvrname systemd[1]: Started Session c10621 of User root.
+Apr 09 14:23:30 cloudproxysvrname kernel: kauditd_printk_skb: 12 callbacks suppressed
+Apr 09 14:23:30 cloudproxysvrname kernel: audit: type=1006 audit(1775744610.957:11113): pid=769982 uid=1000 subj=unconfined old-auid=4294967295 auid=0 tty=(none) old-ses=4294967295 ses=10743 res=1
+Apr 09 14:23:30 cloudproxysvrname kernel: audit: audit_lost=44241 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:30 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:23:30 cloudproxysvrname kernel: audit: type=1300 audit(1775744610.957:11113): arch=c000003e syscall=1 success=yes exit=1 a0=7 a1=7ffdf8447c00 a2=1 a3=7f9889a384f0 items=0 ppid=8074 pid=769982 auid=0 uid=1000 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=10743 comm="sudo" exe="/usr/bin/sudo" subj=unconfined key=(null)
+Apr 09 14:23:30 cloudproxysvrname kernel: audit: audit_lost=44242 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:30 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:23:30 cloudproxysvrname kernel: audit: type=1327 audit(1775744610.957:11113): proctitle=7375646F002F62696E2F62617368002F7573722F6C69622F766D776172652D76636F707373756974652F7574696C69746965732F62696E2F6670696E675F6578656375746F722E7368002D71002D690031002D43003230002D700032303030002D62003536002D66002F7573722F6C69622F766D776172652D76636F70732F75
+Apr 09 14:23:30 cloudproxysvrname kernel: audit: audit_lost=44243 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:30 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:23:30 cloudproxysvrname kernel: audit: audit_lost=44244 audit_rate_limit=0 audit_backlog_limit=64
+
+root@daisv0tp004 [ ~ ]# Apr 09 14:23:41 cloudproxysvrname sudo[769696]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:23:41 cloudproxysvrname systemd[1]: session-c10617.scope: Deactivated successfully.
+Apr 09 14:23:42 cloudproxysvrname sudo[770288]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/Ping-test-for-DAISV0TP003.dat
+Apr 09 14:23:42 cloudproxysvrname sudo[770288]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:23:42 cloudproxysvrname systemd[1]: Started Session c10622 of User root.
+Apr 09 14:23:42 cloudproxysvrname kernel: kauditd_printk_skb: 1 callbacks suppressed
+Apr 09 14:23:42 cloudproxysvrname kernel: audit: type=1006 audit(1775744622.066:11114): pid=770288 uid=1000 subj=unconfined old-auid=4294967295 auid=0 tty=(none) old-ses=4294967295 ses=10744 res=1
+Apr 09 14:23:42 cloudproxysvrname kernel: audit: audit_lost=44245 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:42 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:23:42 cloudproxysvrname kernel: audit: type=1300 audit(1775744622.066:11114): arch=c000003e syscall=1 success=yes exit=1 a0=7 a1=7ffd3b179d00 a2=1 a3=7fab1ec384f0 items=0 ppid=8074 pid=770288 auid=0 uid=1000 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=10744 comm="sudo" exe="/usr/bin/sudo" subj=unconfined key=(null)
+Apr 09 14:23:42 cloudproxysvrname kernel: audit: audit_lost=44246 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:42 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:23:42 cloudproxysvrname kernel: audit: type=1327 audit(1775744622.066:11114): proctitle=7375646F002F62696E2F62617368002F7573722F6C69622F766D776172652D76636F707373756974652F7574696C69746965732F62696E2F6670696E675F6578656375746F722E7368002D71002D690031002D43003230002D700032303030002D62003536002D66002F7573722F6C69622F766D776172652D76636F70732F75
+Apr 09 14:23:42 cloudproxysvrname kernel: audit: audit_lost=44247 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:42 cloudproxysvrname kernel: audit: kauditd hold queue overflow
+Apr 09 14:23:42 cloudproxysvrname kernel: audit: audit_lost=44248 audit_rate_limit=0 audit_backlog_limit=64
+Apr 09 14:23:45 cloudproxysvrname sudo[769701]: pam_unix(sudo:session): session closed for user root
+Apr 09 14:23:45 cloudproxysvrname systemd[1]: session-c10618.scope: Deactivated successfully.
+Apr 09 14:23:45 cloudproxysvrname sudo[770497]:    admin : PWD=/usr/lib/vmware-vcops/common/bin ; USER=root ; COMMAND=/bin/bash /usr/lib/vmware-vcopssuite/utilities/bin/fping_executor.sh -q -i 1 -C 20 -p 2000 -b 56 -f /usr/lib/vmware-vcops/user/plugins/inbound/PingAdapter/work/fping/Ping-test-for-DEV-DAYTON-DNS-Servers.dat
+Apr 09 14:23:45 cloudproxysvrname sudo[770497]: pam_unix(sudo:session): session opened for user root(uid=0) by (uid=1000)
+Apr 09 14:23:45 cloudproxysvrname systemd[1]: Started Session c10623 of User root.
+^C
+root@daisv0tp004 [ ~ ]# kill %1 %2
+root@daisv0tp004 [ ~ ]# sudo docker ps -a | grep azure
+[1]-  Exit 143                sudo docker events
+[2]+  Terminated              sudo journalctl -f
+root@daisv0tp004 [ ~ ]# sudo docker ps -a 
+CONTAINER ID   IMAGE                                                                          COMMAND                  CREATED       STATUS        PORTS                                                                                                          NAMES
+ddf5ca8a4641   cmd-docker-local.artifactory.eng.vmware.com/config-modules-docker:1.1.45       "./scripts/start_api…"   4 weeks ago   Up 19 hours   443/tcp                                                                                                        config-modules-docker
+e2cf823e3f37   ucp-docker-local.packages.vcfd.broadcom.net/salt-master-bootstrap:8.18.6.712   "/bin/sh -c '/tmp/sa…"   4 weeks ago   Up 19 hours   0.0.0.0:4505-4506->4505-4506/tcp, [::]:4505-4506->4505-4506/tcp, 0.0.0.0:8553->8553/tcp, [::]:8553->8553/tcp   ucp-controlplane-saltmaster
+root@daisv0tp004 [ ~ ]# 
