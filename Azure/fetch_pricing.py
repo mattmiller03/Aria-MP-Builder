@@ -7,6 +7,7 @@ Usage:
     python fetch_pricing.py
     python fetch_pricing.py --regions "usgovvirginia,usgovarizona"
     python fetch_pricing.py --all-regions
+    python fetch_pricing.py --no-verify        (skip SSL verification)
 
 The output can be copied directly into pricing.py's FALLBACK_PRICES dict.
 """
@@ -15,8 +16,12 @@ import argparse
 import json
 import requests
 import sys
+import urllib3
 
 RETAIL_PRICES_URL = "https://prices.azure.com/api/retail/prices"
+
+# Set by --no-verify flag to skip SSL certificate verification
+VERIFY_SSL = True
 
 # Azure Gov regions where dedicated hosts are commonly deployed
 GOV_REGIONS = [
@@ -28,12 +33,11 @@ GOV_REGIONS = [
 ]
 
 
-def fetch_prices(region=None, service_name="Virtual Machines Dedicated Host"):
+def fetch_prices(region=None):
     """Fetch dedicated host pricing from the Retail Prices API.
 
     Args:
         region: Optional region filter. If None, fetches all regions.
-        service_name: Azure service name to filter on.
 
     Returns:
         List of pricing items from the API.
@@ -41,7 +45,8 @@ def fetch_prices(region=None, service_name="Virtual Machines Dedicated Host"):
     items = []
 
     filter_parts = [
-        f"serviceName eq '{service_name}'",
+        "serviceName eq 'Virtual Machines'",
+        "contains(productName, 'Dedicated Host')",
         "priceType eq 'Consumption'",
     ]
     if region:
@@ -54,7 +59,7 @@ def fetch_prices(region=None, service_name="Virtual Machines Dedicated Host"):
     page = 1
     while url:
         print(f"  Fetching page {page}...", end=" ", flush=True)
-        response = requests.get(url, params=params, timeout=30)
+        response = requests.get(url, params=params, timeout=30, verify=VERIFY_SSL)
         response.raise_for_status()
         data = response.json()
 
@@ -130,7 +135,18 @@ def main():
         action="store_true",
         help="Output as JSON instead of Python dict",
     )
+    parser.add_argument(
+        "--no-verify",
+        action="store_true",
+        help="Skip SSL certificate verification (for corporate proxies)",
+    )
     args = parser.parse_args()
+
+    if args.no_verify:
+        global VERIFY_SSL
+        VERIFY_SSL = False
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        print("SSL verification disabled.\n")
 
     if args.all_regions:
         print("Fetching dedicated host pricing for ALL regions...")

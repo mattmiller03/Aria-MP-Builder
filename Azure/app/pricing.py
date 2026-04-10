@@ -29,44 +29,87 @@ RETAIL_PRICES_URL = "https://prices.azure.com/api/retail/prices"
 # preferentially when reachable; these are the air-gapped fallback.
 # ---------------------------------------------------------------------------
 FALLBACK_PRICES = {
-    # Dsv3 family
-    "DSv3-Type1": 4.4108,
-    "DSv3-Type2": 4.4108,
-    "DSv3-Type3": 3.5948,
-    "DSv3-Type4": 3.5948,
-    # Dsv4 family
-    "DSv4-Type1": 4.4108,
-    "DSv4-Type2": 4.4108,
-    # Dsv5 family
-    "DSv5-Type1": 4.4108,
-    # Esv3 family
-    "ESv3-Type1": 4.7872,
-    "ESv3-Type2": 4.7872,
-    "ESv3-Type3": 3.8468,
-    "ESv3-Type4": 3.8468,
-    # Esv4 family
-    "ESv4-Type1": 4.8764,
-    "ESv4-Type2": 4.8764,
-    # Esv5 family
-    "ESv5-Type1": 4.8764,
-    # Fsv2 family
-    "FSv2-Type2": 3.0454,
-    "FSv2-Type3": 3.0454,
-    "FSv2-Type4": 2.5304,
-    # Msv2 family
-    "MSv2-Type1": 28.4518,
-    # Lsv2 family
-    "LSv2-Type1": 5.4538,
+    # Azure Gov (usgovvirginia) — fetched 2026-04-10 via fetch_pricing.py
+    # DCadsv6 family
+    "DCadsv6_Type1": 11.4840,
+    # DCasv6 family
+    "DCasv6_Type1": 9.1080,
+    # DCsv2 family
+    "DCsv2 Type 1": 1.0560,
+    # Dadsv5 family
+    "Dadsv5_Type1": 8.0700,
+    # Dasv4 family
+    "Dasv4_Type1": 6.6550,
+    "Dasv4_Type2": 6.6550,
     # Dasv5 family
-    "DASv5-Type1": 3.9704,
-    # Easv5 family
-    "EASv5-Type1": 4.3596,
+    "Dasv5_Type1": 6.7140,
+    # Dasv6 family
+    "Dasv6_Type1": 9.1080,
+    # Ddsv4 family
+    "Ddsv4_Type 1": 5.0340,
+    "Ddsv4_Type2": 5.9770,
+    # Dsv3 family
+    "Dsv3_Type1": 4.2600,
+    "Dsv3_Type2": 4.7930,
+    "Dsv3_Type3": 5.3250,
+    "Dsv3_Type4": 6.6560,
+    # Dsv4 family
+    "Dsv4_Type1": 5.3240,
+    "Dsv4_Type2": 6.6550,
+    # Dsv6 family
+    "Dsv6_Type1": 13.3060,
+    # ECadsv6 family
+    "ECadsv6_Type1": 14.5730,
+    # ECasv6 family
+    "ECasv6_Type1": 11.9750,
+    # Easv4 family
+    "Easv4_Type1": 7.9730,
+    "Easv4_Type2": 7.9730,
+    # Easv6 family
+    "Easv6_Type1": 11.9790,
+    # Ebdsv5 family
+    "Ebdsv5-Type1": 7.1100,
+    # Ebsv5 family
+    "Ebsv5-Type1": 6.3360,
+    # Edsv4 family
+    "Edsv4_Type 1": 6.3360,
+    "Edsv4_Type2": 7.5240,
+    # Esv3 family
+    "Esv3_Type1": 4.6500,
+    "Esv3_Type2": 5.1480,
+    "Esv3_Type3": 5.1480,
+    "Esv3_Type4": 6.9740,
+    # Esv4 family
+    "Esv4_Type1": 5.2830,
+    "Esv4_Type2": 6.9340,
+    # FXmds family
+    "FXmds Type1": 1.2276,
+    # Fsv2 family
+    "Fsv2 Type3": 5.1610,
+    "Fsv2_Type2": 4.0390,
+    "Fsv2_Type4": 5.6100,
+    # Lsv2 family
+    "Lsv2_Type1": 8.2720,
     # Lsv3 family
-    "LSv3-Type1": 5.7028,
-    # Ddsv5 family
-    "DDSv5-Type1": 4.5432,
-    # Edsv5 family
-    "EDSv5-Type1": 5.0824,
+    "Lsv3_Type1": 9.0990,
+    # Mdmsv2MedMem family
+    "Mdmsv2MedMem _Type1": 35.2310,
+    # Mdsv2MedMem family
+    "Mdsv2MedMem_Type1": 17.6090,
+    # Mmsv2MedMem family
+    "Mmsv2MedMem-Type1": 34.6752,
+    # Ms family
+    "Ms_Type1": 17.6030,
+    # Msm family
+    "Msm_Type1": 35.2360,
+    # Msmv2 family
+    "Msmv2_Type1": 136.3300,
+    # Msv2 family
+    "Msv2_Type1": 68.1730,
+    # NVasv4 family
+    "NVasv4_Type1": 8.9700,
+    # NVsv3 family
+    "NVsv3_Type1": 6.2700,
 }
 
 
@@ -90,10 +133,18 @@ def get_dedicated_host_prices(region: str) -> dict:
                      len(prices), region)
         return prices
 
-    # Fall back to hardcoded table
+    # Fall back to hardcoded table — expand with alternate name formats
+    # so lookups work regardless of whether ARM returns "DSv3-Type1",
+    # "Dsv3_Type1", or "Dsv3-Type1"
+    fallback = {}
+    for sku, rate in FALLBACK_PRICES.items():
+        fallback[sku] = rate
+        fallback[sku.replace("_", "-")] = rate
+        fallback[sku.replace("-", "_")] = rate
+
     logger.info("Using fallback pricing table (%d SKUs) — API unavailable "
                 "or returned no results for '%s'", len(FALLBACK_PRICES), region)
-    return dict(FALLBACK_PRICES)
+    return fallback
 
 
 def _fetch_from_api(region: str) -> dict:
@@ -105,8 +156,11 @@ def _fetch_from_api(region: str) -> dict:
     prices = {}
 
     # OData filter for Dedicated Host consumption prices in the region
+    # Dedicated hosts are under serviceName 'Virtual Machines' with
+    # productName containing 'Dedicated Host'
     odata_filter = (
-        f"serviceName eq 'Virtual Machines Dedicated Host' "
+        f"serviceName eq 'Virtual Machines' "
+        f"and contains(productName, 'Dedicated Host') "
         f"and armRegionName eq '{region}' "
         f"and priceType eq 'Consumption'"
     )
@@ -127,11 +181,16 @@ def _fetch_from_api(region: str) -> dict:
 
                 # Only take hourly rates, skip reserved/spot
                 if sku_name and unit_of_measure == "1 Hour":
+                    # Normalize SKU: API returns "Dsv3_Type2",
+                    # ARM returns "DSv3-Type2". Store both forms.
+                    hyphen_name = sku_name.replace("_", "-")
+
                     # Prefer the lowest non-zero price (base pay-as-you-go)
-                    if sku_name not in prices or (
-                        unit_price > 0 and unit_price < prices[sku_name]
-                    ):
-                        prices[sku_name] = unit_price
+                    for name in (sku_name, hyphen_name):
+                        if name not in prices or (
+                            unit_price > 0 and unit_price < prices[name]
+                        ):
+                            prices[name] = unit_price
 
             # Follow pagination
             next_link = data.get("NextPageLink")
