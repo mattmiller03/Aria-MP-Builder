@@ -140,6 +140,10 @@ def main():
         action="store_true",
         help="Skip SSL certificate verification (for corporate proxies)",
     )
+    parser.add_argument(
+        "-o", "--output",
+        help="Save FALLBACK_PRICES to a file (e.g., -o fallback_prices.txt)",
+    )
     args = parser.parse_args()
 
     if args.no_verify:
@@ -180,18 +184,15 @@ def main():
             print(f"  {sku}: ${by_region[region][sku]:.4f}/hr")
         print()
 
-    # Print the FALLBACK_PRICES dict ready to paste
-    print(f"{'='*60}")
-    print("COPY THE BLOCK BELOW INTO pricing.py FALLBACK_PRICES:")
-    print(f"{'='*60}\n")
-
+    # Build the FALLBACK_PRICES block
+    lines = []
     if args.json:
-        print(json.dumps(
+        lines.append(json.dumps(
             {k: v["price"] for k, v in skus_global.items()},
             indent=4,
         ))
     else:
-        print("FALLBACK_PRICES = {")
+        lines.append("FALLBACK_PRICES = {")
         # Group by family for readability
         families = {}
         for sku, info in sorted(skus_global.items()):
@@ -204,16 +205,28 @@ def main():
         first_family = True
         for family in sorted(families):
             if not first_family:
-                print()
+                lines.append("")
             first_family = False
-            print(f"    # {family} family")
+            lines.append(f"    # {family} family")
             for sku, price in sorted(families[family]):
-                print(f'    "{sku}": {price:.4f},')
+                lines.append(f'    "{sku}": {price:.4f},')
 
-        print("}")
+        lines.append("}")
 
-    print(f"\nLast updated: run this script again to refresh.")
-    print(f"Total SKUs: {len(skus_global)}")
+    pricing_block = "\n".join(lines)
+
+    # Output to file or screen
+    if args.output:
+        with open(args.output, "w") as f:
+            f.write(pricing_block + "\n")
+        print(f"\nFALLBACK_PRICES saved to: {args.output}")
+    else:
+        print(f"{'='*60}")
+        print("COPY THE BLOCK BELOW INTO pricing.py FALLBACK_PRICES:")
+        print(f"{'='*60}\n")
+        print(pricing_block)
+
+    print(f"\nTotal SKUs: {len(skus_global)}")
 
 
 if __name__ == "__main__":
