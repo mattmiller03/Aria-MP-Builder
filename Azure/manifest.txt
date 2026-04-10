@@ -1,23 +1,31 @@
 {
+  "display_name": "DISPLAY_NAME",
   "name": "AzureGovCloud",
-  "version": "1.0.0",
+  "description": "DESCRIPTION",
+  "version": "1.2.0",
   "vcops_minimum_version": "8.10.0",
-  "adapter_kinds": ["AzureGovAdapter"],
-  "description": "Collects resource attributes from Azure Government Cloud including VMs, Disks, Networks, Storage, Key Vaults, SQL, and App Services.",
-  "vendor": "Custom",
+  "disk_space_required": 500,
   "eula_file": "eula.txt",
+  "platform": [
+    "Linux Non-VA",
+    "Linux VA"
+  ],
+  "vendor": "Custom",
   "pak_icon": "icon.png",
   "pak_validation_script": {
-    "script": "",
-    "script_timeout": 360
+    "script": ""
   },
   "adapter_pre_script": {
-    "script": "",
-    "script_timeout": 360
+    "script": ""
   },
   "adapter_post_script": {
-    "script": "",
-    "script_timeout": 360
+    "script": ""
   },
-  "platform": ["Linux Non-VA", "Linux VA"]
+  "adapters": [
+    "adapter.zip"
+  ],
+  "adapter_kinds": [
+    "AzureGovAdapter"
+  ],
+  "license_type": " "
 }
