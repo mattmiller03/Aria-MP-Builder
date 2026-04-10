@@ -144,6 +144,10 @@ def main():
         "-o", "--output",
         help="Save FALLBACK_PRICES to a file (e.g., -o fallback_prices.txt)",
     )
+    parser.add_argument(
+        "--update",
+        help="Path to pricing.py — replaces FALLBACK_PRICES in-place",
+    )
     args = parser.parse_args()
 
     if args.no_verify:
@@ -215,8 +219,10 @@ def main():
 
     pricing_block = "\n".join(lines)
 
-    # Output to file or screen
-    if args.output:
+    # Output: update pricing.py in-place, save to file, or print to screen
+    if args.update:
+        _update_pricing_file(args.update, pricing_block)
+    elif args.output:
         with open(args.output, "w") as f:
             f.write(pricing_block + "\n")
         print(f"\nFALLBACK_PRICES saved to: {args.output}")
@@ -227,6 +233,31 @@ def main():
         print(pricing_block)
 
     print(f"\nTotal SKUs: {len(skus_global)}")
+
+
+def _update_pricing_file(filepath, pricing_block):
+    """Replace the FALLBACK_PRICES dict in pricing.py in-place."""
+    import re
+
+    with open(filepath, "r") as f:
+        content = f.read()
+
+    # Match from "FALLBACK_PRICES = {" to the closing "}" at the same indent
+    pattern = r"FALLBACK_PRICES = \{[^}]*(?:\{[^}]*\}[^}]*)*\}"
+    match = re.search(pattern, content)
+
+    if not match:
+        print(f"ERROR: Could not find FALLBACK_PRICES block in {filepath}")
+        sys.exit(1)
+
+    old_block = match.group(0)
+    new_content = content.replace(old_block, pricing_block)
+
+    with open(filepath, "w") as f:
+        f.write(new_content)
+
+    print(f"\nUpdated FALLBACK_PRICES in: {filepath}")
+    print(f"  Replaced {old_block.count(chr(10))+1} lines with {pricing_block.count(chr(10))+1} lines")
 
 
 if __name__ == "__main__":

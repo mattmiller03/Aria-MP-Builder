@@ -29,86 +29,145 @@ RETAIL_PRICES_URL = "https://prices.azure.com/api/retail/prices"
 # preferentially when reachable; these are the air-gapped fallback.
 # ---------------------------------------------------------------------------
 FALLBACK_PRICES = {
-    # Azure Gov (usgovvirginia) — fetched 2026-04-10 via fetch_pricing.py
-    # DCadsv6 family
+    # DCadsv6_Type1 family
     "DCadsv6_Type1": 11.4840,
-    # DCasv6 family
+
+    # DCasv6_Type1 family
     "DCasv6_Type1": 9.1080,
-    # DCsv2 family
+
+    # DCsv2 Type 1 family
     "DCsv2 Type 1": 1.0560,
-    # Dadsv5 family
+
+    # Dadsv5_Type1 family
     "Dadsv5_Type1": 8.0700,
-    # Dasv4 family
+
+    # Dasv4_Type1 family
     "Dasv4_Type1": 6.6550,
+
+    # Dasv4_Type2 family
     "Dasv4_Type2": 6.6550,
-    # Dasv5 family
+
+    # Dasv5_Type1 family
     "Dasv5_Type1": 6.7140,
-    # Dasv6 family
+
+    # Dasv6_Type1 family
     "Dasv6_Type1": 9.1080,
-    # Ddsv4 family
+
+    # Ddsv4_Type 1 family
     "Ddsv4_Type 1": 5.0340,
+
+    # Ddsv4_Type2 family
     "Ddsv4_Type2": 5.9770,
-    # Dsv3 family
+
+    # Dsv3_Type1 family
     "Dsv3_Type1": 4.2600,
+
+    # Dsv3_Type2 family
     "Dsv3_Type2": 4.7930,
+
+    # Dsv3_Type3 family
     "Dsv3_Type3": 5.3250,
+
+    # Dsv3_Type4 family
     "Dsv3_Type4": 6.6560,
-    # Dsv4 family
+
+    # Dsv4_Type1 family
     "Dsv4_Type1": 5.3240,
+
+    # Dsv4_Type2 family
     "Dsv4_Type2": 6.6550,
-    # Dsv6 family
+
+    # Dsv6_Type1 family
     "Dsv6_Type1": 13.3060,
-    # ECadsv6 family
+
+    # ECadsv6_Type1 family
     "ECadsv6_Type1": 14.5730,
-    # ECasv6 family
+
+    # ECasv6_Type1 family
     "ECasv6_Type1": 11.9750,
-    # Easv4 family
+
+    # Easv4_Type1 family
     "Easv4_Type1": 7.9730,
+
+    # Easv4_Type2 family
     "Easv4_Type2": 7.9730,
-    # Easv6 family
+
+    # Easv6_Type1 family
     "Easv6_Type1": 11.9790,
+
     # Ebdsv5 family
     "Ebdsv5-Type1": 7.1100,
+
     # Ebsv5 family
     "Ebsv5-Type1": 6.3360,
-    # Edsv4 family
+
+    # Edsv4_Type 1 family
     "Edsv4_Type 1": 6.3360,
+
+    # Edsv4_Type2 family
     "Edsv4_Type2": 7.5240,
-    # Esv3 family
+
+    # Esv3_Type1 family
     "Esv3_Type1": 4.6500,
+
+    # Esv3_Type2 family
     "Esv3_Type2": 5.1480,
+
+    # Esv3_Type3 family
     "Esv3_Type3": 5.1480,
+
+    # Esv3_Type4 family
     "Esv3_Type4": 6.9740,
-    # Esv4 family
+
+    # Esv4_Type1 family
     "Esv4_Type1": 5.2830,
+
+    # Esv4_Type2 family
     "Esv4_Type2": 6.9340,
-    # FXmds family
+
+    # FXmds Type1 family
     "FXmds Type1": 1.2276,
-    # Fsv2 family
+
+    # Fsv2 Type3 family
     "Fsv2 Type3": 5.1610,
+
+    # Fsv2_Type2 family
     "Fsv2_Type2": 4.0390,
+
+    # Fsv2_Type4 family
     "Fsv2_Type4": 5.6100,
-    # Lsv2 family
+
+    # Lsv2_Type1 family
     "Lsv2_Type1": 8.2720,
-    # Lsv3 family
+
+    # Lsv3_Type1 family
     "Lsv3_Type1": 9.0990,
-    # Mdmsv2MedMem family
+
+    # Mdmsv2MedMem _Type1 family
     "Mdmsv2MedMem _Type1": 35.2310,
-    # Mdsv2MedMem family
+
+    # Mdsv2MedMem_Type1 family
     "Mdsv2MedMem_Type1": 17.6090,
+
     # Mmsv2MedMem family
     "Mmsv2MedMem-Type1": 34.6752,
-    # Ms family
+
+    # Ms_Type1 family
     "Ms_Type1": 17.6030,
-    # Msm family
+
+    # Msm_Type1 family
     "Msm_Type1": 35.2360,
-    # Msmv2 family
+
+    # Msmv2_Type1 family
     "Msmv2_Type1": 136.3300,
-    # Msv2 family
+
+    # Msv2_Type1 family
     "Msv2_Type1": 68.1730,
-    # NVasv4 family
+
+    # NVasv4_Type1 family
     "NVasv4_Type1": 8.9700,
-    # NVsv3 family
+
+    # NVsv3_Type1 family
     "NVsv3_Type1": 6.2700,
 }
 
