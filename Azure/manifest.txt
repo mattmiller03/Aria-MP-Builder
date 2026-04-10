@@ -10,7 +10,7 @@
     "Linux Non-VA",
     "Linux VA"
   ],
-  "vendor": "Custom",
+  "vendor": "DLA",
   "pak_icon": "icon.png",
   "pak_validation_script": {
     "script": ""
