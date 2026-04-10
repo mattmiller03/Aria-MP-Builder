@@ -4,12 +4,13 @@ Run this from any internet-connected PC to generate an updated
 FALLBACK_PRICES table for pricing.py.
 
 Usage:
-    python fetch_pricing.py
-    python fetch_pricing.py --regions "usgovvirginia,usgovarizona"
-    python fetch_pricing.py --all-regions
-    python fetch_pricing.py --no-verify        (skip SSL verification)
-
-The output can be copied directly into pricing.py's FALLBACK_PRICES dict.
+    python fetch_pricing.py                                          # fetch all Gov regions, print to screen
+    python fetch_pricing.py --regions "usgovvirginia,usgovarizona"   # specific regions only
+    python fetch_pricing.py --all-regions                            # all Azure regions (Gov + commercial)
+    python fetch_pricing.py --no-verify                              # skip SSL cert verification
+    python fetch_pricing.py -o fallback_prices.txt                   # save to a text file
+    python fetch_pricing.py --update app/pricing.py                  # replace FALLBACK_PRICES in pricing.py directly
+    python fetch_pricing.py --no-verify --update app/pricing.py      # typical air-gapped workflow
 """
 
 import argparse
