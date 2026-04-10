@@ -1,7 +1,7 @@
 {
-  "display_name": "DISPLAY_NAME",
+  "display_name": "Azure Government Cloud",
   "name": "AzureGovCloud",
-  "description": "DESCRIPTION",
+  "description": "Collects resource attributes from Azure Government Cloud including VMs, Disks, Dedicated Hosts, Networks, Storage, Key Vaults, SQL, Load Balancers, and App Services.",
   "version": "1.2.0",
   "vcops_minimum_version": "8.10.0",
   "disk_space_required": 500,
