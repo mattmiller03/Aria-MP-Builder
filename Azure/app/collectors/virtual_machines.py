@@ -3,35 +3,51 @@
 import logging
 
 from azure_client import AzureClient
-from constants import API_VERSIONS, OBJ_VIRTUAL_MACHINE, OBJ_RESOURCE_GROUP
+from constants import (
+    API_VERSIONS, OBJ_VIRTUAL_MACHINE, OBJ_RESOURCE_GROUP, OBJ_DEDICATED_HOST,
+)
 from helpers import make_identifiers, extract_resource_group, safe_property
 
 logger = logging.getLogger(__name__)
 
 
 def collect_virtual_machines(client: AzureClient, result, adapter_kind: str,
-                             subscriptions: list):
-    """Collect virtual machines across all subscriptions with instance view."""
+                             subscriptions: list, vm_lookup: dict = None):
+    """Collect virtual machines across all subscriptions with instance view.
+
+    Args:
+        client: Azure REST client.
+        result: CollectResult to populate.
+        adapter_kind: Adapter kind string.
+        subscriptions: List of subscription dicts.
+        vm_lookup: Optional pre-fetched dict mapping VM resource ID (lowered)
+                   to VM API dict. If provided, skips the API call and uses
+                   this data instead.
+    """
     logger.info("Collecting virtual machines")
     total = 0
 
     for sub in subscriptions:
         sub_id = sub["subscriptionId"]
 
-        # List all VMs in subscription
-        # Try with instanceView first, fall back without it
-        try:
-            vms = client.get_all(
-                path=f"/subscriptions/{sub_id}/providers/Microsoft.Compute/virtualMachines",
-                api_version=API_VERSIONS["virtual_machines"],
-                params={"$expand": "instanceView"},
-            )
-        except Exception:
-            logger.warning("instanceView expand failed for sub %s, retrying without", sub_id)
-            vms = client.get_all(
-                path=f"/subscriptions/{sub_id}/providers/Microsoft.Compute/virtualMachines",
-                api_version=API_VERSIONS["virtual_machines"],
-            )
+        # Use pre-fetched VM data if available, otherwise call API
+        if vm_lookup is not None:
+            vms = [v for v in vm_lookup.values()
+                   if v.get("id", "").lower().startswith(
+                       f"/subscriptions/{sub_id}".lower())]
+        else:
+            try:
+                vms = client.get_all(
+                    path=f"/subscriptions/{sub_id}/providers/Microsoft.Compute/virtualMachines",
+                    api_version=API_VERSIONS["virtual_machines"],
+                    params={"$expand": "instanceView"},
+                )
+            except Exception:
+                logger.warning("instanceView expand failed for sub %s, retrying without", sub_id)
+                vms = client.get_all(
+                    path=f"/subscriptions/{sub_id}/providers/Microsoft.Compute/virtualMachines",
+                    api_version=API_VERSIONS["virtual_machines"],
+                )
 
         for vm in vms:
             vm_name = vm["name"]
@@ -132,6 +148,39 @@ def collect_virtual_machines(client: AzureClient, result, adapter_kind: str,
             zones = vm.get("zones", [])
             if zones:
                 safe_property(obj, "availability_zone", ", ".join(zones))
+
+            # Dedicated Host placement
+            host_ref = props.get("host", {})
+            host_id = host_ref.get("id", "") if host_ref else ""
+            safe_property(obj, "dedicated_host_id", host_id)
+            if host_id:
+                # Extract host group name and host name from resource ID
+                # Format: .../hostGroups/{group}/hosts/{host}
+                parts = host_id.split("/")
+                dh_host_name = ""
+                dh_group_name = ""
+                for i, part in enumerate(parts):
+                    if part.lower() == "hostgroups" and i + 1 < len(parts):
+                        dh_group_name = parts[i + 1]
+                    if part.lower() == "hosts" and i + 1 < len(parts):
+                        dh_host_name = parts[i + 1]
+
+                if dh_host_name and dh_group_name:
+                    safe_property(obj, "dedicated_host_name", dh_host_name)
+                    safe_property(obj, "dedicated_host_group", dh_group_name)
+
+                    # Relationship: VM -> Dedicated Host (parent)
+                    dh_obj = result.object(
+                        adapter_kind=adapter_kind,
+                        object_kind=OBJ_DEDICATED_HOST,
+                        name=dh_host_name,
+                        identifiers=make_identifiers([
+                            ("subscription_id", sub_id),
+                            ("host_group_name", dh_group_name),
+                            ("host_name", dh_host_name),
+                        ]),
+                    )
+                    obj.add_parent(dh_obj)
 
             # Relationship: VM -> Resource Group (parent)
             if rg_name:

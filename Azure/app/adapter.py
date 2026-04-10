@@ -13,7 +13,7 @@ from constants import (
     ADAPTER_KIND, ADAPTER_NAME,
     CREDENTIAL_TYPE, CREDENTIAL_TENANT_ID, CREDENTIAL_CLIENT_ID,
     CREDENTIAL_CLIENT_SECRET, CREDENTIAL_SUBSCRIPTION_ID,
-    CONFIG_CLOUD_ENVIRONMENT, CLOUD_ENV_GOV,
+    CONFIG_CLOUD_ENVIRONMENT, CLOUD_ENV_GOV, API_VERSIONS,
     OBJ_SUBSCRIPTION, OBJ_RESOURCE_GROUP, OBJ_VIRTUAL_MACHINE,
     OBJ_DISK, OBJ_NETWORK_INTERFACE, OBJ_VIRTUAL_NETWORK, OBJ_SUBNET,
     OBJ_STORAGE_ACCOUNT, OBJ_LOAD_BALANCER, OBJ_KEY_VAULT,
@@ -138,6 +138,9 @@ def get_adapter_definition():
     vm.define_string_property("boot_diagnostics_enabled",
                               "Boot Diagnostics Enabled")
     vm.define_string_property("availability_zone", "Availability Zone")
+    vm.define_string_property("dedicated_host_id", "Dedicated Host ID")
+    vm.define_string_property("dedicated_host_name", "Dedicated Host Name")
+    vm.define_string_property("dedicated_host_group", "Dedicated Host Group")
 
     # Disk
     disk = definition.define_object_type(OBJ_DISK, "Azure Disk")
@@ -160,6 +163,8 @@ def get_adapter_definition():
     disk.define_string_property("network_access_policy",
                                 "Network Access Policy")
     disk.define_string_property("availability_zone", "Availability Zone")
+    disk.define_string_property("attached_vm_id", "Attached VM ID")
+    disk.define_string_property("attached_vm_name", "Attached VM Name")
 
     # Network Interface
     nic = definition.define_object_type(OBJ_NETWORK_INTERFACE,
@@ -373,6 +378,15 @@ def get_adapter_definition():
     dh.define_string_property("smallest_vm_size", "Smallest VM Size")
     dh.define_numeric_property("smallest_vm_available",
                                "Smallest VM Size Available Count")
+    dh.define_string_property("allocatable_vm_summary",
+                              "Allocatable VM Capacity Summary")
+    dh.define_string_property("vm_size_summary", "VM Size Breakdown")
+    dh.define_numeric_property("vm_size_distinct_count",
+                               "Distinct VM Size Count")
+    dh.define_string_property("vm_disk_skus", "Disk SKUs In Use")
+    dh.define_numeric_property("hourly_rate", "Hourly Compute Rate (USD)")
+    dh.define_numeric_property("monthly_rate_estimate",
+                               "Monthly Rate Estimate (USD)")
 
     # Public IP Address
     pip = definition.define_object_type(OBJ_PUBLIC_IP,
@@ -501,10 +515,34 @@ def collect(adapter_instance):
         rgs_by_sub = collect_resource_groups(client, result, ADAPTER_KIND,
                                              subscriptions)
 
-        # 3. All resource collectors — each wrapped independently
+        # 3. Collect VMs first and build lookup for dedicated host enrichment
+        vm_lookup = {}  # VM resource ID (lowered) -> VM API dict
+        try:
+            for sub in subscriptions:
+                sub_id = sub["subscriptionId"]
+                try:
+                    vms_raw = client.get_all(
+                        path=f"/subscriptions/{sub_id}/providers/Microsoft.Compute/virtualMachines",
+                        api_version=API_VERSIONS["virtual_machines"],
+                        params={"$expand": "instanceView"},
+                    )
+                except Exception:
+                    vms_raw = client.get_all(
+                        path=f"/subscriptions/{sub_id}/providers/Microsoft.Compute/virtualMachines",
+                        api_version=API_VERSIONS["virtual_machines"],
+                    )
+                for vm_raw in vms_raw:
+                    vm_id = vm_raw.get("id", "")
+                    if vm_id:
+                        vm_lookup[vm_id.lower()] = vm_raw
+            logger.info("Built VM lookup with %d entries", len(vm_lookup))
+        except Exception as e:
+            logger.warning("Failed to build VM lookup: %s", e)
+
+        # 4. All resource collectors — each wrapped independently
         #    so one failure doesn't prevent other resource types from collecting
         collectors = [
-            ("Virtual Machines", lambda: collect_virtual_machines(client, result, ADAPTER_KIND, subscriptions)),
+            ("Virtual Machines", lambda: collect_virtual_machines(client, result, ADAPTER_KIND, subscriptions, vm_lookup)),
             ("Disks", lambda: collect_disks(client, result, ADAPTER_KIND, subscriptions)),
             ("Network Interfaces", lambda: collect_network_interfaces(client, result, ADAPTER_KIND, subscriptions)),
             ("Virtual Networks", lambda: collect_virtual_networks(client, result, ADAPTER_KIND, subscriptions)),
@@ -513,7 +551,7 @@ def collect(adapter_instance):
             ("Key Vaults", lambda: collect_key_vaults(client, result, ADAPTER_KIND, subscriptions, rgs_by_sub)),
             ("SQL Databases", lambda: collect_sql_servers_and_databases(client, result, ADAPTER_KIND, subscriptions)),
             ("App Services", lambda: collect_app_services(client, result, ADAPTER_KIND, subscriptions)),
-            ("Dedicated Hosts", lambda: collect_dedicated_hosts(client, result, ADAPTER_KIND, subscriptions)),
+            ("Dedicated Hosts", lambda: collect_dedicated_hosts(client, result, ADAPTER_KIND, subscriptions, vm_lookup)),
             ("Public IPs", lambda: collect_public_ips(client, result, ADAPTER_KIND, subscriptions)),
             ("ExpressRoute", lambda: collect_expressroute_circuits(client, result, ADAPTER_KIND, subscriptions)),
             ("Recovery Vaults", lambda: collect_recovery_vaults(client, result, ADAPTER_KIND, subscriptions)),

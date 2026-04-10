@@ -1,22 +1,39 @@
 """Collector for Azure Dedicated Host Groups and Hosts."""
 
 import logging
+from collections import Counter
 
 from azure_client import AzureClient
 from constants import (
     API_VERSIONS, OBJ_HOST_GROUP, OBJ_DEDICATED_HOST, OBJ_RESOURCE_GROUP,
 )
 from helpers import make_identifiers, extract_resource_group, safe_property
+from pricing import get_dedicated_host_prices
 
 logger = logging.getLogger(__name__)
 
 
 def collect_dedicated_hosts(client: AzureClient, result, adapter_kind: str,
-                            subscriptions: list):
-    """Collect dedicated host groups and hosts across all subscriptions."""
+                            subscriptions: list, vm_lookup: dict = None):
+    """Collect dedicated host groups and hosts across all subscriptions.
+
+    Args:
+        client: Azure REST client.
+        result: CollectResult to populate.
+        adapter_kind: Adapter kind string.
+        subscriptions: List of subscription dicts.
+        vm_lookup: Optional dict mapping VM resource ID (lowered) to VM dict
+                   from the Azure API. Used to enrich hosts with VM size
+                   breakdowns and disk info.
+    """
     logger.info("Collecting dedicated host groups and hosts")
+    if vm_lookup is None:
+        vm_lookup = {}
     total_groups = 0
     total_hosts = 0
+
+    # Cache pricing per region — fetched lazily on first use
+    region_prices = {}  # region -> {sku_name: hourly_rate}
 
     for sub in subscriptions:
         sub_id = sub["subscriptionId"]
@@ -130,6 +147,44 @@ def collect_dedicated_hosts(client: AzureClient, result, adapter_kind: str,
                         vm_names.append(parts[-1])
                 safe_property(host_obj, "vm_names", ", ".join(vm_names))
 
+                # --- VM size breakdown from vm_lookup ---
+                vm_size_counts = Counter()
+                vm_disk_skus = set()
+                for vm_id in vm_ids:
+                    vm_data = vm_lookup.get(vm_id.lower())
+                    if vm_data:
+                        vm_hw = vm_data.get("properties", {}).get(
+                            "hardwareProfile", {})
+                        size = vm_hw.get("vmSize", "unknown")
+                        vm_size_counts[size] += 1
+
+                        # Collect disk SKUs from this VM's storage profile
+                        storage = vm_data.get("properties", {}).get(
+                            "storageProfile", {})
+                        os_managed = storage.get("osDisk", {}).get(
+                            "managedDisk", {})
+                        os_sku = os_managed.get("storageAccountType", "")
+                        if os_sku:
+                            vm_disk_skus.add(os_sku)
+                        for dd in storage.get("dataDisks", []):
+                            dd_sku = dd.get("managedDisk", {}).get(
+                                "storageAccountType", "")
+                            if dd_sku:
+                                vm_disk_skus.add(dd_sku)
+
+                # VM size summary: "Standard_D2s_v3 x4, Standard_D4s_v3 x2"
+                size_parts = [f"{size} x{cnt}"
+                              for size, cnt in vm_size_counts.most_common()]
+                safe_property(host_obj, "vm_size_summary",
+                              ", ".join(size_parts) if size_parts else "")
+                safe_property(host_obj, "vm_size_distinct_count",
+                              len(vm_size_counts))
+
+                # Disk SKUs across all VMs on this host
+                safe_property(host_obj, "vm_disk_skus",
+                              ", ".join(sorted(vm_disk_skus))
+                              if vm_disk_skus else "")
+
                 # Instance view — available capacity and health
                 instance_view = host_props.get("instanceView", {})
 
@@ -164,6 +219,32 @@ def collect_dedicated_hosts(client: AzureClient, result, adapter_kind: str,
                                   smallest_vm.get("vmSize", ""))
                     safe_property(host_obj, "smallest_vm_available",
                                   smallest_vm.get("count", 0))
+
+                    # Capacity summary: "Standard_D2s_v3: 12, Standard_D4s_v3: 6"
+                    capacity_parts = [
+                        f"{s.get('vmSize', '')}: {s.get('count', 0)}"
+                        for s in allocatable if s.get("vmSize")
+                    ]
+                    safe_property(host_obj, "allocatable_vm_summary",
+                                  ", ".join(capacity_parts))
+
+                # --- Hourly rate from Azure Retail Prices API ---
+                host_location = host.get("location", "").lower()
+                sku_name = host_sku.get("name", "")
+                if host_location and host_location not in region_prices:
+                    try:
+                        region_prices[host_location] = (
+                            get_dedicated_host_prices(host_location))
+                    except Exception as e:
+                        logger.warning("Pricing fetch failed for %s: %s",
+                                       host_location, e)
+                        region_prices[host_location] = {}
+
+                hourly_rate = region_prices.get(host_location, {}).get(
+                    sku_name, 0.0)
+                safe_property(host_obj, "hourly_rate", hourly_rate)
+                safe_property(host_obj, "monthly_rate_estimate",
+                              round(hourly_rate * 730, 2))
 
                 # Tags
                 host_tags = host.get("tags", {})

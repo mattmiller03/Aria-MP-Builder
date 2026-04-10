@@ -3,7 +3,7 @@
 import logging
 
 from azure_client import AzureClient
-from constants import API_VERSIONS, OBJ_DISK, OBJ_RESOURCE_GROUP
+from constants import API_VERSIONS, OBJ_DISK, OBJ_RESOURCE_GROUP, OBJ_VIRTUAL_MACHINE
 from helpers import make_identifiers, extract_resource_group, safe_property
 
 logger = logging.getLogger(__name__)
@@ -84,6 +84,26 @@ def collect_disks(client: AzureClient, result, adapter_kind: str,
                     ]),
                 )
                 obj.add_parent(rg_obj)
+
+            # Relationship: Disk -> VM (parent) via managedBy
+            managed_by = disk.get("managedBy", "")
+            safe_property(obj, "attached_vm_id", managed_by)
+            if managed_by:
+                vm_name = managed_by.split("/")[-1] if managed_by else ""
+                vm_rg = extract_resource_group(managed_by)
+                if vm_name and vm_rg:
+                    safe_property(obj, "attached_vm_name", vm_name)
+                    vm_obj = result.object(
+                        adapter_kind=adapter_kind,
+                        object_kind=OBJ_VIRTUAL_MACHINE,
+                        name=vm_name,
+                        identifiers=make_identifiers([
+                            ("subscription_id", sub_id),
+                            ("resource_group", vm_rg),
+                            ("vm_name", vm_name),
+                        ]),
+                    )
+                    obj.add_parent(vm_obj)
 
         total += len(disks)
 
