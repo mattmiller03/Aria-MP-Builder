@@ -4,101 +4,79 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Custom VMware Aria Operations management pack that collects resource attributes from **Azure Government Cloud** using the VCF Operations Integration SDK (Python). The pack authenticates via OAuth2 client credentials to Azure Gov ARM APIs and discovers/monitors VMs, Disks, NICs, VNets, Storage Accounts, Key Vaults, SQL Databases, Load Balancers, App Services, and more.
+Custom VMware Aria Operations management pack that collects resource attributes from **Azure Government Cloud** using the VCF Operations Integration SDK 1.3.1 (Python). Deployed on Aria Ops 8.18.6 Enterprise (air-gapped) with a container-based adapter running on a Cloud Proxy.
+
+**Current version:** 1.3.0 with 18 resource types collecting ~17,000 objects.
 
 ## Architecture
 
 ```
 Azure/
+├── Dockerfile                  # FROM base-adapter:python-1.2.0
+├── commands.cfg                # Maps HTTP endpoints to adapter subprocess commands
+├── manifest.txt                # Pack metadata — platform MUST be ["Linux Non-VA", "Linux VA"]
+├── config.json                 # Container registry config (git-ignored)
+├── connections.json.example    # Credential template
 ├── app/
-│   ├── adapter.py          # Main adapter — defines collect(), test(), get_adapter_definition()
-│   ├── constants.py         # Adapter kind key, object type keys, API versions
-│   ├── auth.py              # OAuth2 client credentials flow against Azure Gov Entra ID
-│   ├── azure_client.py      # REST client with pagination (nextLink), rate-limit handling
-│   ├── collectors/          # Per-resource-type collection modules
-│   │   ├── virtual_machines.py
-│   │   ├── disks.py
-│   │   ├── network_interfaces.py
-│   │   ├── virtual_networks.py
-│   │   ├── storage_accounts.py
-│   │   ├── key_vaults.py
-│   │   ├── sql_databases.py
-│   │   ├── load_balancers.py
-│   │   ├── app_services.py
-│   │   ├── resource_groups.py
-│   │   └── subscriptions.py
-│   └── requirements.txt     # requests, etc.
-├── conf/
-│   └── describe.xml         # Adapter object model (resource kinds, metrics, properties, credentials)
-├── resources/
-│   └── resources.properties # Localization keys
-├── manifest.txt             # MP metadata (name, version, adapter_kinds)
-├── eula.txt                 # License agreement
-└── connections.json         # Test connection config (not shipped in .pak)
+│   ├── adapter.py              # Main entry point (collect, test, get_adapter_definition, main dispatcher)
+│   ├── constants.py            # Adapter keys, Azure Gov endpoints, API versions, object type keys
+│   ├── auth.py                 # OAuth2 client credentials flow (login.microsoftonline.us)
+│   ├── azure_client.py         # REST client with nextLink pagination + rate-limit retry
+│   ├── helpers.py              # SDK compat: make_identifiers(), safe_property(), extract_resource_group()
+│   ├── collectors/             # 18 per-resource-type modules
+│   └── wheels/                 # Bundled Python wheels for air-gapped Docker builds
+├── conf/describeSchema.xsd     # VMware validation schema (do not modify)
+└── content/                    # Dashboards (future)
 ```
 
-### Key Design Decisions
+## SDK Compatibility Notes (CRITICAL)
 
-- **SDK approach over MP Builder GUI**: The code-based SDK gives full control over Azure Gov's OAuth2 token lifecycle, nextLink pagination, retry/rate-limiting, and multi-subscription enumeration.
-- **Azure Gov endpoints**: All API calls target `management.usgovcloudapi.net` (ARM) and `login.microsoftonline.us` (auth). These differ from commercial Azure.
-- **Token scope**: `https://management.usgovcloudapi.net/.default`
-- **Pagination**: Azure ARM uses cursor-based pagination via `nextLink` in response bodies. Always follow the full nextLink URL as-is.
+The SDK lib is v1.1.0. These patterns differ from newer SDK versions:
 
-## Build & Development Commands
+- **Identifiers:** Use `define_string_identifier()`, NOT `define_string_property(is_part_of_uniqueness=True)`
+- **Credentials:** Use `adapter_instance.get_credential_value(key)` directly, NOT `get_credential(type).get_credential_value(key)`
+- **Properties:** Use `safe_property(obj, key, value)` from helpers.py to prevent None values
+- **Relationships:** Use `child.add_parent(parent)`, NOT `result.add_relationship(parent, child)`
+- **TestResult:** Has no `with_message()` method — a successful test just returns without calling `with_error()`
+- **Entry point:** adapter.py uses pipe-based dispatch via `main(sys.argv[1:])`, not `start_adapter()`
+- **Identifiers must be `Identifier` objects**, not tuples — use `make_identifiers()` from helpers.py
+
+## Build Commands (Air-Gapped)
 
 ```bash
-# Install the SDK
-pip install vmware-aria-operations-integration-sdk
+# On MP Builder server (Photon 4.0 OVA)
+cd /opt/aria/Aria-MP-Builder/Azure
 
-# Scaffold a new project (interactive)
-mp-init
+# Test locally
+sudo mp-test --port 8181
 
-# Test adapter locally against a target environment
-mp-test
+# Build .pak — MUST use -i flag for insecure collector communication
+sudo mp-build -i --no-ttl --registry-tag "<REGISTRY-IP>:5000/azuregovcloud-adapter" -P 8181
 
-# Build the .pak file for deployment to Aria Operations
-mp-build
+# Push image to local registry
+sudo docker tag azuregovcloud-test:<VERSION> <REGISTRY-IP>:5000/azuregovcloud-adapter:latest
+sudo docker push <REGISTRY-IP>:5000/azuregovcloud-adapter:latest
 ```
 
-### Deploy to Aria Operations
+See `docs/rebuild-steps.md` for full step-by-step rebuild process.
 
-1. Upload `.pak` via **Administration > Solutions/Integrations**
-2. Disable signature checking for unsigned packs
-3. Configure adapter instance with Azure Gov credentials (tenant_id, client_id, client_secret, subscription_id)
-4. Validate connection, then collection starts within ~5 minutes
+## Deployment Gotchas (Air-Gapped Aria Ops 8.18.6)
 
-## Azure Gov Authentication Flow
+- **manifest.txt platform:** MUST be `["Linux Non-VA", "Linux VA"]` — bare `["Linux"]` crashes pak manager
+- **manifest.txt fields:** Must include `display_name`, `disk_space_required`, `adapters`, `license_type`
+- **API_PORT:** Container adapter uses 8080/HTTP (set via `-i` build flag). Port 443 conflicts with Cloud Proxy's config-modules container
+- **REGISTRY in .conf:** Must be explicitly set — without it, Cloud Proxy tries `harbor-repo.vmware.com`
+- **Cloud Proxy Docker certs:** Must copy registry cert to `/etc/docker/certs.d/<IP>:5000/ca.crt`
+- **Azure Gov API versions:** Use 2023-xx — newer versions return 502 Bad Gateway
+- **Unsigned pak STIG:** No way to self-sign; document exception with security team
 
-```
-POST https://login.microsoftonline.us/{tenant_id}/oauth2/v2.0/token
-Content-Type: application/x-www-form-urlencoded
-
-grant_type=client_credentials
-&client_id={client_id}
-&client_secret={client_secret}
-&scope=https://management.usgovcloudapi.net/.default
-```
-
-The returned `access_token` (Bearer) is used in `Authorization` header for all ARM calls.
-
-## Azure Gov Endpoint Quick Reference
+## Azure Gov Endpoints
 
 | Service | Endpoint |
 |---------|----------|
 | ARM | `management.usgovcloudapi.net` |
 | Auth | `login.microsoftonline.us` |
+| Token scope | `https://management.usgovcloudapi.net/.default` |
 | Key Vault | `vault.usgovcloudapi.net` |
 | Storage | `*.core.usgovcloudapi.net` |
 | SQL | `database.usgovcloudapi.net` |
-
-## Adapter Entry Points
-
-The SDK expects three functions in `adapter.py`:
-
-- **`get_adapter_definition()`** — Returns `AdapterDefinition` with all credential types, object types, metrics, and properties. The SDK auto-generates `describe.xml` from this.
-- **`collect(adapter_instance)`** — Called each collection cycle. Authenticates to Azure Gov, enumerates subscriptions/resource groups, calls each collector, returns `CollectResult` with objects, metrics, properties, and relationships.
-- **`test(adapter_instance)`** — Validates credentials and connectivity. Called when user clicks "Test Connection" in Aria Operations.
-
-## Rate Limiting
-
-Azure Gov currently uses legacy hourly limits: 12,000 reads/hour per service principal per subscription. Monitor `x-ms-ratelimit-remaining-subscription-reads` response header. On HTTP 429, respect `Retry-After` header.
