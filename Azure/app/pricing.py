@@ -30,82 +30,82 @@ RETAIL_PRICES_URL = "https://prices.azure.com/api/retail/prices"
 # ---------------------------------------------------------------------------
 FALLBACK_PRICES = {
     # DCadsv6_Type1 family
-    "DCadsv6_Type1": 11.4840,
+    "DCadsv6_Type1": 5.8610,
 
     # DCasv6_Type1 family
-    "DCasv6_Type1": 9.1080,
+    "DCasv6_Type1": 4.6410,
 
     # DCsv2 Type 1 family
-    "DCsv2 Type 1": 1.0560,
+    "DCsv2 Type 1": 0.8450,
 
     # Dadsv5_Type1 family
-    "Dadsv5_Type1": 8.0700,
+    "Dadsv5_Type1": 4.1330,
 
     # Dasv4_Type1 family
-    "Dasv4_Type1": 6.6550,
+    "Dasv4_Type1": 1.0670,
 
     # Dasv4_Type2 family
-    "Dasv4_Type2": 6.6550,
+    "Dasv4_Type2": 5.0690,
 
     # Dasv5_Type1 family
-    "Dasv5_Type1": 6.7140,
+    "Dasv5_Type1": 3.4220,
 
     # Dasv6_Type1 family
-    "Dasv6_Type1": 9.1080,
+    "Dasv6_Type1": 4.6430,
 
     # Ddsv4_Type 1 family
-    "Ddsv4_Type 1": 5.0340,
+    "Ddsv4_Type 1": 0.9180,
 
     # Ddsv4_Type2 family
-    "Ddsv4_Type2": 5.9770,
+    "Ddsv4_Type2": 4.7230,
 
     # Dsv3_Type1 family
-    "Dsv3_Type1": 4.2600,
+    "Dsv3_Type1": 3.3800,
 
     # Dsv3_Type2 family
-    "Dsv3_Type2": 4.7930,
+    "Dsv3_Type2": 3.8020,
 
     # Dsv3_Type3 family
-    "Dsv3_Type3": 5.3250,
+    "Dsv3_Type3": 4.2250,
 
     # Dsv3_Type4 family
-    "Dsv3_Type4": 6.6560,
+    "Dsv3_Type4": 5.2810,
 
     # Dsv4_Type1 family
-    "Dsv4_Type1": 5.3240,
+    "Dsv4_Type1": 1.0560,
 
     # Dsv4_Type2 family
-    "Dsv4_Type2": 6.6550,
+    "Dsv4_Type2": 5.0690,
 
     # Dsv6_Type1 family
-    "Dsv6_Type1": 13.3060,
+    "Dsv6_Type1": 10.6450,
 
     # ECadsv6_Type1 family
-    "ECadsv6_Type1": 14.5730,
+    "ECadsv6_Type1": 7.4290,
 
     # ECasv6_Type1 family
-    "ECasv6_Type1": 11.9750,
+    "ECasv6_Type1": 6.0980,
 
     # Easv4_Type1 family
-    "Easv4_Type1": 7.9730,
+    "Easv4_Type1": 1.3730,
 
     # Easv4_Type2 family
-    "Easv4_Type2": 7.9730,
+    "Easv4_Type2": 6.6530,
 
     # Easv6_Type1 family
-    "Easv6_Type1": 11.9790,
+    "Easv6_Type1": 6.0980,
 
     # Ebdsv5 family
-    "Ebdsv5-Type1": 7.1100,
+    "Ebdsv5-Type1": 5.8780,
 
     # Ebsv5 family
-    "Ebsv5-Type1": 6.3360,
+    "Ebsv5-Type1": 5.2450,
 
     # Edsv4_Type 1 family
-    "Edsv4_Type 1": 6.3360,
+    "Edsv4_Type 1": 1.2250,
 
     # Edsv4_Type2 family
-    "Edsv4_Type2": 7.5240,
+    "Edsv4_Type2": 6.0190,
 
     # Esv3_Type1 family
     "Esv3_Type1": 4.6500,
@@ -114,61 +114,70 @@ FALLBACK_PRICES = {
     "Esv3_Type2": 5.1480,
 
     # Esv3_Type3 family
-    "Esv3_Type3": 5.1480,
+    "Esv3_Type3": 4.2970,
 
     # Esv3_Type4 family
-    "Esv3_Type4": 6.9740,
+    "Esv3_Type4": 5.8220,
 
     # Esv4_Type1 family
-    "Esv4_Type1": 5.2830,
+    "Esv4_Type1": 1.0630,
 
     # Esv4_Type2 family
-    "Esv4_Type2": 6.9340,
+    "Esv4_Type2": 5.8210,
 
     # FXmds Type1 family
-    "FXmds Type1": 1.2276,
+    "FXmds Type1": 0.9820,
 
     # Fsv2 Type3 family
-    "Fsv2 Type3": 5.1610,
+    "Fsv2 Type3": 3.5280,
 
     # Fsv2_Type2 family
-    "Fsv2_Type2": 4.0390,
+    "Fsv2_Type2": 3.1752,
 
     # Fsv2_Type4 family
-    "Fsv2_Type4": 5.6100,
+    "Fsv2_Type4": 4.4680,
 
     # Lsv2_Type1 family
-    "Lsv2_Type1": 8.2720,
+    "Lsv2_Type1": 6.8640,
 
     # Lsv3_Type1 family
-    "Lsv3_Type1": 9.0990,
+    "Lsv3_Type1": 7.6560,
 
     # Mdmsv2MedMem _Type1 family
-    "Mdmsv2MedMem _Type1": 35.2310,
+    "Mdmsv2MedMem _Type1": 29.3590,
 
     # Mdsv2MedMem_Type1 family
-    "Mdsv2MedMem_Type1": 17.6090,
+    "Mdsv2MedMem_Type1": 14.6740,
 
     # Mmsv2MedMem family
-    "Mmsv2MedMem-Type1": 34.6752,
+    "Mmsv2MedMem-Type1": 8.3800,
 
     # Ms_Type1 family
-    "Ms_Type1": 17.6030,
+    "Ms_Type1": 14.6690,
 
     # Msm_Type1 family
-    "Msm_Type1": 35.2360,
+    "Msm_Type1": 29.3630,
 
     # Msmv2_Type1 family
-    "Msmv2_Type1": 136.3300,
+    "Msmv2_Type1": 109.0600,
+
+    # Msv2MedMem Type1 family
+    "Msv2MedMem Type1": 4.1210,
 
     # Msv2_Type1 family
-    "Msv2_Type1": 68.1730,
+    "Msv2_Type1": 54.5380,
+
+    # NDamsrA100v4_Type1 family
+    "NDamsrA100v4_Type1": 36.0470,
+
+    # NDasrA100v4_Type1 family
+    "NDasrA100v4_Type1": 29.9170,
 
     # NVasv4_Type1 family
-    "NVasv4_Type1": 8.9700,
+    "NVasv4_Type1": 7.1760,
 
     # NVsv3_Type1 family
-    "NVsv3_Type1": 6.2700,
+    "NVsv3_Type1": 5.0160,
 }
 
 
