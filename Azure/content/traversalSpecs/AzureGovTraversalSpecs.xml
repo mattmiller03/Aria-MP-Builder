@@ -1,0 +1,60 @@
+<AdapterKind key="AzureGovAdapter">
+	<TraversalSpecKinds>
+		<TraversalSpecKind name="Azure Gov Resources By Subscription"
+			rootAdapterKind="AzureGovAdapter" rootResourceKind="azure_subscription"
+			description="Navigate Azure Government resources by subscription.">
+
+			<!-- Subscription > Resource Group -->
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group::child" />
+
+			<!-- Resource Group > VMs > Disks -->
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_virtual_machine::child" />
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_virtual_machine::child||AzureGovAdapter::azure_disk::child" />
+
+			<!-- Resource Group > Host Groups > Dedicated Hosts > VMs -->
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_host_group::child||AzureGovAdapter::azure_dedicated_host::child" />
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_dedicated_host::child||AzureGovAdapter::azure_virtual_machine::child" />
+
+			<!-- Resource Group > Disks (unattached) -->
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_disk::child" />
+
+			<!-- Resource Group > SQL Server > SQL Database -->
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_sql_server::child||AzureGovAdapter::azure_sql_database::child" />
+
+			<!-- Resource Group > Networking -->
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_virtual_network::child||AzureGovAdapter::azure_subnet::child" />
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_network_interface::child" />
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_load_balancer::child" />
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_public_ip::child" />
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_expressroute_circuit::child" />
+
+			<!-- Resource Group > Storage -->
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_storage_account::child" />
+
+			<!-- Resource Group > Security & Management -->
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_key_vault::child" />
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_recovery_services_vault::child" />
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_log_analytics_workspace::child" />
+
+			<!-- Resource Group > App Services -->
+			<ResourcePath
+				path="AzureGovAdapter::azure_subscription||AzureGovAdapter::azure_resource_group||AzureGovAdapter::azure_app_service::child" />
+		</TraversalSpecKind>
+	</TraversalSpecKinds>
+</AdapterKind>

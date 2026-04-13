@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AdapterKinds>
+    <AdapterKind adapterKindKey="AzureGovAdapter">
+        <ResourceKind resourceKindKey="azure_virtual_machine">
+            <Metric attrkey="CPU|cpu_usage" label="CPU Usage" unit="%"/>
+            <Metric attrkey="Disk|disk_read_operations" label="Disk Read Ops" unit="Operations/s"/>
+            <Metric attrkey="Disk|disk_write_operations" label="Disk Write Ops" unit="Operations/s"/>
+            <Metric attrkey="Disk|disk_read_bytes" label="Disk Read Bytes" unit="B"/>
+            <Metric attrkey="Disk|disk_write_bytes" label="Disk Write Bytes" unit="B"/>
+            <Metric attrkey="Network|network_in" label="Network In" unit="B"/>
+            <Metric attrkey="Network|network_out" label="Network Out" unit="B"/>
+        </ResourceKind>
+        <ResourceKind resourceKindKey="azure_dedicated_host">
+            <Metric attrkey="hourly_rate" label="Hourly Rate" unit="USD"/>
+            <Metric attrkey="monthly_rate_estimate" label="Monthly Estimate" unit="USD"/>
+            <Metric attrkey="vm_count" label="VM Count"/>
+            <Metric attrkey="max_available_slots" label="Max Available Slots"/>
+        </ResourceKind>
+        <ResourceKind resourceKindKey="azure_sql_database">
+            <Metric attrkey="CPU|cpu_usage" label="CPU Usage" unit="%"/>
+            <Metric attrkey="Workload|dtu_consumption" label="DTU Consumption" unit="%"/>
+            <Metric attrkey="Storage|data_io" label="Data I/O" unit="%"/>
+            <Metric attrkey="Storage|log_io" label="Log I/O" unit="%"/>
+            <Metric attrkey="Storage|storage_usage" label="Storage Usage" unit="%"/>
+            <Metric attrkey="Network|successful_connections" label="Successful Connections"/>
+            <Metric attrkey="Network|failed_connections" label="Failed Connections"/>
+            <Metric attrkey="Workload|sessions" label="Sessions" unit="%"/>
+            <Metric attrkey="Workload|workers" label="Workers" unit="%"/>
+        </ResourceKind>
+        <ResourceKind resourceKindKey="azure_sql_server">
+            <Metric attrkey="CPU|cpu_usage" label="Avg CPU Usage" unit="%"/>
+            <Metric attrkey="Storage|data_io" label="Avg Data I/O" unit="%"/>
+            <Metric attrkey="Workload|dtu_used" label="DTU Used"/>
+        </ResourceKind>
+        <ResourceKind resourceKindKey="azure_network_interface">
+            <Metric attrkey="Network|bytes_sent" label="Bytes Sent" unit="B"/>
+            <Metric attrkey="Network|bytes_received" label="Bytes Received" unit="B"/>
+            <Metric attrkey="Network|packets_sent" label="Packets Sent"/>
+            <Metric attrkey="Network|packets_received" label="Packets Received"/>
+        </ResourceKind>
+        <ResourceKind resourceKindKey="azure_load_balancer">
+            <Metric attrkey="Availability|data_path_availability" label="Data Path Availability" unit="%"/>
+            <Metric attrkey="Availability|health_probe_status" label="Health Probe Status" unit="%"/>
+            <Metric attrkey="Network|byte_count" label="Byte Count" unit="B"/>
+            <Metric attrkey="Network|packet_count" label="Packet Count"/>
+        </ResourceKind>
+        <ResourceKind resourceKindKey="azure_storage_account">
+            <Metric attrkey="Storage|used_capacity" label="Used Capacity" unit="B"/>
+            <Metric attrkey="Storage|transactions" label="Transactions"/>
+            <Metric attrkey="Network|ingress" label="Ingress" unit="B"/>
+            <Metric attrkey="Network|egress" label="Egress" unit="B"/>
+            <Metric attrkey="Availability|availability" label="Availability" unit="%"/>
+            <Metric attrkey="Latency|e2e_latency" label="E2E Latency" unit="ms"/>
+            <Metric attrkey="Latency|server_latency" label="Server Latency" unit="ms"/>
+        </ResourceKind>
+    </AdapterKind>
+</AdapterKinds>
