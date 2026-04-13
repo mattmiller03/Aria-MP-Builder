@@ -6,7 +6,7 @@ from azure_client import AzureClient
 from constants import (
     API_VERSIONS, OBJ_VIRTUAL_MACHINE, OBJ_RESOURCE_GROUP, OBJ_DEDICATED_HOST,
 )
-from helpers import make_identifiers, extract_resource_group, safe_property
+from helpers import make_identifiers, extract_resource_group, safe_property, sanitize_tag_key
 from collectors.metrics import collect_metrics_for_objects
 
 logger = logging.getLogger(__name__)
@@ -144,7 +144,7 @@ def collect_virtual_machines(client: AzureClient, result, adapter_kind: str,
             tags = vm.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    safe_property(obj, f"tag_{key}", value)
+                    safe_property(obj, f"tag_{sanitize_tag_key(key)}", value)
 
             # Zones
             zones = vm.get("zones", [])

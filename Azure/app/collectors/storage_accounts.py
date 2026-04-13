@@ -4,7 +4,7 @@ import logging
 
 from azure_client import AzureClient
 from constants import API_VERSIONS, OBJ_STORAGE_ACCOUNT, OBJ_RESOURCE_GROUP
-from helpers import make_identifiers, extract_resource_group, safe_property
+from helpers import make_identifiers, extract_resource_group, safe_property, sanitize_tag_key
 from collectors.metrics import collect_metrics_for_objects
 
 logger = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ def collect_storage_accounts(client: AzureClient, result, adapter_kind: str,
             tags = acct.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    safe_property(obj, f"tag_{key}", value)
+                    safe_property(obj, f"tag_{sanitize_tag_key(key)}", value)
 
             # Relationship: Storage Account -> Resource Group
             if rg_name:

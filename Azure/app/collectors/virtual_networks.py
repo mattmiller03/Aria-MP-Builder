@@ -6,7 +6,7 @@ from azure_client import AzureClient
 from constants import (
     API_VERSIONS, OBJ_VIRTUAL_NETWORK, OBJ_SUBNET, OBJ_RESOURCE_GROUP,
 )
-from helpers import make_identifiers, extract_resource_group, safe_property
+from helpers import make_identifiers, extract_resource_group, safe_property, sanitize_tag_key
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ def collect_virtual_networks(client: AzureClient, result, adapter_kind: str,
             tags = vnet.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    safe_property(vnet_obj, f"tag_{key}", value)
+                    safe_property(vnet_obj, f"tag_{sanitize_tag_key(key)}", value)
 
             # Relationship: VNet -> Resource Group
             if rg_name:

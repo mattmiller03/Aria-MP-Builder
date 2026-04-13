@@ -7,7 +7,7 @@ from azure_client import AzureClient
 from constants import (
     API_VERSIONS, OBJ_HOST_GROUP, OBJ_DEDICATED_HOST, OBJ_RESOURCE_GROUP,
 )
-from helpers import make_identifiers, extract_resource_group, safe_property
+from helpers import make_identifiers, extract_resource_group, safe_property, sanitize_tag_key
 from pricing import get_dedicated_host_prices
 
 logger = logging.getLogger(__name__)
@@ -76,7 +76,7 @@ def collect_dedicated_hosts(client: AzureClient, result, adapter_kind: str,
             tags = group.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    safe_property(group_obj, f"tag_{key}", value)
+                    safe_property(group_obj, f"tag_{sanitize_tag_key(key)}", value)
 
             # Relationship: Host Group -> Resource Group
             if rg_name:
@@ -250,7 +250,7 @@ def collect_dedicated_hosts(client: AzureClient, result, adapter_kind: str,
                 host_tags = host.get("tags", {})
                 if host_tags:
                     for key, value in host_tags.items():
-                        safe_property(host_obj, f"tag_{key}", value)
+                        safe_property(host_obj, f"tag_{sanitize_tag_key(key)}", value)
 
                 # Relationship: Host -> Host Group (parent)
                 host_obj.add_parent(group_obj)

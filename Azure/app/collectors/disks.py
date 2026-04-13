@@ -4,7 +4,7 @@ import logging
 
 from azure_client import AzureClient
 from constants import API_VERSIONS, OBJ_DISK, OBJ_RESOURCE_GROUP, OBJ_VIRTUAL_MACHINE
-from helpers import make_identifiers, extract_resource_group, safe_property
+from helpers import make_identifiers, extract_resource_group, safe_property, sanitize_tag_key
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +65,7 @@ def collect_disks(client: AzureClient, result, adapter_kind: str,
             tags = disk.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    safe_property(obj, f"tag_{key}", value)
+                    safe_property(obj, f"tag_{sanitize_tag_key(key)}", value)
 
             # Zones
             zones = disk.get("zones", [])

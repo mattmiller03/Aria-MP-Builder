@@ -37,3 +37,16 @@ def safe_property(obj, key, value):
         obj.with_property(key, value)
         return
     obj.with_property(key, str(value))
+
+
+def sanitize_tag_key(key):
+    """Sanitize an Azure tag key for use as an Aria Ops property key.
+
+    Replaces spaces and special characters with underscores, converts
+    to lowercase for consistency.
+    """
+    sanitized = key.replace(" ", "_").replace("-", "_").replace(".", "_")
+    sanitized = sanitized.replace("/", "_").replace("\\", "_")
+    # Remove any remaining non-alphanumeric chars except underscore
+    sanitized = "".join(c if c.isalnum() or c == "_" else "_" for c in sanitized)
+    return sanitized.lower()

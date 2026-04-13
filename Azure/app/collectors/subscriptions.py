@@ -4,7 +4,7 @@ import logging
 
 from azure_client import AzureClient
 from constants import API_VERSIONS, OBJ_SUBSCRIPTION
-from helpers import make_identifiers, safe_property
+from helpers import make_identifiers, safe_property, sanitize_tag_key
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ def collect_subscriptions(client: AzureClient, result, adapter_kind: str):
         tags = sub.get("tags", {})
         if tags:
             for key, value in tags.items():
-                safe_property(obj, f"tag_{key}", value)
+                safe_property(obj, f"tag_{sanitize_tag_key(key)}", value)
 
     logger.info("Collected %d subscriptions", len(subscriptions))
     return subscriptions

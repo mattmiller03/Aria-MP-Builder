@@ -4,7 +4,7 @@ import logging
 
 from azure_client import AzureClient
 from constants import API_VERSIONS, OBJ_RECOVERY_VAULT, OBJ_RESOURCE_GROUP
-from helpers import make_identifiers, extract_resource_group, safe_property
+from helpers import make_identifiers, extract_resource_group, safe_property, sanitize_tag_key
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ def collect_recovery_vaults(client: AzureClient, result, adapter_kind: str,
             tags = vault.get("tags", {})
             if tags:
                 for key, value in tags.items():
-                    safe_property(obj, f"tag_{key}", value)
+                    safe_property(obj, f"tag_{sanitize_tag_key(key)}", value)
 
             if rg_name:
                 rg_obj = result.object(
