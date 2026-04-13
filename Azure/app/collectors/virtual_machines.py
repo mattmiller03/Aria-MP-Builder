@@ -198,6 +198,9 @@ def collect_virtual_machines(client: AzureClient, result, adapter_kind: str,
                 obj.add_parent(rg_obj)
 
             # Track for metrics collection
+            # CPU capacity reference for Aria Ops capacity planning
+            obj.with_metric("CPU|capacity", 100.0)
+
             resource_id = vm.get("id", "")
             if resource_id:
                 vm_objects[resource_id] = obj

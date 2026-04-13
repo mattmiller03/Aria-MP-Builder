@@ -18,7 +18,8 @@ def collect_sql_servers_and_databases(client: AzureClient, result,
     logger.info("Collecting SQL servers and databases")
     total_servers = 0
     total_dbs = 0
-    db_objects = {}  # resource_id -> aria obj
+    srv_objects = {}  # resource_id -> aria obj (servers)
+    db_objects = {}  # resource_id -> aria obj (databases)
 
     for sub in subscriptions:
         sub_id = sub["subscriptionId"]
@@ -79,6 +80,10 @@ def collect_sql_servers_and_databases(client: AzureClient, result,
                     ]),
                 )
                 srv_obj.add_parent(rg_obj)
+
+            srv_resource_id = server.get("id", "")
+            if srv_resource_id:
+                srv_objects[srv_resource_id] = srv_obj
 
             # List databases on this server
             databases = client.get_all(
@@ -149,5 +154,7 @@ def collect_sql_servers_and_databases(client: AzureClient, result,
     logger.info("Collected %d SQL servers, %d databases",
                 total_servers, total_dbs)
 
+    if srv_objects:
+        collect_metrics_for_objects(client, srv_objects, "sql_servers")
     if db_objects:
         collect_metrics_for_objects(client, db_objects, "sql_databases")

@@ -95,7 +95,7 @@ MONITOR_METRICS = {
     "load_balancers": [
         ("VipAvailability", "Availability|data_path_availability", "Average"),
         ("DipAvailability", "Availability|health_probe_status", "Average"),
-        ("Network|byte_count", "Network|byte_count", "Total"),
+        ("ByteCount", "Network|byte_count", "Total"),
         ("PacketCount", "Network|packet_count", "Total"),
     ],
     "sql_databases": [

@@ -157,6 +157,8 @@ def get_adapter_definition():
                      unit=DataSize.BYTE)
     vm.define_metric("Network|network_out", "Network Out",
                      unit=DataSize.BYTE)
+    vm.define_metric("CPU|capacity", "CPU Capacity Reference",
+                     unit=Ratio.PERCENT)
 
     # Disk
     disk = definition.define_object_type(OBJ_DISK, "Azure Disk")
