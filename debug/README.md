@@ -62,3 +62,34 @@ print(f'Service principal can see {len(subs)} subscriptions:')
 for s in subs:
     print(f'  {s[\"displayName\"]} ({s[\"subscriptionId\"]})')
 "
+
+
+
+
+500 Internal Server Error
+No result from adapter. Captured stdout:
+  2026-04-13 16:59:00,858 [INFO] __main__: Running adapter code with arguments: ['adapter_definition', '/tmp/tmprnwnr6zu/input_pipe', '/tmp/tmprnwnr6zu/output_pipe']
+2026-04-13 16:59:00,882 [ERROR] __main__: Error in adapter_definition: 'Unit' object has no attribute 'value'
+Traceback (most recent call last):
+  File "/home/aria-ops-adapter-user/src/app/app/adapter.py", line 748, in main
+    result = get_adapter_definition()
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/aria-ops-adapter-user/src/app/app/adapter.py", line 155, in get_adapter_definition
+    vm.define_metric("CPU|cpu_usage", "CPU Usage",
+  File "/usr/local/lib/python3.11/site-packages/aria/ops/definition/group.py", line 113, in define_metric
+    metric = MetricAttribute(
+             ^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/aria/ops/definition/attribute.py", line 98, in __init__
+    super().__init__(
+  File "/usr/local/lib/python3.11/site-packages/aria/ops/definition/attribute.py", line 45, in __init__
+    self.unit = unit.value.key if unit else None
+                ^^^^^^^^^^
+AttributeError: 'Unit' object has no attribute 'value'
+2026-04-13 16:59:00,883 [INFO] __main__: Timing Graph: 
+━━━━━━━━━┯━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Operation│Time    │t=0s                                                t=-1776099540.88s
+━━━━━━━━━┿━━━━━━━━┿━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━┷━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+adapterDefinition endpoint returned 500.
+Unable to build pak file
