@@ -66,64 +66,27 @@ for s in subs:
 
 
 
-500 Internal Server Error
-No result from adapter. Captured stdout:
-  2026-04-13 16:59:00,858 [INFO] __main__: Running adapter code with arguments: ['adapter_definition', '/tmp/tmprnwnr6zu/input_pipe', '/tmp/tmprnwnr6zu/output_pipe']
-2026-04-13 16:59:00,882 [ERROR] __main__: Error in adapter_definition: 'Unit' object has no attribute 'value'
-Traceback (most recent call last):
-  File "/home/aria-ops-adapter-user/src/app/app/adapter.py", line 748, in main
-    result = get_adapter_definition()
-             ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/aria-ops-adapter-user/src/app/app/adapter.py", line 155, in get_adapter_definition
-    vm.define_metric("CPU|cpu_usage", "CPU Usage",
-  File "/usr/local/lib/python3.11/site-packages/aria/ops/definition/group.py", line 113, in define_metric
-    metric = MetricAttribute(
-             ^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/site-packages/aria/ops/definition/attribute.py", line 98, in __init__
-    super().__init__(
-  File "/usr/local/lib/python3.11/site-packages/aria/ops/definition/attribute.py", line 45, in __init__
-    self.unit = unit.value.key if unit else None
-                ^^^^^^^^^^
-AttributeError: 'Unit' object has no attribute 'value'
-2026-04-13 16:59:00,883 [INFO] __main__: Timing Graph: 
-━━━━━━━━━┯━━━━━━━━┯━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Operation│Time    │t=0s                                                t=-1776099540.88s
-━━━━━━━━━┿━━━━━━━━┿━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-━━━━━━━━━┷━━━━━━━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+The adapter_definition code looks correct — all object types have proper keys. The "resource key=, resource args=[]" error is coming from the Aria Ops server during pak installation, not from the adapter code itself.
 
-adapterDefinition endpoint returned 500.
-Unable to build pak file
+This is likely a conflict with the existing v1.4.0 installation that's in a failed state. The clobber didn't fully clean up, so Aria Ops has stale/empty resource kind entries from the previous failed install attempt.
+
+Try this sequence on the Aria Ops node:
 
 
+# 1. Check current pak state
+curl -k -u admin "https://localhost/suite-api/api/solutions" | python3 -m json.tool | grep -A5 -i azure
 
-sudo docker images | grep azure
-mp-builder-Ip:5000/azuregovcloud-adapter                            <none>       f994e72787c2   2 days ago     281MB
-mp-builder-Ip:5000/azuregovcloud-adapter                            <none>       66f9a35890b1   3 days ago     281MB
-mp-builder-Ip:5000/azuregovcloud-adapter                            latest       9eb8cf6a0866   3 days ago     281MB
-mp-builder-Ip:5000/azuregovcloud-adapter                            <none>       63dd5869a726   3 days ago     281MB
-mp-builder-Ip:5000/azuregovcloud-adapter                            <none>       786e9f3b4ac2   3 days ago     281MB
-azuregovcloud-test                                                  1.0.0        ae3623788d7a   7 days ago     281MB
-mp-builder-Ip:5000/azuregovcloud-adapter                            <none>       ae3623788d7a   7 days ago     281MB
+# 2. Force uninstall the stuck pak via the API
+TOKEN=$(curl -k -s -X POST "https://localhost/suite-api/api/auth/token/acquire" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"YOUR_PASSWORD","authSource":"local"}' \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
 
+curl -k -X DELETE "https://localhost/suite-api/api/solutions/AzureGovCloud" \
+  -H "Authorization: vRealizeOpsToken $TOKEN"
 
+# 3. Restart CASA
+sudo systemctl restart vmware-casa
+Then wait a few minutes and do a fresh install of the v1.4.1 pak.
 
-Unexpected exception occurred while trying to build pak file
-[Errno 2] No such file or directory: '/opt/aria/Aria-MP-Builder/Azure/echo 0'
-  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_build.py", line 713, in main
-    pak_file = asyncio.run(
-               ^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/asyncio/runners.py", line 195, in run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/asyncio/runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "/opt/python312/lib/python3.12/site-packages/vmware_aria_operations_integration_sdk/mp_build.py", line 547, in build_pak_file
-    shutil.copy(
-  File "/opt/python312/lib/python3.12/shutil.py", line 435, in copy
-    copyfile(src, dst, follow_symlinks=follow_symlinks)
-  File "/opt/python312/lib/python3.12/shutil.py", line 260, in copyfile
-    with open(src, 'rb') as fsrc:
+Important: deleting the solution via the API removes the adapter definition but your collected object data should persist in the datastore. When you reinstall with the same adapter kind (AzureGovAdapter) and the same object identifiers, Aria Ops will reconnect to the existing objects.
