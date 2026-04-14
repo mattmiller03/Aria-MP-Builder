@@ -1,3 +1,6 @@
+<!-- markdownlint-disable -->
+
+
 # Debug Folder
 
 Use this folder for transferring logs and scratch files between machines.
@@ -91,53 +94,3 @@ Then wait a few minutes and do a fresh install of the v1.4.1 pak.
 
 Important: deleting the solution via the API removes the adapter definition but your collected object data should persist in the datastore. When you reinstall with the same adapter kind (AzureGovAdapter) and the same object identifiers, Aria Ops will reconnect to the existing objects.
 
-
-The VCSA patching process when vSAN is configured requires some specific steps to ensure cluster health is maintained throughout. Here's the proper method:
-Patching VCSA 8 with vSAN Configured
-Pre-Patch Checks
-Before anything else:
-
-Verify vSAN cluster health in Skyline Health — resolve any warnings/errors first
-Confirm all hosts are in a Connected state and not in maintenance mode
-Check vSAN resync status is 0% (no active resyncing)
-Take a VCSA file-based backup (critical — if VCSA lives on vSAN, this is your only real safety net)
-Note your current VCSA version and target patch level
-
-The Core Consideration with vSAN
-The VCSA itself may be running on the vSAN datastore, which creates a dependency loop during patching. vCenter needs to be online to manage vSAN, but patching takes vCenter offline temporarily. VMware handles this with vSAN ESA/OSA resiliency — the VMs keep running on the datastore even while vCenter is patched, since the vSAN data plane is independent of the management plane.
-This means the patch is generally safe to apply without putting hosts in maintenance mode, as long as your cluster has proper redundancy (FTT policy met).
-Patching Methods
-Method 1: VAMI (Recommended for most environments)
-
-Log into the VCSA VAMI at https://<vcsa-fqdn>:5480
-Go to Update → Settings — verify your update source (VMware repo or local depot)
-Click Check Updates
-Stage the update first (Stage Only) — this downloads and prepares without applying
-Once staged, click Stage and Install or Install if already staged
-Accept the EULA and confirm the reboot
-Monitor the update progress — VCSA will reboot automatically
-
-Method 2: Lifecycle Manager (vLCM) — If managing VCSA via LCM
-Available in vSphere 8 for appliance management; less common but centralizes patching alongside host baselines.
-Method 3: CLI (ISO/offline patch)
-bash# SSH into VCSA, enable bash shell
-shell
-
-# Stage and apply patch from depot or local ISO mount
-software-packages install --iso --acceptEulas
-Post-Patch Validation
-
-Confirm vCenter services are healthy via VAMI → Services
-Re-check vSAN Skyline Health — verify no new issues introduced
-Confirm all hosts reconnected and cluster is fully healthy
-Check vSAN resync status post-reboot
-Validate your vSAN policies are still intact on critical VMs
-
-Key Timing Notes
-
-The VCSA reboot during patching typically takes 15–30 minutes
-During that window, existing VMs on vSAN keep running — the data plane is unaffected
-Any vCenter-dependent operations (vMotion, DRS, new VM deploys) will be unavailable during the outage window
-Schedule during low-activity periods and communicate the management plane outage to stakeholders
-
-The biggest risk isn't the patch itself — it's going in with an unhealthy vSAN cluster or skipping the file-based backup. Always back up first.
