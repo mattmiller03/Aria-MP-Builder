@@ -13,13 +13,13 @@
   "vendor": "DLA",
   "pak_icon": "icon.png",
   "pak_validation_script": {
-    "script": "noop.sh"
+    "script": ""
   },
   "adapter_pre_script": {
-    "script": "noop.sh"
+    "script": ""
   },
   "adapter_post_script": {
-    "script": "noop.sh"
+    "script": ""
   },
   "adapters": [
     "adapter.zip"
