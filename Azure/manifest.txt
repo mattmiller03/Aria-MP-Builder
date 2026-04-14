@@ -2,7 +2,7 @@
   "display_name": "Azure Government Cloud",
   "name": "AzureGovCloud",
   "description": "Collects resource attributes and cost data from Azure Government Cloud. Monitors 18 resource types including VMs, Managed Disks, Dedicated Hosts (with hourly pricing and capacity tracking), NICs, VNets, Subnets, Storage Accounts, Load Balancers, Key Vaults, SQL Servers/Databases, App Services, Public IPs, ExpressRoute Circuits, Recovery Services Vaults, and Log Analytics Workspaces. Supports parent-child relationships across VM-to-Host and Disk-to-VM hierarchies.",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "vcops_minimum_version": "8.10.0",
   "disk_space_required": 500,
   "eula_file": "eula.txt",
