@@ -159,3 +159,30 @@ Then on Aria Ops UI:
 
 Administration > Repository > Add Pak
 Fresh install of the new .pak file
+
+
+
+The key finding: the suite-api's SOLUTION_INSTALL task goes to ERROR in 87 milliseconds with empty errorMessages. That's an instant rejection — the suite-api already has a stale adapter kind registered.
+
+We need the suite-api logs. Try these locations:
+
+
+sudo find /storage/log /usr/lib/vmware-vcops -name "*.log" 2>/dev/null | xargs grep -l "SOLUTION_INSTALL\|AzureGov" 2>/dev/null
+Or look specifically for the analytics web service logs:
+
+
+sudo ls /storage/log/vcops/log/
+sudo ls /usr/lib/vmware-vcops/user/log/
+Also — let's try to get the task detail directly:
+
+
+curl -k -u 'admin:YOUR_PASSWORD' \
+  "https://localhost/suite-api/api/tasks/d98d88ef-1daf-47b7-84f5-4763f85a42e7" \
+  -H "Accept: application/json"
+And check if the adapter kind is still registered even after uninstall:
+
+
+curl -k -u 'admin:YOUR_PASSWORD' \
+  "https://localhost/suite-api/api/adapterkinds" \
+  -H "Accept: application/json" 2>/dev/null | grep -i azure
+If it shows AzureGovAdapter still registered, that's the blocker. We'd need to delete the stale adapter kind before reinstalling.
