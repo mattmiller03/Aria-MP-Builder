@@ -20,7 +20,7 @@ debug/*
 !debug/README.md
 !debug/scrub.py
 !debug/fetch_pricing.py
-ErrorFile.txt
+!ErrorFile.txt
 
 # Python
 __pycache__/
