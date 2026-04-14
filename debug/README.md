@@ -236,3 +236,33 @@ Traceback (most recent call last):
   File "/usr/lib/vmware-vcopssuite/utilities/sliceConfiguration/bin/vcopsClusterManager.py", line 81, in initializeCluster
     raise Exception('Failed to initialize the cluster.')
 Exception: Failed to initialize the cluster.
+
+
+
+
+
+
+
+
+root@daisv0tp003 [ ~ ]# sudo systemctl status vmware-casa.service
+● vmware-casa.service - LSB: vRealize Operations Cluster and Slice Administration
+     Loaded: loaded (/usr/lib/vmware-casa/bin/vmware-casa.sh; enabled; preset: enabled)
+     Active: activating (start) since Tue 2026-04-14 19:34:52 UTC; 835ms ago
+       Docs: man:systemd-sysv-generator(8)
+    Process: 3640 ExecStartPre=/usr/lib/vmware-vcopssuite/utilities/bin/restore_check_instance_id.sh (code=exited, status=0/SUCCESS)
+  Cntrl PID: 3643 (vmware-casa.sh)
+      Tasks: 4
+     Memory: 1.6M
+        CPU: 87ms
+     CGroup: /system.slice/vmware-casa.service
+             ├─3643 /bin/bash /usr/lib/vmware-casa/bin/vmware-casa.sh start
+             ├─3649 /bin/sh /usr/lib/vmware-casa/casa-webapp/bin/init.d.sh start
+             ├─3652 /bin/sh /usr/share/tomcat/instance/bin/tomcat-instance-control.sh casa-webapp start
+             └─3671 sleep 2
+
+Apr 14 19:34:52 daisv0tp003.dev-test.dla.mil systemd[1]: Starting LSB: vRealize Operations Cluster and Sl…on...
+Apr 14 19:34:52 daisv0tp003.dev-test.dla.mil vmware-casa.sh[3649]: init.d.sh  admin
+Apr 14 19:34:52 daisv0tp003.dev-test.dla.mil vmware-casa.sh[3649]: starting tomcat instance
+Apr 14 19:34:52 daisv0tp003.dev-test.dla.mil vmware-casa.sh[3649]: su_tomcat /usr/lib/vmware-casa/casa-web…tart
+Apr 14 19:34:52 daisv0tp003.dev-test.dla.mil vmware-casa.sh[3670]: touch: cannot touch '/storage/log/vcops…tory
+Apr 14 19:34:52 daisv0tp003.dev-test.dla.mil vmware-casa.sh[3666]: /usr/share/tomcat/bin/catalina.sh: line…tory
