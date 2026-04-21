@@ -1,0 +1,23 @@
+# Force LF line endings for files that must run on Linux (Photon OS / Cloud Proxy).
+# Without this, Windows checkouts with core.autocrlf=true ship CRLF to the server
+# and bash/python choke on the carriage returns.
+
+*.sh       text eol=lf
+*.py       text eol=lf
+*.cfg      text eol=lf
+Dockerfile text eol=lf
+manifest.txt text eol=lf
+commands.cfg text eol=lf
+*.json     text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+
+# Binary files — never touch
+*.pak      binary
+*.zip      binary
+*.tar      binary
+*.jar      binary
+*.png      binary
+*.jpg      binary
+*.ico      binary
+*.whl      binary
