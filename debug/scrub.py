@@ -29,10 +29,11 @@ REPLACEMENTS = {
     "daisv0tp003": "ariaops-node",
     "daisv0tp004": "cloud-proxy",
 
-    # IPs — add your actual IPs here
+    # IPs — exact match, or use x / * as octet wildcards
     "214.73.76.134": "MP-BUILDER-IP",
     "214.73.76.149": "CLOUD-PROXY-IP",
-    # "10.x.x.x": "INTERNAL-IP",
+    # "192.168.x.x": "INTERNAL-IP",   # matches 192.168.1.5, 192.168.200.17, etc.
+    # "10.*.*.*":    "RFC1918-IP",    # * and x both work as wildcards
 
     # Usernames
     "vropsssh": "svcaccount",
@@ -44,9 +45,29 @@ REPLACEMENTS = {
 }
 
 
+# Detects patterns like 192.168.x.x, 10.*.*.*, 172.16.x.100 — four octets where each
+# octet is digits, 'x', 'X', or '*'. Anything else is treated as a literal string.
+_IP_WILDCARD_RE = re.compile(r'[\dxX*]{1,3}(\.[\dxX*]{1,3}){3}')
+
+
+def _compile_if_ip_pattern(key):
+    """Return a compiled regex if key looks like an IP wildcard pattern, else None."""
+    if not _IP_WILDCARD_RE.fullmatch(key):
+        return None
+    pat = re.escape(key)                       # escapes dots; x/X pass through; * → \*
+    pat = pat.replace('x', r'\d{1,3}')
+    pat = pat.replace('X', r'\d{1,3}')
+    pat = pat.replace(r'\*', r'\d{1,3}')
+    return re.compile(r'\b' + pat + r'\b')
+
+
 def scrub(text):
     for sensitive, placeholder in REPLACEMENTS.items():
-        text = text.replace(sensitive, placeholder)
+        regex = _compile_if_ip_pattern(sensitive)
+        if regex is not None:
+            text = regex.sub(placeholder, text)
+        else:
+            text = text.replace(sensitive, placeholder)
 
     # Also catch any IP addresses not in the list (x.x.x.x pattern)
     # Uncomment the next line to replace ALL IPs:
@@ -94,7 +115,7 @@ def main():
         args = args[1:]
 
     if not args:
-        print(__doc__.strip())
+        print((__doc__ or "Usage: python scrub.py <input> [output]").strip())
         sys.exit(1)
 
     input_path = args[0]
