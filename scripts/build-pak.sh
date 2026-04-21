@@ -26,7 +26,7 @@ SIGN=false
 TEST_ONLY=false
 
 # Read adapter kind from manifest.txt so path lookups stay in sync with pak name.
-ADAPTER_KIND="$(python3 -c "import json,sys; print(json.load(open(sys.argv[1]))['adapter_kinds'][0])" "${ADAPTER_DIR}/manifest.txt")"
+ADAPTER_KIND=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["adapter_kinds"][0])' "${ADAPTER_DIR}/manifest.txt")
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
