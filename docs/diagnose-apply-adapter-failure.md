@@ -195,9 +195,36 @@ head -3 "$DESCRIBE"
 
 
 
+Summary of everything the patch script now does, in order:
 
-Results:      
+Attribute overrides on ResourceKinds (AZURE_WORLD, AZURE_RESOURCE_GROUP, AZURE_REGION, etc.) — strips existing type="1" before inserting our values (fixes duplicate-attribute parse error from round 1)
+PowerState injection on AZURE_VIRTUAL_MACHINE
+Identifier attribute overrides — flips ACCOUNT_TYPE.identType 1→2 (fixes upgrade-key mismatch)
+Append SERVICES — 85 native service enum values
+Append REGIONS — 49 native region enum values
+Root element — adds xmlns:xsi + xsi:schemaLocation
+Rename MicrosoftAzureAdapter_adapter_instance → MicrosoftAzureAdapter Instance + monitoringInterval="10"
+On the MP Builder server:
 
-xmllint --noout --schema "$SCHEMA" "$DESCRIBE" 2>&1 | head -80
-/tmp/pak-inspect/MicrosoftAzureAdapter/conf/describeSchema.xsd:788: element assert: Schemas parser error : Element '{http://www.w3.org/2001/XMLSchema}complexType': The content is not valid. Expected is (annotation?, (simpleContent | complexContent | ((group | all | choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?)))).
-WXS schema /tmp/pak-inspect/MicrosoftAzureAdapter/conf/describeSchema.xsd failed to compile
+
+cd /opt/aria/Aria-MP-Builder
+git pull origin main
+bash scripts/build-pak.sh
+
+# Verify all patches took effect
+cd /tmp && rm -rf pak-inspect && mkdir pak-inspect && cd pak-inspect
+PAK=$(ls -t /opt/aria/Aria-MP-Builder/Azure-Native-Build/build/*.pak | head -1)
+unzip -q "$PAK" && unzip -q adapter.zip
+
+echo "=== Root AdapterKind ==="
+head -3 MicrosoftAzureAdapter/conf/describe.xml
+
+echo "=== Adapter instance ResourceKind ==="
+grep 'ResourceKind key="MicrosoftAzureAdapter' MicrosoftAzureAdapter/conf/describe.xml
+
+echo "=== Identifier list for adapter-instance kind ==="
+grep -A0 'ResourceIdentifier.*key="\(ACCOUNT_TYPE\|AZURE_SUBSCRIPTION_ID\|AZURE_TENANT_ID\|SERVICES\|REGIONS\)"' \
+     MicrosoftAzureAdapter/conf/describe.xml | head -10
+Expected: root has xsi:schemaLocation, adapter instance is MicrosoftAzureAdapter Instance, and you see 5 identifiers (ACCOUNT_TYPE with identType=2, SERVICES, REGIONS, SUBSCRIPTION_ID, TENANT_ID).
+
+Then upload to Aria Ops and retry the upgrade. If this combo doesn't get past APPLY_ADAPTER, there's only a handful of things left that could be blocking — and we'll know the shape of the remaining issue from whatever state the installer ends in.
