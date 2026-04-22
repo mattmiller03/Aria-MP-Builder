@@ -27,6 +27,8 @@ debug/*
 !debug/fetch_pricing.py
 !ErrorFile.txt
 !*.log
+!*.xml
+!*.xsd
 
 # Python
 __pycache__/
