@@ -186,29 +186,36 @@ def get_adapter_definition():
     # -- Virtual Machine --
     vm = definition.define_object_type(OBJ_VIRTUAL_MACHINE, "Azure Virtual Machine")
     _add_standard_identifiers(vm)
-    # CPU group
-    vm.define_metric("CPU|CPU_USAGE", "CPU Usage", unit=PERCENT, is_key_attribute=True)
-    vm.define_metric("CPU|CPU_CRED_REMAINING", "CPU Credits Remaining")
-    vm.define_metric("CPU|CPU_CRED_CONSUMED", "CPU Credits Consumed")
-    # STORAGE group
-    vm.define_metric("STORAGE|DATA_WRITE_DISK", "Disk Write Bytes", unit=BYTE)
-    vm.define_metric("STORAGE|DATA_READ_DISK", "Disk Read Bytes", unit=BYTE)
-    vm.define_metric("STORAGE|DISK_READ_OPERATION", "Disk Read Operations")
-    vm.define_metric("STORAGE|DISK_WRITE_OPERATION", "Disk Write Operations")
-    # NETWORK group
-    vm.define_metric("NETWORK|NETWORK_IN", "Network In", unit=BYTE)
-    vm.define_metric("NETWORK|NETWORK_OUT", "Network Out", unit=BYTE)
-    # MEMORY group (custom — requires Azure Monitor Agent on VM)
-    vm.define_metric("MEMORY|AVAILABLE_MEMORY_BYTES", "Available Memory Bytes", unit=BYTE)
-    # general group
-    vm.define_string_property("general|FQDN", "FQDN")
-    vm.define_metric("general|running", "Running")
-    # summary group
-    vm.define_string_property("summary|OS_TYPE", "OS Type")
-    vm.define_string_property("summary|OS_VHD_URI", "OS VHD URI")
-    vm.define_string_property("summary|SIZING_TIER", "VM Size")
-    vm.define_string_property("summary|availabilityZones", "Availability Zones")
-    vm.define_string_property("summary|runtime|powerState", "Power State")
+    # BISECT ROUND 9: strip all metrics + properties from VM. Only identifiers
+    # and service_descriptors remain. If install succeeds, the problem is in
+    # the metric/property definitions below (pipe-separated keys like
+    # "CPU|CPU_USAGE" or "summary|runtime|powerState" are prime suspects).
+    # If install still fails with this stripped VM, the base VM kind itself
+    # is the issue — unlikely but possible.
+    if False:
+        # CPU group
+        vm.define_metric("CPU|CPU_USAGE", "CPU Usage", unit=PERCENT, is_key_attribute=True)
+        vm.define_metric("CPU|CPU_CRED_REMAINING", "CPU Credits Remaining")
+        vm.define_metric("CPU|CPU_CRED_CONSUMED", "CPU Credits Consumed")
+        # STORAGE group
+        vm.define_metric("STORAGE|DATA_WRITE_DISK", "Disk Write Bytes", unit=BYTE)
+        vm.define_metric("STORAGE|DATA_READ_DISK", "Disk Read Bytes", unit=BYTE)
+        vm.define_metric("STORAGE|DISK_READ_OPERATION", "Disk Read Operations")
+        vm.define_metric("STORAGE|DISK_WRITE_OPERATION", "Disk Write Operations")
+        # NETWORK group
+        vm.define_metric("NETWORK|NETWORK_IN", "Network In", unit=BYTE)
+        vm.define_metric("NETWORK|NETWORK_OUT", "Network Out", unit=BYTE)
+        # MEMORY group (custom — requires Azure Monitor Agent on VM)
+        vm.define_metric("MEMORY|AVAILABLE_MEMORY_BYTES", "Available Memory Bytes", unit=BYTE)
+        # general group
+        vm.define_string_property("general|FQDN", "FQDN")
+        vm.define_metric("general|running", "Running")
+        # summary group
+        vm.define_string_property("summary|OS_TYPE", "OS Type")
+        vm.define_string_property("summary|OS_VHD_URI", "OS VHD URI")
+        vm.define_string_property("summary|SIZING_TIER", "VM Size")
+        vm.define_string_property("summary|availabilityZones", "Availability Zones")
+        vm.define_string_property("summary|runtime|powerState", "Power State")
     _add_service_descriptors(vm)
 
     # BISECT ROUND 8: azure_subscription + RESOURCE_GROUP + VIRTUAL_MACHINE.
