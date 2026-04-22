@@ -110,10 +110,185 @@ CHILD_PATCHES = [
 
 
 # ---------------------------------------------------------------------------
+# ResourceIdentifier blocks to APPEND to the adapter-instance ResourceKind.
+# These replicate identifiers the native pak has that our SDK doesn't emit.
+# They're purely for upgrade compatibility — Aria Ops's existing adapter
+# instances have values for SERVICES/REGIONS in the DB, and dropping those
+# identifiers from the schema can make the upgrade reject.
+#
+# Blocks are idempotent: inject happens only if the identifier key isn't
+# already present in the adapter-instance kind.
+# ---------------------------------------------------------------------------
+
+SERVICES_BLOCK = """
+      <ResourceIdentifier dispOrder="2" key="SERVICES" length="" nameKey="870" required="false" type="string" identType="2" enum="true" enumMultiSelect="true" advanced="false">
+         <enumUnselected displayName="All" nameKey="865"/>
+         <enum value="virtualMachines" nameKey="871" />
+         <enum value="sqlServers" nameKey="872" />
+         <enum value="cosmosDb" nameKey="873" />
+         <enum value="loadBalancer" nameKey="874" />
+         <enum value="networkInterfaces" nameKey="875" />
+         <enum value="postgres" nameKey="876" />
+         <enum value="mysql" nameKey="877" />
+         <enum value="kubernetes" nameKey="878" />
+         <enum value="vmScaleSets" nameKey="879" />
+         <enum value="virtualNetwork" nameKey="880" />
+         <enum value="vpnGateway" nameKey="881" />
+         <enum value="appGateway" nameKey="882" />
+         <enum value="webApps" nameKey="883" />
+         <enum value="diskStorage" nameKey="884" />
+         <enum value="storageAccounts" nameKey="886" />
+         <enum value="serviceBus" nameKey="885" />
+         <enum value="dataLakeAnalytics" nameKey="890" />
+         <enum value="synapseAnalyticsWorkspace" nameKey="891" />
+         <enum value="synapseAnalyticsSQLPool" nameKey="892" />
+         <enum value="synapseAnalyticsBigDataPool" nameKey="893" />
+         <enum value="hdInsight" nameKey="894" />
+         <enum value="kustoClusters" nameKey="895" />
+         <enum value="dataFactory" nameKey="896" />
+         <enum value="kustoDatabases" nameKey="897" />
+         <enum value="purviewAccounts" nameKey="2037" />
+         <enum value="botServices" nameKey="2038" />
+         <enum value="searchServices" nameKey="2039" />
+         <enum value="analysisServices" nameKey="2040" />
+         <enum value="cognitiveServicesAccounts" nameKey="2041" />
+         <enum value="powerBIEmbedded" nameKey="2042" />
+         <enum value="machineLearning" nameKey="2043" />
+         <enum value="streamAnalyticsJobs" nameKey="2045" />
+         <enum value="streamAnalyticsClusters" nameKey="2046" />
+         <enum value="dataBox" nameKey="2047" />
+         <enum value="digitalTwins" nameKey="2048" />
+         <enum value="iotCentral" nameKey="2049" />
+         <enum value="apiManagement" nameKey="2050" />
+         <enum value="spatialAnchors" nameKey="2052" />
+         <enum value="ddosProtectionPlan" nameKey="2053" />
+         <enum value="iotHub" nameKey="2054" />
+         <enum value="automation" nameKey="2055" />
+         <enum value="timeSeriesInsights" nameKey="2056" />
+         <enum value="eventGridDomain" nameKey="2057" />
+         <enum value="eventGridTopic" nameKey="2058" />
+         <enum value="eventGridSubscription" nameKey="2059" />
+         <enum value="publicIpAddresses" nameKey="2200" />
+         <enum value="functionApp" nameKey="2201" />
+         <enum value="networkWatchers" nameKey="2202" />
+         <enum value="cacheRedis" nameKey="2203" />
+         <enum value="sqlManagedInstances" nameKey="2204" />
+         <enum value="mariaDbServer" nameKey="2205" />
+         <enum value="computeDomains" nameKey="2206" />
+         <enum value="batchAccount" nameKey="2207" />
+         <enum value="computeHostGroups" nameKey="2208" />
+         <enum value="containerGroups" nameKey="2209" />
+         <enum value="containerRegisteries" nameKey="2210" />
+         <enum value="dataLakeStore" nameKey="2211" />
+         <enum value="appConfiguration" nameKey="2212" />
+         <enum value="openshiftClusters" nameKey="2213" />
+         <enum value="routeTable" nameKey="2214" />
+         <enum value="dnsZones" nameKey="2215" />
+         <enum value="privateDnsZones" nameKey="2216" />
+         <enum value="expressRouteCirtuits" nameKey="2217" />
+         <enum value="trafficManagerProfiles" nameKey="2218" />
+         <enum value="singnalrServices" nameKey="2219" />
+         <enum value="firewalls" nameKey="2220" />
+         <enum value="frontDoors" nameKey="2221" />
+         <enum value="cdnProfile" nameKey="2222" />
+         <enum value="cdnProfileEndpoints" nameKey="2223" />
+         <enum value="virtualWan" nameKey="2224" />
+         <enum value="keyVaults" nameKey="2225" />
+         <enum value="natAppAccount" nameKey="2226" />
+         <enum value="natAppAccountCapacityPools" nameKey="2227" />
+         <enum value="natAppAccountCapacityPoolVolumn" nameKey="2228" />
+         <enum value="mediaServices" nameKey="2229" />
+         <enum value="mediaServicesLiveEvents" nameKey="2230" />
+         <enum value="mediaServicesStreamingGep" nameKey="2231" />
+         <enum value="notificationHubs" nameKey="2232" />
+         <enum value="notificationHubsNamespaces" nameKey="2233" />
+         <enum value="eventHubsNamespaces" nameKey="2234" />
+         <enum value="networkSecurityGroup" nameKey="2243" />
+         <enum value="appServicePlan" nameKey="2244" />
+         <enum value="availabilitysets" nameKey="2245" />
+         <enum value="proximityPlacementGroups" nameKey="2246" />
+      </ResourceIdentifier>"""
+
+REGIONS_BLOCK = """
+      <ResourceIdentifier dispOrder="3" key="REGIONS" length="" nameKey="802" required="false" type="string" identType="2" enum="true" enumMultiSelect="true" advanced="false">
+         <enumUnselected displayName="All" nameKey="866"/>
+         <enum value="westus" nameKey="803" />
+         <enum value="westus2" nameKey="804" />
+         <enum value="centralus" nameKey="805" />
+         <enum value="eastus" nameKey="806" />
+         <enum value="eastus2" nameKey="807" />
+         <enum value="northcentralus" nameKey="808" />
+         <enum value="southcentralus" nameKey="809" />
+         <enum value="westcentralus" nameKey="810" />
+         <enum value="canadacentral" nameKey="811" />
+         <enum value="canadaeast" nameKey="812" />
+         <enum value="brazilsouth" nameKey="813" />
+         <enum value="northeurope" nameKey="814" />
+         <enum value="westeurope" nameKey="815" />
+         <enum value="uksouth" nameKey="816" />
+         <enum value="ukwest" nameKey="817" />
+         <enum value="francecentral" nameKey="818" />
+         <enum value="francesouth" nameKey="819" />
+         <enum value="eastasia" nameKey="820" />
+         <enum value="southeastasia" nameKey="821" />
+         <enum value="japaneast" nameKey="822" />
+         <enum value="japanwest" nameKey="823" />
+         <enum value="australiaeast" nameKey="824" />
+         <enum value="australiasoutheast" nameKey="825" />
+         <enum value="australiacentral" nameKey="826" />
+         <enum value="australiacentral2" nameKey="827" />
+         <enum value="centralindia" nameKey="828" />
+         <enum value="southindia" nameKey="829" />
+         <enum value="westindia" nameKey="830" />
+         <enum value="koreacentral" nameKey="831" />
+         <enum value="koreasouth" nameKey="832" />
+         <enum value="southafricanorth" nameKey="833" />
+         <enum value="germanywestcentral" nameKey="834" />
+         <enum value="norwayeast" nameKey="835" />
+         <enum value="switzerlandnorth" nameKey="836" />
+         <enum value="uaenorth" nameKey="837" />
+         <enum value="eastus2euap" nameKey="858" />
+         <enum value="southafricawest" nameKey="859" />
+         <enum value="germanynorth" nameKey="860" />
+         <enum value="norwaywest" nameKey="861" />
+         <enum value="switzerlandwest" nameKey="862" />
+         <enum value="uaecentral" nameKey="863" />
+         <enum value="brazilsoutheast" nameKey="864" />
+         <enum value="westus3" nameKey="867" />
+         <enum value="southcentralindia" nameKey="868" />
+         <enum value="swedencentral" nameKey="869" />
+         <enum value="jioindiawest" nameKey="901" />
+         <enum value="jioindiacentral" nameKey="902" />
+         <enum value="swedensouth" nameKey="903" />
+         <enum value="centraluseuap" nameKey="904" />
+      </ResourceIdentifier>"""
+
+# List of (identifier_key, block) pairs to append to the adapter-instance kind.
+# Uses the SDK-emitted adapter kind name (pre-rename).
+ADAPTER_INSTANCE_APPEND = [
+    ("SERVICES", SERVICES_BLOCK),
+    ("REGIONS", REGIONS_BLOCK),
+]
+
+# The adapter-instance ResourceKind key at the time these appends run
+# (before rename). Keep in sync with the first key in RENAME_KINDS.
+ADAPTER_INSTANCE_KIND = "MicrosoftAzureAdapter_adapter_instance"
+
+# Attributes to inject onto the root <AdapterKind> element. Matches native pak.
+ROOT_ATTRS = {
+    "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+    "xsi:schemaLocation": "http://schemas.vmware.com/vcops/schema describeSchema.xsd",
+}
+
+
+# ---------------------------------------------------------------------------
 # Core patching helpers
 # ---------------------------------------------------------------------------
 
-_ATTR_RE = re.compile(r'(\w+)="([^"]*)"')
+# Matches XML attributes including namespace-prefixed ones (e.g., xmlns:xsi).
+# Without the colon, we'd mis-parse xmlns:xsi="..." as xsi="..." and break
+# idempotency on root-element patches.
+_ATTR_RE = re.compile(r'([\w:]+)="([^"]*)"')
 
 
 def _apply_attr_patch(content: str, kind: str, new_attrs: dict) -> tuple[str, int]:
@@ -220,6 +395,66 @@ def _apply_identifier_attr_patch(content: str, ident_key: str, new_attrs: dict) 
     return new_content, count
 
 
+def _append_identifier_block(content: str, parent_kind: str, ident_key: str, block: str) -> tuple[str, int]:
+    """Insert `block` just before the closing `</ResourceKind>` of the named
+    kind. Idempotent: skipped if a ResourceIdentifier with key=ident_key
+    already lives inside that ResourceKind.
+    """
+    open_re = re.compile(
+        r'(<ResourceKind\s+key="' + re.escape(parent_kind) + r'"[^>]*>)'
+    )
+    match = open_re.search(content)
+    if not match:
+        return content, 0
+
+    open_end = match.end()
+    close_start = content.find("</ResourceKind>", open_end)
+    if close_start == -1:
+        return content, 0
+
+    body = content[open_end:close_start]
+    if f'key="{ident_key}"' in body:
+        return content, 0  # already present
+
+    injected = content[:close_start] + block + "\n   " + content[close_start:]
+    return injected, 1
+
+
+def _patch_root_attrs(content: str, new_attrs: dict) -> tuple[str, int]:
+    """Inject/override attributes on the root <AdapterKind ...> opening tag."""
+    pattern = re.compile(r'(<AdapterKind\b)([^>]*?)(>)')
+    match = pattern.search(content)
+    if not match:
+        return content, 0
+
+    head = match.group(1)   # <AdapterKind
+    rest = match.group(2)   # existing attrs
+    close = match.group(3)  # >
+
+    kept = []
+    for attr_match in _ATTR_RE.finditer(rest):
+        name = attr_match.group(1)
+        if name in new_attrs:
+            continue
+        kept.append(attr_match.group(0))
+
+    our_attrs = " ".join(f'{k}="{v}"' for k, v in new_attrs.items())
+    kept_attrs = " ".join(kept)
+
+    parts = [head]
+    if kept_attrs:
+        parts.append(" " + kept_attrs)
+    if our_attrs:
+        parts.append(" " + our_attrs)
+    parts.append(close)
+    new_tag = "".join(parts)
+
+    # Did the root tag actually change? (skip no-op writes for idempotency)
+    if new_tag == match.group(0):
+        return content, 0
+    return content[:match.start()] + new_tag + content[match.end():], 1
+
+
 def _rename_kind(content: str, old_key: str, new_key: str) -> tuple[str, int]:
     """Rename every `<ResourceKind key="old_key">` occurrence to new_key.
     Does NOT touch other XML (the adapter instance kind doesn't appear as a
@@ -269,7 +504,28 @@ def patch_describe_xml(filepath: str) -> int:
         else:
             print(f"  [SKIP]    identifier {ident_key}: not found")
 
-    # 4. ResourceKind renames (applied last so attribute patches can target
+    # 4. Append missing ResourceIdentifier blocks (SERVICES, REGIONS) to the
+    # adapter-instance ResourceKind. Must run BEFORE the rename step below
+    # because we target the SDK's original key.
+    for ident_key, block in ADAPTER_INSTANCE_APPEND:
+        content, count = _append_identifier_block(
+            content, ADAPTER_INSTANCE_KIND, ident_key, block
+        )
+        if count > 0:
+            applied += count
+            print(f"  [PATCHED] append ResourceIdentifier {ident_key} to adapter-instance kind")
+        else:
+            print(f"  [SKIP]    append {ident_key} (already present or parent kind missing)")
+
+    # 5. Root <AdapterKind> attribute injection (xsi:schemaLocation, xmlns:xsi)
+    content, count = _patch_root_attrs(content, ROOT_ATTRS)
+    if count > 0:
+        applied += count
+        print(f"  [PATCHED] root AdapterKind: {', '.join(ROOT_ATTRS)}")
+    else:
+        print(f"  [SKIP]    root AdapterKind attrs (already set)")
+
+    # 6. ResourceKind renames (applied last so attribute patches can target
     # the SDK's original key). Each rename is idempotent via check before sub.
     for old_key, new_key in RENAME_KINDS.items():
         content, count = _rename_kind(content, old_key, new_key)
