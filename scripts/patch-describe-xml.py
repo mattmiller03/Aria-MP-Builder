@@ -5,6 +5,11 @@ The Python SDK's ObjectType class doesn't support all the XML attributes
 needed for Aria Ops UI integration (type, subType, worldObjectName, showTag).
 This script patches the generated describe.xml after mp-build to add them.
 
+Each attribute patch REPLACES any existing same-named attribute rather than
+appending, so we don't end up with duplicate `type="..."` attributes (which
+produce malformed XML and cause Suite-API to reject the pak synchronously
+during APPLY_ADAPTER).
+
 Usage:
     python patch-describe-xml.py [path/to/describe.xml]
 
@@ -21,78 +26,154 @@ import os
 
 
 # ---------------------------------------------------------------------------
-# Patches to apply
+# Attribute patches — per-ResourceKind attribute overrides
+#
+# Each entry maps a ResourceKind `key` to a dict of attributes that should be
+# present (overwriting any existing attribute of the same name emitted by the
+# SDK).
 # ---------------------------------------------------------------------------
 
-PATCHES = [
-    # AZURE_WORLD: add type="8" subType="6" worldObjectName="Azure World" showTag="false"
-    {
-        "find": r'<ResourceKind key="AZURE_WORLD"([^>]*)>',
-        "replace": '<ResourceKind key="AZURE_WORLD" showTag="false" type="8" subType="6" worldObjectName="Azure World"\\1>',
-        "description": "AZURE_WORLD: set as world object (Home Overview)",
+ATTR_PATCHES = {
+    "AZURE_WORLD": {
+        "showTag": "false",
+        "type": "8",
+        "subType": "6",
+        "worldObjectName": "Azure World",
     },
-
-    # AZURE_REGION: add type="4" showTag="false"
-    {
-        "find": r'<ResourceKind key="AZURE_REGION"([^>]*)>',
-        "replace": '<ResourceKind key="AZURE_REGION" showTag="false"\\1>',
-        "description": "AZURE_REGION: hide from tag navigation",
+    "AZURE_REGION": {
+        "showTag": "false",
     },
-
-    # AZURE_REGION_PER_SUB: add type="4" showTag="false"
-    {
-        "find": r'<ResourceKind key="AZURE_REGION_PER_SUB"([^>]*)>',
-        "replace": '<ResourceKind key="AZURE_REGION_PER_SUB" showTag="false"\\1>',
-        "description": "AZURE_REGION_PER_SUB: hide from tag navigation",
+    "AZURE_REGION_PER_SUB": {
+        "showTag": "false",
     },
-
-    # AZURE_RESOURCE_GROUP: set type="8" (container, not leaf)
-    {
-        "find": r'<ResourceKind key="AZURE_RESOURCE_GROUP"([^>]*)>',
-        "replace": '<ResourceKind key="AZURE_RESOURCE_GROUP" type="8"\\1>',
-        "description": "AZURE_RESOURCE_GROUP: set as container type",
+    "AZURE_RESOURCE_GROUP": {
+        "type": "8",
     },
+    "AZURE_SERVICES_FROM_XML": {
+        "showTag": "false",
+    },
+}
 
-    # AZURE_VIRTUAL_MACHINE: add PowerState alias
+# ---------------------------------------------------------------------------
+# Child-element patches — injected as children of the named ResourceKind.
+# These are added once per kind; re-runs are a no-op because we check for the
+# child's presence first.
+# ---------------------------------------------------------------------------
+
+POWER_STATE_BLOCK = """
+         <PowerState alias="summary|runtime|powerState">
+            <PowerStateValue key="ON" value="Powered On" />
+            <PowerStateValue key="OFF" value="Powered Off" />
+            <PowerStateValue key="UNKNOWN" value="Unknown" />
+         </PowerState>"""
+
+CHILD_PATCHES = [
     {
-        "find": r'(<ResourceKind key="AZURE_VIRTUAL_MACHINE"[^>]*>)',
-        "replace": '\\1\n         <PowerState alias="summary|runtime|powerState">\n            <PowerStateValue key="ON" value="Powered On" />\n            <PowerStateValue key="OFF" value="Powered Off" />\n            <PowerStateValue key="UNKNOWN" value="Unknown" />\n         </PowerState>',
+        "kind": "AZURE_VIRTUAL_MACHINE",
+        "child_tag": "PowerState",
+        "block": POWER_STATE_BLOCK,
         "description": "AZURE_VIRTUAL_MACHINE: add PowerState for health integration",
-    },
-
-    # AZURE_SERVICES_FROM_XML: add showTag="false"
-    {
-        "find": r'<ResourceKind key="AZURE_SERVICES_FROM_XML"([^>]*)>',
-        "replace": '<ResourceKind key="AZURE_SERVICES_FROM_XML" showTag="false"\\1>',
-        "description": "AZURE_SERVICES_FROM_XML: hide from tag navigation",
     },
 ]
 
 
-def patch_describe_xml(filepath: str) -> int:
-    """Apply patches to the describe.xml file.
+# ---------------------------------------------------------------------------
+# Core patching helpers
+# ---------------------------------------------------------------------------
 
-    Returns:
-        Number of patches applied.
+_ATTR_RE = re.compile(r'(\w+)="([^"]*)"')
+
+
+def _apply_attr_patch(content: str, kind: str, new_attrs: dict) -> tuple[str, int]:
+    """Replace or add attributes on `<ResourceKind key="KIND" ...>` opening tag.
+
+    Removes any SDK-emitted attribute whose name matches one of new_attrs.keys(),
+    then prepends the new attributes right after the `key="..."` attribute.
     """
+    pattern = re.compile(
+        r'(<ResourceKind\s+key="' + re.escape(kind) + r'")([^>]*?)(/?>)'
+    )
+
+    def substitute(match):
+        head = match.group(1)           # <ResourceKind key="KIND"
+        rest = match.group(2)           # everything else before >
+        close = match.group(3)          # > or />
+
+        # Parse existing attributes and strip the ones we're overriding.
+        preserved = []
+        for attr_match in _ATTR_RE.finditer(rest):
+            name = attr_match.group(1)
+            if name in new_attrs:
+                continue
+            preserved.append(attr_match.group(0))
+
+        # Build the new attribute block: our overrides first (in insertion
+        # order), then whatever the SDK emitted that we didn't override.
+        our_attrs = " ".join(f'{k}="{v}"' for k, v in new_attrs.items())
+        preserved_attrs = " ".join(preserved)
+
+        parts = [head]
+        if our_attrs:
+            parts.append(" " + our_attrs)
+        if preserved_attrs:
+            parts.append(" " + preserved_attrs)
+        parts.append(close)
+        return "".join(parts)
+
+    new_content, count = pattern.subn(substitute, content)
+    return new_content, count
+
+
+def _apply_child_patch(content: str, kind: str, child_tag: str, block: str) -> tuple[str, int]:
+    """Insert `block` as the first child of `<ResourceKind key="KIND">`, unless
+    a child with `child_tag` is already present inside it."""
+    open_re = re.compile(
+        r'(<ResourceKind\s+key="' + re.escape(kind) + r'"[^>]*>)'
+    )
+    match = open_re.search(content)
+    if not match:
+        return content, 0
+
+    open_end = match.end()
+    # Look for the matching </ResourceKind> to get the body
+    close_start = content.find("</ResourceKind>", open_end)
+    if close_start == -1:
+        return content, 0
+
+    body = content[open_end:close_start]
+    if f"<{child_tag}" in body:
+        # Already present — idempotent, skip
+        return content, 0
+
+    injected = content[:open_end] + block + content[open_end:]
+    return injected, 1
+
+
+def patch_describe_xml(filepath: str) -> int:
     with open(filepath, "r", encoding="utf-8") as f:
         content = f.read()
 
     original = content
     applied = 0
 
-    for patch in PATCHES:
-        pattern = patch["find"]
-        replacement = patch["replace"]
-        desc = patch["description"]
-
-        new_content, count = re.subn(pattern, replacement, content)
+    for kind, attrs in ATTR_PATCHES.items():
+        content, count = _apply_attr_patch(content, kind, attrs)
+        attr_preview = ", ".join(f"{k}={v}" for k, v in attrs.items())
         if count > 0:
-            content = new_content
             applied += count
-            print(f"  [PATCHED] {desc}")
+            print(f"  [PATCHED] {kind}: set {attr_preview}")
         else:
-            print(f"  [SKIP]    {desc} (pattern not found)")
+            print(f"  [SKIP]    {kind}: ResourceKind not found")
+
+    for patch in CHILD_PATCHES:
+        content, count = _apply_child_patch(
+            content, patch["kind"], patch["child_tag"], patch["block"]
+        )
+        if count > 0:
+            applied += count
+            print(f"  [PATCHED] {patch['description']}")
+        else:
+            print(f"  [SKIP]    {patch['description']} (already present or ResourceKind missing)")
 
     if content != original:
         with open(filepath, "w", encoding="utf-8") as f:
@@ -105,11 +186,9 @@ def patch_describe_xml(filepath: str) -> int:
 
 
 def main():
-    # Find describe.xml
     if len(sys.argv) > 1:
         filepath = sys.argv[1]
     else:
-        # Default: look relative to this script's location
         script_dir = os.path.dirname(os.path.abspath(__file__))
         candidates = [
             os.path.join(script_dir, "..", "Azure-Native-Build", "conf", "describe.xml"),
@@ -121,7 +200,6 @@ def main():
             if os.path.exists(c):
                 filepath = c
                 break
-
         if filepath is None:
             print("Could not find describe.xml. Pass the path as an argument:")
             print(f"  python {sys.argv[0]} path/to/describe.xml")
