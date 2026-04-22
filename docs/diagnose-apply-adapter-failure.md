@@ -37,7 +37,7 @@ On Photon, `libxml2` package provides `xmllint`. On Ubuntu/Debian the package is
 ## Step 3 — Extract the pak into a scratch directory
 
 ```bash
-PAK=$(ls -t /opt/aria/Aria-MP-Builder/Azure-Native-Build/build/*.pak | head -1)
+PAK=$(ls -t /opt/aria/Aria-MP-Builder-1.x/*.pak | head -1)
 echo "Using pak: $PAK"
 
 rm -rf /tmp/pak-inspect
@@ -228,3 +228,9 @@ grep -A0 'ResourceIdentifier.*key="\(ACCOUNT_TYPE\|AZURE_SUBSCRIPTION_ID\|AZURE_
 Expected: root has xsi:schemaLocation, adapter instance is MicrosoftAzureAdapter Instance, and you see 5 identifiers (ACCOUNT_TYPE with identType=2, SERVICES, REGIONS, SUBSCRIPTION_ID, TENANT_ID).
 
 Then upload to Aria Ops and retry the upgrade. If this combo doesn't get past APPLY_ADAPTER, there's only a handful of things left that could be blocking — and we'll know the shape of the remaining issue from whatever state the installer ends in.
+
+
+500 Internal Server Error
+{"type": "about:blank", "title": "Internal Server Error", "detail": "The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.", "status": 500}
+adapterDefinition endpoint returned 500.
+Unable to build pak file
