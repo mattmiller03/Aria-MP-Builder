@@ -713,15 +713,17 @@ def get_adapter_definition():
     world.define_metric("summary|total_number_regions", "Total Regions")
 
     # ===================================================================
-    # Stub Resource Kinds — 71 native pak types we don't actively collect
+    # Stub Resource Kinds — 18 native pak types we don't actively collect
     # ===================================================================
-    # These are defined so describe.xml includes them, preventing
-    # "unknown resource kind" warnings for dashboards that reference them.
-
-    for stub_key in ALL_NATIVE_STUB_KINDS:
-        stub = definition.define_object_type(stub_key, stub_key)
-        _add_standard_identifiers(stub)
-        _add_service_descriptors(stub)
+    # TEMPORARILY DISABLED for install-failure bisection. If enabling the
+    # stub loop is what blocks APPLY_ADAPTER, the generic 4-identifier
+    # shape we're using must not match what Aria Ops expects for these
+    # specific kinds. Remove the `False and` to re-enable.
+    if False:
+        for stub_key in ALL_NATIVE_STUB_KINDS:
+            stub = definition.define_object_type(stub_key, stub_key)
+            _add_standard_identifiers(stub)
+            _add_service_descriptors(stub)
 
     return definition
 
