@@ -99,14 +99,76 @@ POWER_STATE_BLOCK = """
             <PowerStateValue key="UNKNOWN" value="Unknown" />
          </PowerState>"""
 
-CHILD_PATCHES = [
-    {
-        "kind": "AZURE_VIRTUAL_MACHINE",
-        "child_tag": "PowerState",
-        "block": POWER_STATE_BLOCK,
-        "description": "AZURE_VIRTUAL_MACHINE: add PowerState for health integration",
-    },
-]
+# PowerState injection for VM moved into AZURE_VIRTUAL_MACHINE_BLOCK below.
+# Keep POWER_STATE_BLOCK defined — future kinds may reuse it via CHILD_PATCHES.
+CHILD_PATCHES = []
+
+
+# ---------------------------------------------------------------------------
+# Whole-ResourceKind substitutions — replace the entire
+# `<ResourceKind key="KIND">...</ResourceKind>` span with a hand-authored
+# native-identical literal. Applied FIRST (step 0) so subsequent transforms
+# on the same kind are either no-ops or safely target the already-native XML.
+#
+# Used for kinds whose native shape the Python SDK can't reproduce: nested
+# <ResourceGroup>, <PowerState> sibling, identType asymmetry, nameKey integer
+# attrs, and `validation=""`. Copy the span verbatim from the native pak's
+# describe.xml so diff output against native is zero-line.
+#
+# Source: sdk_packages/MicrosoftAzureAdapter-818024067771/AzureAdapter/
+#         MicrosoftAzureAdapter/conf/describe.xml
+# ---------------------------------------------------------------------------
+
+AZURE_VIRTUAL_MACHINE_BLOCK = """<ResourceKind key="AZURE_VIRTUAL_MACHINE" nameKey="14" type="4">
+         <ResourceIdentifier dispOrder="1" enum="false" identType="1" key="AZURE_SUBSCRIPTION_ID" length="" nameKey="5" required="true" type="string" />
+         <ResourceIdentifier dispOrder="2" enum="false" identType="2" key="AZURE_RESOURCE_GROUP" length="" nameKey="12" required="true" type="string" />
+         <ResourceIdentifier dispOrder="3" enum="false" identType="2" key="AZURE_REGION" length="" nameKey="13" required="true" type="string" />
+         <ResourceIdentifier dispOrder="4" enum="false" identType="1" key="ID" length="" nameKey="19" required="true" type="string" />
+         <PowerState alias="summary|runtime|powerState">
+            <PowerStateValue key="ON" value="Powered On" />
+            <PowerStateValue key="OFF" value="Powered Off" />
+            <PowerStateValue key="UNKNOWN" value="Unknown" />
+         </PowerState>
+         <ResourceGroup instanced="false" key="CPU" nameKey="100" validation="">
+            <ResourceAttribute key="CPU_USAGE" nameKey="101" dashboardOrder="1" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="percent" />
+            <ResourceAttribute key="CPU_CRED_REMAINING" nameKey="102" dashboardOrder="2" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" />
+            <ResourceAttribute key="CPU_CRED_CONSUMED" nameKey="103" dashboardOrder="3" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" />
+         </ResourceGroup>
+         <ResourceGroup instanced="false" key="STORAGE" nameKey="104" validation="">
+            <ResourceAttribute key="DATA_WRITE_DISK" nameKey="105" dashboardOrder="1" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="bytes" />
+            <ResourceAttribute key="DATA_READ_DISK" nameKey="106" dashboardOrder="2" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="bytes" />
+            <ResourceAttribute key="DISK_READ_OPERATION" nameKey="107" dashboardOrder="3" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" />
+            <ResourceAttribute key="DISK_WRITE_OPERATION" nameKey="108" dashboardOrder="4" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" />
+         </ResourceGroup>
+         <ResourceGroup instanced="false" key="NETWORK" nameKey="109" validation="">
+            <ResourceAttribute key="NETWORK_IN" nameKey="110" dashboardOrder="1" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="bytes" />
+            <ResourceAttribute key="NETWORK_OUT" nameKey="111" dashboardOrder="2" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="bytes" />
+         </ResourceGroup>
+          <ResourceGroup instanced="false" key="general" nameKey="6000" validation="">
+            <ResourceAttribute key="FQDN" nameKey="115" dashboardOrder="4" dataType="string" isDiscrete="false" isProperty="true" />
+            <ResourceAttribute key="running" nameKey="116" dataType="float" defaultMonitored="true" isDiscrete="false" isRate="false" isProperty="false" />
+         </ResourceGroup>
+         <ResourceGroup instanced="false" key="summary" nameKey="1100" validation="">
+            <ResourceAttribute key="OS_TYPE" nameKey="112" dashboardOrder="1" dataType="string" isDiscrete="false" isProperty="true" />
+            <ResourceAttribute key="OS_VHD_URI" nameKey="113" dashboardOrder="2" dataType="string" isDiscrete="false" isProperty="true" />
+            <ResourceAttribute key="SIZING_TIER" nameKey="114" dashboardOrder="3" dataType="string" isDiscrete="false" isProperty="true" />
+            <ResourceAttribute key="availabilityZones" nameKey="117" dashboardOrder="3" dataType="string" isDiscrete="false" isProperty="true" />
+            <ResourceGroup instanced="false" key="runtime" nameKey="160" validation="">
+               <ResourceAttribute key="powerState" nameKey="161" dataType="string" defaultMonitored="true" isDiscrete="false" isRate="false" maxVal="" minVal="" isProperty="true" keyAttribute="true" />
+            </ResourceGroup>
+         </ResourceGroup>
+         <!-- Default Service Descriptors -->
+         <ResourceGroup instanced="false" key="SERVICE_DESCRIPTORS" nameKey="950" validation="">
+            <ResourceAttribute key="AZURE_SUBSCRIPTION_ID" nameKey="5" dashboardOrder="1" dataType="string" isDiscrete="false" isProperty="true" />
+            <ResourceAttribute key="AZURE_RESOURCE_GROUP" nameKey="12" dashboardOrder="2" dataType="string" isDiscrete="false" isProperty="true" />
+            <ResourceAttribute key="AZURE_REGION" nameKey="13" dashboardOrder="3" dataType="string" isDiscrete="false" isProperty="true" />
+            <ResourceAttribute key="AZURE_SERVICE" nameKey="951" dashboardOrder="4" dataType="string" isDiscrete="false" isProperty="true" />
+         </ResourceGroup>
+      </ResourceKind>"""
+
+BLOCK_SUBSTITUTIONS = {
+    "AZURE_VIRTUAL_MACHINE": AZURE_VIRTUAL_MACHINE_BLOCK,
+}
 
 
 # ---------------------------------------------------------------------------
@@ -291,6 +353,30 @@ ROOT_ATTRS = {
 _ATTR_RE = re.compile(r'([\w:]+)="([^"]*)"')
 
 
+def _substitute_resource_kind(content: str, kind: str, block: str) -> tuple[str, int]:
+    """Replace the entire `<ResourceKind key="KIND">...</ResourceKind>` span
+    with `block`. Idempotent: if the literal block is already a substring of
+    `content`, returns unchanged.
+    """
+    if block in content:
+        return content, 0
+
+    open_re = re.compile(
+        r'<ResourceKind\s+key="' + re.escape(kind) + r'"[^>]*>'
+    )
+    match = open_re.search(content)
+    if not match:
+        return content, 0
+
+    close_tag = "</ResourceKind>"
+    close_start = content.find(close_tag, match.end())
+    if close_start == -1:
+        return content, 0
+    full_end = close_start + len(close_tag)
+
+    return content[:match.start()] + block + content[full_end:], 1
+
+
 def _apply_attr_patch(content: str, kind: str, new_attrs: dict) -> tuple[str, int]:
     """Replace or add attributes on `<ResourceKind key="KIND" ...>` opening tag.
 
@@ -472,6 +558,17 @@ def patch_describe_xml(filepath: str) -> int:
 
     original = content
     applied = 0
+
+    # 0. Whole-ResourceKind substitutions (replace entire kind body with a
+    # native-identical literal). Runs first so subsequent transforms either
+    # no-op (different kind) or target the already-native XML safely.
+    for kind, block in BLOCK_SUBSTITUTIONS.items():
+        content, count = _substitute_resource_kind(content, kind, block)
+        if count > 0:
+            applied += count
+            print(f"  [PATCHED] substitute ResourceKind {kind} with native literal")
+        else:
+            print(f"  [SKIP]    substitute {kind} (already native or ResourceKind not found)")
 
     # 1. Attribute patches (strip any conflicting existing attrs, then inject)
     for kind, attrs in ATTR_PATCHES.items():
