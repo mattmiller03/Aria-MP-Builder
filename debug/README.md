@@ -1684,3 +1684,111 @@ NATIVE=/opt/aria/Aria-MP-Builder/sdk_packages/MicrosoftAzureAdapter-818024067771
 diff <(sed -n '/ResourceKind key="AZURE_VIRTUAL_MACHINE"/,/<\/ResourceKind>/p' MicrosoftAzureAdapter/conf/describe.xml) \
      <(sed -n '/ResourceKind key="AZURE_VIRTUAL_MACHINE"/,/<\/ResourceKind>/p' "$NATIVE")
 # Expect: no output (VM block is byte-equal to native)
+
+
+
+
+MicrosoftAzureAdapter/conf/describeSchema.xsd:788: element assert: Schemas parser error : Element '{http://www.w3.org/2001/XMLSchema}complexType': The content is not valid. Expected is (annotation?, (simpleContent | complexContent | ((group | all | choice | sequence)?, ((attribute | attributeGroup)*, anyAttribute?)))).
+WXS schema MicrosoftAzureAdapter/conf/describeSchema.xsd failed to compile
+
+
+
+
+
+
+
+
+1,46c1,46
+<     <ResourceKind key="AZURE_VIRTUAL_MACHINE" nameKey="14" type="4">
+<          <ResourceIdentifier dispOrder="1" enum="false" identType="1" key="AZURE_SUBSCRIPTION_ID" length="" nameKey="5" required="true" type="string" />
+<          <ResourceIdentifier dispOrder="2" enum="false" identType="2" key="AZURE_RESOURCE_GROUP" length="" nameKey="12" required="true" type="string" />
+<          <ResourceIdentifier dispOrder="3" enum="false" identType="2" key="AZURE_REGION" length="" nameKey="13" required="true" type="string" />
+<          <ResourceIdentifier dispOrder="4" enum="false" identType="1" key="ID" length="" nameKey="19" required="true" type="string" />
+<          <PowerState alias="summary|runtime|powerState">
+<             <PowerStateValue key="ON" value="Powered On" />
+<             <PowerStateValue key="OFF" value="Powered Off" />
+<             <PowerStateValue key="UNKNOWN" value="Unknown" />
+<          </PowerState>
+<          <ResourceGroup instanced="false" key="CPU" nameKey="100" validation="">
+<             <ResourceAttribute key="CPU_USAGE" nameKey="101" dashboardOrder="1" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="percent" />
+<             <ResourceAttribute key="CPU_CRED_REMAINING" nameKey="102" dashboardOrder="2" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" />
+<             <ResourceAttribute key="CPU_CRED_CONSUMED" nameKey="103" dashboardOrder="3" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" />
+<          </ResourceGroup>
+<          <ResourceGroup instanced="false" key="STORAGE" nameKey="104" validation="">
+<             <ResourceAttribute key="DATA_WRITE_DISK" nameKey="105" dashboardOrder="1" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="bytes" />
+<             <ResourceAttribute key="DATA_READ_DISK" nameKey="106" dashboardOrder="2" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="bytes" />
+<             <ResourceAttribute key="DISK_READ_OPERATION" nameKey="107" dashboardOrder="3" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" />
+<             <ResourceAttribute key="DISK_WRITE_OPERATION" nameKey="108" dashboardOrder="4" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" />
+<          </ResourceGroup>
+<          <ResourceGroup instanced="false" key="NETWORK" nameKey="109" validation="">
+<             <ResourceAttribute key="NETWORK_IN" nameKey="110" dashboardOrder="1" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="bytes" />
+<             <ResourceAttribute key="NETWORK_OUT" nameKey="111" dashboardOrder="2" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="bytes" />
+<          </ResourceGroup>
+<           <ResourceGroup instanced="false" key="general" nameKey="6000" validation="">
+<             <ResourceAttribute key="FQDN" nameKey="115" dashboardOrder="4" dataType="string" isDiscrete="false" isProperty="true" />
+<             <ResourceAttribute key="running" nameKey="116" dataType="float" defaultMonitored="true" isDiscrete="false" isRate="false" isProperty="false" />
+<          </ResourceGroup>
+<          <ResourceGroup instanced="false" key="summary" nameKey="1100" validation="">
+<             <ResourceAttribute key="OS_TYPE" nameKey="112" dashboardOrder="1" dataType="string" isDiscrete="false" isProperty="true" />
+<             <ResourceAttribute key="OS_VHD_URI" nameKey="113" dashboardOrder="2" dataType="string" isDiscrete="false" isProperty="true" />
+<             <ResourceAttribute key="SIZING_TIER" nameKey="114" dashboardOrder="3" dataType="string" isDiscrete="false" isProperty="true" />
+<             <ResourceAttribute key="availabilityZones" nameKey="117" dashboardOrder="3" dataType="string" isDiscrete="false" isProperty="true" />
+<             <ResourceGroup instanced="false" key="runtime" nameKey="160" validation="">
+<                <ResourceAttribute key="powerState" nameKey="161" dataType="string" defaultMonitored="true" isDiscrete="false" isRate="false" maxVal="" minVal="" isProperty="true" keyAttribute="true" />
+<             </ResourceGroup>
+<          </ResourceGroup>
+<          <!-- Default Service Descriptors -->
+<          <ResourceGroup instanced="false" key="SERVICE_DESCRIPTORS" nameKey="950" validation="">
+<             <ResourceAttribute key="AZURE_SUBSCRIPTION_ID" nameKey="5" dashboardOrder="1" dataType="string" isDiscrete="false" isProperty="true" />
+<             <ResourceAttribute key="AZURE_RESOURCE_GROUP" nameKey="12" dashboardOrder="2" dataType="string" isDiscrete="false" isProperty="true" />
+<             <ResourceAttribute key="AZURE_REGION" nameKey="13" dashboardOrder="3" dataType="string" isDiscrete="false" isProperty="true" />
+<             <ResourceAttribute key="AZURE_SERVICE" nameKey="951" dashboardOrder="4" dataType="string" isDiscrete="false" isProperty="true" />
+<          </ResourceGroup>
+<       </ResourceKind>
+---
+>       <ResourceKind key="AZURE_VIRTUAL_MACHINE" nameKey="14" type="4">
+>          <ResourceIdentifier dispOrder="1" enum="false" identType="1" key="AZURE_SUBSCRIPTION_ID" length="" nameKey="5" required="true" type="string" />
+>          <ResourceIdentifier dispOrder="2" enum="false" identType="2" key="AZURE_RESOURCE_GROUP" length="" nameKey="12" required="true" type="string" />
+>          <ResourceIdentifier dispOrder="3" enum="false" identType="2" key="AZURE_REGION" length="" nameKey="13" required="true" type="string" />
+>          <ResourceIdentifier dispOrder="4" enum="false" identType="1" key="ID" length="" nameKey="19" required="true" type="string" />
+>          <PowerState alias="summary|runtime|powerState">
+>             <PowerStateValue key="ON" value="Powered On" />
+>             <PowerStateValue key="OFF" value="Powered Off" />
+>             <PowerStateValue key="UNKNOWN" value="Unknown" />
+>          </PowerState>
+>          <ResourceGroup instanced="false" key="CPU" nameKey="100" validation="">
+>             <ResourceAttribute key="CPU_USAGE" nameKey="101" dashboardOrder="1" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="percent" />
+>             <ResourceAttribute key="CPU_CRED_REMAINING" nameKey="102" dashboardOrder="2" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" />
+>             <ResourceAttribute key="CPU_CRED_CONSUMED" nameKey="103" dashboardOrder="3" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" />
+>          </ResourceGroup>
+>          <ResourceGroup instanced="false" key="STORAGE" nameKey="104" validation="">
+>             <ResourceAttribute key="DATA_WRITE_DISK" nameKey="105" dashboardOrder="1" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="bytes" />
+>             <ResourceAttribute key="DATA_READ_DISK" nameKey="106" dashboardOrder="2" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="bytes" />
+>             <ResourceAttribute key="DISK_READ_OPERATION" nameKey="107" dashboardOrder="3" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" />
+>             <ResourceAttribute key="DISK_WRITE_OPERATION" nameKey="108" dashboardOrder="4" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" />
+>          </ResourceGroup>
+>          <ResourceGroup instanced="false" key="NETWORK" nameKey="109" validation="">
+>             <ResourceAttribute key="NETWORK_IN" nameKey="110" dashboardOrder="1" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="bytes" />
+>             <ResourceAttribute key="NETWORK_OUT" nameKey="111" dashboardOrder="2" dataType="double" defaultMonitored="true" isDiscrete="false" isProperty="false" unit="bytes" />
+>          </ResourceGroup>
+>           <ResourceGroup instanced="false" key="general" nameKey="6000" validation="">
+>             <ResourceAttribute key="FQDN" nameKey="115" dashboardOrder="4" dataType="string" isDiscrete="false" isProperty="true" />
+>             <ResourceAttribute key="running" nameKey="116" dataType="float" defaultMonitored="true" isDiscrete="false" isRate="false" isProperty="false" />
+>          </ResourceGroup>
+>          <ResourceGroup instanced="false" key="summary" nameKey="1100" validation="">
+>             <ResourceAttribute key="OS_TYPE" nameKey="112" dashboardOrder="1" dataType="string" isDiscrete="false" isProperty="true" />
+>             <ResourceAttribute key="OS_VHD_URI" nameKey="113" dashboardOrder="2" dataType="string" isDiscrete="false" isProperty="true" />
+>             <ResourceAttribute key="SIZING_TIER" nameKey="114" dashboardOrder="3" dataType="string" isDiscrete="false" isProperty="true" />
+>             <ResourceAttribute key="availabilityZones" nameKey="117" dashboardOrder="3" dataType="string" isDiscrete="false" isProperty="true" />
+>             <ResourceGroup instanced="false" key="runtime" nameKey="160" validation="">
+>                <ResourceAttribute key="powerState" nameKey="161" dataType="string" defaultMonitored="true" isDiscrete="false" isRate="false" maxVal="" minVal="" isProperty="true" keyAttribute="true" />
+>             </ResourceGroup>
+>          </ResourceGroup>
+>          <!-- Default Service Descriptors -->
+>          <ResourceGroup instanced="false" key="SERVICE_DESCRIPTORS" nameKey="950" validation="">
+>             <ResourceAttribute key="AZURE_SUBSCRIPTION_ID" nameKey="5" dashboardOrder="1" dataType="string" isDiscrete="false" isProperty="true" />
+>             <ResourceAttribute key="AZURE_RESOURCE_GROUP" nameKey="12" dashboardOrder="2" dataType="string" isDiscrete="false" isProperty="true" />
+>             <ResourceAttribute key="AZURE_REGION" nameKey="13" dashboardOrder="3" dataType="string" isDiscrete="false" isProperty="true" />
+>             <ResourceAttribute key="AZURE_SERVICE" nameKey="951" dashboardOrder="4" dataType="string" isDiscrete="false" isProperty="true" />
+>          </ResourceGroup>
+>       </ResourceKind>
