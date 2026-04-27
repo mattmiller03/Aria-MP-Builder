@@ -72,20 +72,28 @@ sudo docker exec azure-test cat /home/aria-ops-adapter-user/src/adapter.log 2>&1
 sudo docker rm -f azure-test
 
 
-HTTP 500
-root@photon [ /opt/aria/Aria-MP-Builder ]# echo ""
+sudo docker run -d --name azure-test -p 8181:8080 microsoftazureadapter-test:8.19.2
+sleep 3
 
-root@photon [ /opt/aria/Aria-MP-Builder ]# echo "=== CONTAINER LOGS ==="
-=== CONTAINER LOGS ===
-root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker logs azure-test 2>&1 | tail -60
-INFO:     Started server process [1]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
-INFO:     172.17.0.1:56126 - "GET /adapterDefinition HTTP/1.1" 500 Internal Server Error
-root@photon [ /opt/aria/Aria-MP-Builder ]# echo ""
+# Try the OpenAPI/Swagger doc to see what paths exist
+echo "=== OpenAPI spec (first 80 lines) ==="
+curl -s http://localhost:8181/openapi.json | python3 -m json.tool 2>/dev/null | head -80
+echo "---"
+curl -s http://localhost:8181/api/v1/openapi.json | python3 -m json.tool 2>/dev/null | head -40
+echo "---"
+curl -s http://localhost:8181/docs 2>&1 | head -10
 
-root@photon [ /opt/aria/Aria-MP-Builder ]# echo "=== adapter.log INSIDE CONTAINER ==="
-=== adapter.log INSIDE CONTAINER ===
-root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker exec azure-test cat /home/aria-ops-adapter-user/src/adapter.log 2>&1 | tail -60
-cat: /home/aria-ops-adapter-user/src/adapter.log: No such file or directory
+# Try common variants of the endpoint
+echo ""
+echo "=== Endpoint probes ==="
+for path in /adapterDefinition /adapter_definition /api/adapterDefinition /api/v1/adapterDefinition /apiVersions; do
+  code=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8181$path)
+  echo "  $path  ->  $code"
+done
+
+# Also peek at swagger_server's actual app structure
+echo ""
+echo "=== swagger_server source location ==="
+sudo docker exec azure-test find / -path '*swagger_server*' -name '*.py' 2>/dev/null | head -10
+
+sudo docker rm -f azure-test
