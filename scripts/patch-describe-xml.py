@@ -172,6 +172,47 @@ BLOCK_SUBSTITUTIONS = {
 
 
 # ---------------------------------------------------------------------------
+# Dynamic native-describe.xml loader.
+#
+# Most native-pak-equivalent ResourceKinds have a nested <ResourceGroup> shape
+# that the SDK doesn't reproduce (flat <ResourceAttribute> instead). Rather
+# than hand-paste ~40 verbatim blocks into BLOCK_SUBSTITUTIONS, we read the
+# native describe.xml at patch time and substitute every kind that has a
+# native equivalent.
+#
+# Kinds in BLOCK_SUBSTITUTIONS win — those are manual overrides we hand-tuned.
+# Kinds in CUSTOM_KIND_SKIPS have no native equivalent and stay SDK-shaped.
+# ---------------------------------------------------------------------------
+
+# Path to native describe.xml (sdk_packages bundles VMware's pak). Override
+# with NATIVE_DESCRIBE_XML env var for testing.
+DEFAULT_NATIVE_DESCRIBE_XML = os.path.normpath(
+    os.path.join(
+        os.path.dirname(os.path.abspath(__file__)),
+        "..",
+        "sdk_packages",
+        "MicrosoftAzureAdapter-818024067771",
+        "AzureAdapter",
+        "MicrosoftAzureAdapter",
+        "conf",
+        "describe.xml",
+    )
+)
+
+# ResourceKind keys that have NO native equivalent — keep the SDK-emitted
+# shape for these. The adapter-instance kind is excluded too because it's
+# patched by attribute overrides + rename, not block substitution.
+CUSTOM_KIND_SKIPS = {
+    "azure_subscription",
+    "azure_subnet",
+    "azure_recovery_services_vault",
+    "azure_log_analytics_workspace",
+    "MicrosoftAzureAdapter_adapter_instance",  # adapter-instance, pre-rename
+    "MicrosoftAzureAdapter Instance",          # adapter-instance, post-rename
+}
+
+
+# ---------------------------------------------------------------------------
 # ResourceIdentifier blocks to APPEND to the adapter-instance ResourceKind.
 # These replicate identifiers the native pak has that our SDK doesn't emit.
 # They're purely for upgrade compatibility — Aria Ops's existing adapter
@@ -377,6 +418,32 @@ def _substitute_resource_kind(content: str, kind: str, block: str) -> tuple[str,
     return content[:match.start()] + block + content[full_end:], 1
 
 
+def _load_native_resourcekinds(native_xml_path: str) -> dict:
+    """Read the native pak's describe.xml and return a dict mapping each
+    ResourceKind key to its raw `<ResourceKind ...>...</ResourceKind>` span.
+
+    Uses regex (not ET) so we preserve the exact whitespace from the source —
+    important because Aria Ops parses describe.xml byte-for-byte and any
+    SDK-vs-native diff has bitten us before.
+    """
+    with open(native_xml_path, "r", encoding="utf-8") as f:
+        native_content = f.read()
+
+    kinds = {}
+    open_re = re.compile(
+        r'<ResourceKind\s+key="([^"]+)"[^>]*>'
+    )
+    for match in open_re.finditer(native_content):
+        key = match.group(1)
+        close_start = native_content.find("</ResourceKind>", match.end())
+        if close_start == -1:
+            continue
+        full_end = close_start + len("</ResourceKind>")
+        kinds[key] = native_content[match.start():full_end]
+
+    return kinds
+
+
 def _apply_attr_patch(content: str, kind: str, new_attrs: dict) -> tuple[str, int]:
     """Replace or add attributes on `<ResourceKind key="KIND" ...>` opening tag.
 
@@ -559,16 +626,39 @@ def patch_describe_xml(filepath: str) -> int:
     original = content
     applied = 0
 
-    # 0. Whole-ResourceKind substitutions (replace entire kind body with a
-    # native-identical literal). Runs first so subsequent transforms either
-    # no-op (different kind) or target the already-native XML safely.
+    # 0a. Manual whole-ResourceKind substitutions (hand-tuned overrides).
+    # Runs first so any kind we've explicitly hand-edited wins over the
+    # dynamic native-loader below.
     for kind, block in BLOCK_SUBSTITUTIONS.items():
         content, count = _substitute_resource_kind(content, kind, block)
         if count > 0:
             applied += count
-            print(f"  [PATCHED] substitute ResourceKind {kind} with native literal")
+            print(f"  [PATCHED] substitute ResourceKind {kind} with native literal (manual)")
         else:
             print(f"  [SKIP]    substitute {kind} (already native or ResourceKind not found)")
+
+    # 0b. Dynamic substitution from the native pak's describe.xml.
+    # For every ResourceKind in our SDK-emitted XML that has a same-keyed
+    # entry in the native describe.xml, replace it with the native span
+    # verbatim. Skips kinds in BLOCK_SUBSTITUTIONS (manual overrides win)
+    # and CUSTOM_KIND_SKIPS (no native equivalent).
+    native_xml_path = os.environ.get("NATIVE_DESCRIBE_XML", DEFAULT_NATIVE_DESCRIBE_XML)
+    if os.path.exists(native_xml_path):
+        native_kinds = _load_native_resourcekinds(native_xml_path)
+        dynamic_skips = set(BLOCK_SUBSTITUTIONS.keys()) | CUSTOM_KIND_SKIPS
+        substituted_dyn = 0
+        for kind, native_span in native_kinds.items():
+            if kind in dynamic_skips:
+                continue
+            content, count = _substitute_resource_kind(content, kind, native_span)
+            if count > 0:
+                applied += count
+                substituted_dyn += 1
+        print(f"  [PATCHED] dynamic native loader: {substituted_dyn} kinds substituted "
+              f"(from {native_xml_path})")
+    else:
+        print(f"  [WARN]    native describe.xml not found at {native_xml_path}; "
+              "dynamic loader skipped — only BLOCK_SUBSTITUTIONS will apply")
 
     # 1. Attribute patches (strip any conflicting existing attrs, then inject)
     for kind, attrs in ATTR_PATCHES.items():

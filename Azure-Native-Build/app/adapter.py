@@ -211,11 +211,6 @@ def get_adapter_definition():
     vm.define_string_property("summary|runtime|powerState", "Power State")
     _add_service_descriptors(vm)
 
-    # BISECT ROUND 8: azure_subscription + RESOURCE_GROUP + VIRTUAL_MACHINE.
-    # If install FAILS → VM is the culprit (confirming my bet).
-    # If install SUCCEEDS → DISK is the culprit (need to bisect what's wrong in DISK).
-    return definition
-
     # -- Disk (AZURE_STORAGE_DISK) --
     disk = definition.define_object_type(OBJ_DISK, "Azure Managed Disk")
     _add_standard_identifiers(disk)
