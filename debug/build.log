@@ -15,3 +15,22 @@ except Exception:
     print('--- EXCEPTION ---')
     traceback.print_exc()
 "
+
+
+
+cat > /tmp/test_def.py << 'EOF'
+import sys, traceback
+sys.path.insert(0, "app")
+try:
+    import adapter
+    d = adapter.get_adapter_definition()
+    print("get_adapter_definition: OK, kinds:", len(d.object_types))
+    j = d.to_json()
+    print("to_json: OK, kinds in JSON:", len(j.get("object_types", [])))
+except Exception:
+    print("--- EXCEPTION ---")
+    traceback.print_exc()
+EOF
+
+sudo docker run --rm -v /tmp/test_def.py:/tmp/test_def.py microsoftazureadapter-test:8.19.1 /usr/local/bin/python /tmp/test_def.py
+
