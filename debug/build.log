@@ -49,7 +49,7 @@ sudo docker run --rm --entrypoint /usr/local/bin/python microsoftazureadapter-te
 sudo docker inspect microsoftazureadapter-test:8.19.2 | grep -A 5 -iE '"Entrypoint"|"Cmd"|"WorkingDir"'
 
 # 1. Start the container in the background with its real entrypoint
-sudo docker run -d --name azure-test -p 8080:8080 microsoftazureadapter-test:8.19.2
+sudo docker run -d --name azure-test -p 8181:8080 microsoftazureadapter-test:8.19.2
 sleep 3
 
 # 2. Confirm it's up
@@ -70,3 +70,30 @@ sudo docker exec azure-test cat /home/aria-ops-adapter-user/src/adapter.log 2>&1
 
 # 5. Cleanup
 sudo docker rm -f azure-test
+
+
+root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker run -d --name azure-test -p 8181:8080 microsoftazureadapter-test:8.19.255eb2012956c618dabdd1056adc4d56ccc1291269a9280fb774e751a86e59684
+root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker ps | grep azure-test
+55eb2012956c   microsoftazureadapter-test:8.19.2   "python3 -m swagger_…"   21 seconds ago   Up 21 seconds   443/tcp, 0.0.0.0:8181->8080/tcp, :::8181->8080/tcp                                         azure-test
+root@photon [ /opt/aria/Aria-MP-Builder ]# echo "=== HTTP RESPONSE ==="
+=== HTTP RESPONSE ===
+root@photon [ /opt/aria/Aria-MP-Builder ]# curl -s -w "\nHTTP %{http_code}\n" http://localhost:8080/adapterDefinition | head -100
+
+HTTP 000
+root@photon [ /opt/aria/Aria-MP-Builder ]# echo ""
+
+root@photon [ /opt/aria/Aria-MP-Builder ]# echo "=== CONTAINER LOGS ==="
+=== CONTAINER LOGS ===
+root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker logs azure-test 2>&1 | tail -60
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+root@photon [ /opt/aria/Aria-MP-Builder ]# echo ""
+
+root@photon [ /opt/aria/Aria-MP-Builder ]# echo "=== adapter.log INSIDE CONTAINER ==="
+=== adapter.log INSIDE CONTAINER ===
+root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker exec azure-test cat /home/aria-ops-adapter-user/src/adapter.log 2>&1 | tail -60
+cat: /home/aria-ops-adapter-user/src/adapter.log: No such file or directory
+root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker rm -f azure-test
+azure-test
