@@ -58,13 +58,49 @@ sudo docker push 214.73.76.134:5000/azuregovcloud-adapter:latest
 #    Step 16/20 (APPLY_ADAPTER) must reach SUCCESS, not ERROR
 ```
 
-### If APPLY_ADAPTER fails on D.2
+### If the build itself 500s (`adapterDefinition endpoint returned 500`)
+
+The HTTP 500 happens BEFORE the patch script runs — it's coming from the running adapter container's `/adapterDefinition` handler. Two common causes: stale Docker image cache (recurring trap on this project) or a specific kind's definition crashing the SDK serializer.
+
+```bash
+cd /opt/aria/Aria-MP-Builder
+
+# 1. Confirm the server has the latest commit (otherwise nothing changed)
+git log --oneline -3
+# expect e70b157 "Phase D.1+D.2..." (or later) at HEAD
+
+# 2. Hard-purge ALL azure adapter images (including any "<none>" dangling ones)
+sudo docker images -a | grep -iE 'azure|microsoft' | awk '{print $3}' | sort -u | xargs -r sudo docker rmi --force
+sudo docker system prune -f
+
+# 3. Rebuild and capture the full output
+mkdir -p debug
+bash scripts/build-pak.sh 2>&1 | tee debug/build.log
+
+# 4. As soon as it 500s, in another terminal grab the container logs
+#    (mp-build tears the container down fast — don't wait)
+sudo docker ps -a --format '{{.ID}} {{.Image}} {{.Status}}' | grep -iE 'azure|microsoft'
+# Note the container ID and run:
+sudo docker logs <CONTAINER_ID> 2>&1 | tail -100 | tee debug/container.log
+```
+
+If the container is gone before you can `docker logs` it, run the adapter manually instead so its stdout stays visible:
+
+```bash
+cd /opt/aria/Aria-MP-Builder/Azure-Native-Build
+sudo mp-test --port 8181 2>&1 | tail -50
+# In another shell:
+curl -s http://localhost:8181/adapterDefinition | head -50
+```
+
+The Python traceback in either output names the exact line/kind that's crashing.
+
+### If APPLY_ADAPTER fails on D.2 (build succeeded, install rejected the pak)
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | `ERROR after 0.0 seconds, empty errorMessages` | A custom kind's SDK shape isn't acceptable to Aria Ops | Bisect — temporarily put one of `azure_subnet` / `azure_recovery_services_vault` / `azure_log_analytics_workspace` back in `if False:` to find the culprit |
 | `ERROR` with text mentioning a specific kind | That kind's native span has a value Aria Ops rejects on this server | Add a hand-tuned entry to `BLOCK_SUBSTITUTIONS` (manual override wins over loader) |
-| Build itself 500s | Likely the loader regex misfired on something — check `debug/build.log` for traceback | Roll back D.1 patch script change, rebuild |
 
 ## Cycle D.3 — Add Geo Trio (24 → 27 kinds)
 
