@@ -57,7 +57,7 @@ sudo docker ps | grep azure-test
 
 # 3. Hit the endpoint and capture both response and container logs
 echo "=== HTTP RESPONSE ==="
-curl -s -w "\nHTTP %{http_code}\n" http://localhost:8080/adapterDefinition | head -100
+curl -s -w "\nHTTP %{http_code}\n" http://localhost:8181/adapterDefinition | head -100 
 
 echo ""
 echo "=== CONTAINER LOGS ==="
@@ -72,14 +72,7 @@ sudo docker exec azure-test cat /home/aria-ops-adapter-user/src/adapter.log 2>&1
 sudo docker rm -f azure-test
 
 
-root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker run -d --name azure-test -p 8181:8080 microsoftazureadapter-test:8.19.255eb2012956c618dabdd1056adc4d56ccc1291269a9280fb774e751a86e59684
-root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker ps | grep azure-test
-55eb2012956c   microsoftazureadapter-test:8.19.2   "python3 -m swagger_…"   21 seconds ago   Up 21 seconds   443/tcp, 0.0.0.0:8181->8080/tcp, :::8181->8080/tcp                                         azure-test
-root@photon [ /opt/aria/Aria-MP-Builder ]# echo "=== HTTP RESPONSE ==="
-=== HTTP RESPONSE ===
-root@photon [ /opt/aria/Aria-MP-Builder ]# curl -s -w "\nHTTP %{http_code}\n" http://localhost:8080/adapterDefinition | head -100
-
-HTTP 000
+HTTP 500
 root@photon [ /opt/aria/Aria-MP-Builder ]# echo ""
 
 root@photon [ /opt/aria/Aria-MP-Builder ]# echo "=== CONTAINER LOGS ==="
@@ -89,11 +82,10 @@ INFO:     Started server process [1]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+INFO:     172.17.0.1:56126 - "GET /adapterDefinition HTTP/1.1" 500 Internal Server Error
 root@photon [ /opt/aria/Aria-MP-Builder ]# echo ""
 
 root@photon [ /opt/aria/Aria-MP-Builder ]# echo "=== adapter.log INSIDE CONTAINER ==="
 === adapter.log INSIDE CONTAINER ===
 root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker exec azure-test cat /home/aria-ops-adapter-user/src/adapter.log 2>&1 | tail -60
 cat: /home/aria-ops-adapter-user/src/adapter.log: No such file or directory
-root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker rm -f azure-test
-azure-test
