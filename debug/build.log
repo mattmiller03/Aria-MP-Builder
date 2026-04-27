@@ -48,36 +48,25 @@ sudo docker run --rm --entrypoint /usr/local/bin/python microsoftazureadapter-te
 # 2. What's the image's entrypoint/cmd? mp-build runs through this — knowing what it is tells us which layer to inspect next
 sudo docker inspect microsoftazureadapter-test:8.19.2 | grep -A 5 -iE '"Entrypoint"|"Cmd"|"WorkingDir"'
 
+# 1. Start the container in the background with its real entrypoint
+sudo docker run -d --name azure-test -p 8080:8080 microsoftazureadapter-test:8.19.2
+sleep 3
 
+# 2. Confirm it's up
+sudo docker ps | grep azure-test
 
-JSON size: 139123 bytes
-root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker inspect microsoftazureadapter-test:8.19.2 | grep -A 5 -iE '"Entrypoint"|"Cmd"|"WorkingDir"'
-            "Cmd": [
-                "/bin/sh",
-                "-c",
-                "#(nop) ",
-                "LABEL mp-test=1777307403.3124087"
-            ],
---
-            "WorkingDir": "/home/aria-ops-adapter-user/src/app",
-            "Entrypoint": [
-                "python3"
-            ],
-            "OnBuild": null,
-            "Labels": {
-                "mp-test": "1777307403.3124087"
---
-            "Cmd": [
-                "-m",
-                "swagger_server"
-            ],
-            "ArgsEscaped": true,
-            "Image": "sha256:5da2b459f925ab167c637cfcbe0643fae8d7302d9ec71896e782b13fdd7a1da3",
---
-            "WorkingDir": "/home/aria-ops-adapter-user/src/app",
-            "Entrypoint": [
-                "python3"
-            ],
-            "OnBuild": null,
-            "Labels": {
-                "mp-test": "1777307403.3124087"
+# 3. Hit the endpoint and capture both response and container logs
+echo "=== HTTP RESPONSE ==="
+curl -s -w "\nHTTP %{http_code}\n" http://localhost:8080/adapterDefinition | head -100
+
+echo ""
+echo "=== CONTAINER LOGS ==="
+sudo docker logs azure-test 2>&1 | tail -60
+
+# 4. Also grab the adapter's own log file inside the container
+echo ""
+echo "=== adapter.log INSIDE CONTAINER ==="
+sudo docker exec azure-test cat /home/aria-ops-adapter-user/src/adapter.log 2>&1 | tail -60
+
+# 5. Cleanup
+sudo docker rm -f azure-test
