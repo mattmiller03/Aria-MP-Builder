@@ -355,3 +355,42 @@ def runcommand(
     reader_thread = threading.Thread(
         target=read_results, args=(output_pipe, result, good_response_code)
     )
+
+
+
+    sudo docker rm -f azure-test 2>/dev/null
+sudo docker run -d --name azure-test -p 8181:8080 -e PYTHONUNBUFFERED=1 microsoftazureadapter-test:8.19.2
+sleep 3
+
+# Call definition() directly — the exception will print
+sudo docker exec azure-test /usr/local/bin/python -c "
+import sys, traceback, os
+sys.path.insert(0, '/home/aria-ops-adapter-user/src/app')
+os.chdir('/home/aria-ops-adapter-user/src/app')
+try:
+    from swagger_server.controllers.controller import definition
+    msg, code = definition()
+    print('--- OK ---')
+    print('code:', code)
+    print('payload (first 500 chars):', str(msg)[:500])
+except Exception:
+    print('--- EXCEPTION ---')
+    traceback.print_exc()
+"
+
+# Also try to load the swagger spec file directly — that's what /openapi.json does
+echo ""
+echo "=== Try loading swagger spec ==="
+sudo docker exec azure-test /usr/local/bin/python -c "
+import os, traceback
+os.chdir('/home/aria-ops-adapter-user/src/app')
+try:
+    import yaml
+    with open('swagger_server/swagger/swagger.yaml') as f:
+        spec = yaml.safe_load(f)
+    print('spec loaded OK, paths:', list(spec.get('paths', {}).keys()))
+except Exception:
+    traceback.print_exc()
+"
+
+sudo docker rm -f azure-test
