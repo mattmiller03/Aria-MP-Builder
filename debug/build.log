@@ -394,3 +394,27 @@ except Exception:
 "
 
 sudo docker rm -f azure-test
+
+
+
+
+
+
+
+
+--- EXCEPTION ---
+Traceback (most recent call last):
+  File "<string>", line 7, in <module>
+  File "/home/aria-ops-adapter-user/src/app/swagger_server/controllers/controller.py", line 79, in definition
+    message, code = runcommand(command)
+                    ^^^^^^^^^^^^^^^^^^^
+  File "/home/aria-ops-adapter-user/src/app/swagger_server/controllers/controller.py", line 168, in runcommand
+    dir = tempfile.mkdtemp()
+          ^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/tempfile.py", line 385, in mkdtemp
+    _os.mkdir(file, 0o700)
+OSError: [Errno 28] No space left on device: '/tmp/tmpodglvw0z'
+
+
+
+spec loaded OK, paths: ['/apiVersion', '/test', '/collect', '/endpointURLs', '/adapterDefinition']
