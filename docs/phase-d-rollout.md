@@ -60,7 +60,44 @@ sudo docker push 214.73.76.134:5000/azuregovcloud-adapter:latest
 
 ### If the build itself 500s (`adapterDefinition endpoint returned 500`)
 
-The HTTP 500 happens BEFORE the patch script runs — it's coming from the running adapter container's `/adapterDefinition` handler. Two common causes: stale Docker image cache (recurring trap on this project) or a specific kind's definition crashing the SDK serializer.
+**Most common cause: `/tmp` is full on the host.** Confirmed via in-container diagnosis on 2026-04-30 — the actual exception is `OSError: [Errno 28] No space left on device` from `tempfile.mkdtemp()` in `swagger_server/controllers/controller.py:168`. swagger_server can't create the FIFO pipes it needs to talk to our adapter subprocess, so it returns 500 before our `adapter.py` ever runs. (That's why `adapter.log` is empty after a failed build.)
+
+#### Recovery — disk-space cleanup (run these in order)
+
+```bash
+# 1. Diagnose
+df -h
+df -h /var/lib/docker /tmp
+sudo docker system df
+
+# 2. Clean host /tmp (leftover dirs from build-pak.sh's mktemp -d that didn't cleanup on crash)
+sudo rm -rf /tmp/pak-inspect /tmp/test_def.py
+sudo find /tmp -maxdepth 1 -type d -name 'tmp*' -mtime +1 -exec rm -rf {} +
+
+# 3. Docker prune (keeps tagged images like base-adapter:python-1.2.0)
+sudo docker system prune -f
+sudo docker system df    # confirm space recovered
+
+# 4. AGGRESSIVE prune — only if step 3 didn't free enough.
+#    WARNING: -a removes all unused images including base-adapter:python-1.2.0,
+#    which in this air-gapped env you cannot re-pull. Confirm base-adapter
+#    survives via `docker images | grep base-adapter` after.
+# sudo docker system prune -a --volumes -f
+
+# 5. Verify free space
+df -h /var/lib/docker /tmp
+sudo docker run --rm microsoftazureadapter-test:8.19.2 df -h /tmp
+
+# 6. Rebuild
+mkdir -p debug
+bash scripts/build-pak.sh 2>&1 | tee debug/build.log
+ls -la Azure-Native-Build/build/*.pak
+```
+
+#### Other possible causes (check after disk-space is ruled out)
+
+- **Stale Docker image cache** — see [memory note](.). Purge with `sudo docker images | grep -iE 'azure|microsoft' | awk '{print $3}' | xargs -r sudo docker rmi --force`.
+- **A specific kind's definition crashing the SDK serializer** — only relevant if `adapter.log` exists inside the running container with a Python traceback (see "Capture container logs" below).
 
 ```bash
 cd /opt/aria/Aria-MP-Builder
