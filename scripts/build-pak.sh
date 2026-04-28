@@ -70,6 +70,35 @@ done
 
 cd "$ADAPTER_DIR"
 
+# Unified cleanup run on EXIT (success or failure). Two responsibilities:
+#
+# 1. Reap zombie adapter containers from prior failed mp-build / mp-test
+#    runs. Each crash leaves a container running `python3 -m swagger_server`
+#    whose /tmp lives in host overlay storage and accumulates over time —
+#    eventually filling /tmp and causing `tempfile.mkdtemp() OSError 28`
+#    inside swagger_server, which surfaces as `/adapterDefinition` 500.
+# 2. Remove the patch-step's mktemp -d directory if one was created.
+#
+# Filtered strictly by image ancestor `microsoftazureadapter-test` so the
+# long-running mp-builder-app and registry containers are never touched.
+# Idempotent: silent no-op if there are no matching resources.
+TEMP_DIR=""
+cleanup_all() {
+    local ids
+    ids=$(sudo docker ps -aq --filter "ancestor=microsoftazureadapter-test" 2>/dev/null || true)
+    if [[ -n "$ids" ]]; then
+        echo "Reaping $(echo "$ids" | wc -l) leftover microsoftazureadapter-test container(s)..."
+        echo "$ids" | xargs -r sudo docker rm -f >/dev/null 2>&1 || true
+    fi
+    if [[ -n "$TEMP_DIR" && -d "$TEMP_DIR" ]]; then
+        rm -rf "$TEMP_DIR"
+    fi
+}
+trap cleanup_all EXIT
+
+# Reap any zombies left over from prior runs before we build a new image.
+cleanup_all
+
 if $TEST_ONLY; then
     echo "=== Running mp-test ==="
     sudo mp-test --port "$PORT"
@@ -96,7 +125,7 @@ else
         PAK_FILE="$(readlink -f "$PAK_FILE")"
 
         TEMP_DIR=$(mktemp -d)
-        trap "rm -rf $TEMP_DIR" EXIT
+        # cleanup_all (registered above) will rm -rf $TEMP_DIR on exit.
 
         # Extract, patch, repack
         unzip -q "$PAK_FILE" -d "$TEMP_DIR/pak"
