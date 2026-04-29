@@ -724,17 +724,17 @@ def get_adapter_definition():
     world.define_metric("summary|total_number_regions", "Total Regions")
 
     # ===================================================================
-    # Stub Resource Kinds — 18 native pak types we don't actively collect
+    # Stub Resource Kinds — native pak types we don't actively collect
     # ===================================================================
-    # TEMPORARILY DISABLED for install-failure bisection. If enabling the
-    # stub loop is what blocks APPLY_ADAPTER, the generic 4-identifier
-    # shape we're using must not match what Aria Ops expects for these
-    # specific kinds. Remove the `False and` to re-enable.
-    if False:
-        for stub_key in ALL_NATIVE_STUB_KINDS:
-            stub = definition.define_object_type(stub_key, stub_key)
-            _add_standard_identifiers(stub)
-            _add_service_descriptors(stub)
+    # The SDK emits these with the standard 4-identifier + pipe-keyed
+    # SERVICE_DESCRIPTORS shape, which Aria Ops would reject. But every
+    # key in ALL_NATIVE_STUB_KINDS exists in the native pak's describe.xml,
+    # so the dynamic loader in patch-describe-xml.py replaces each one
+    # with the native verbatim XML before pak packaging.
+    for stub_key in ALL_NATIVE_STUB_KINDS:
+        stub = definition.define_object_type(stub_key, stub_key)
+        _add_standard_identifiers(stub)
+        _add_service_descriptors(stub)
 
     return definition
 
