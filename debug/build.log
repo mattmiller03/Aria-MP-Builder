@@ -649,5 +649,24 @@ General help using GNU software: <https://www.gnu.org/gethelp/>.
 14:21:01,141 vmware_aria_operations_integration_sdk.mp_build ERROR Unable to build pak file
 
 
+Same /tmp full pattern most likely — the container's /adapterDefinition is 500ing again. Two quick checks:
 
+
+cd /opt/aria/Aria-MP-Builder
+
+# 1. /tmp space — same root cause as last time?
+df -h /tmp /var/lib/docker
+sudo docker system df
+sudo find /tmp -maxdepth 1 -type d -name 'tmp*' -mtime -1 2>/dev/null | wc -l
+
+# 2. If /tmp looks fine, exec into the freshly-built image and run get_adapter_definition() directly
+sudo docker run --rm --entrypoint /usr/local/bin/python microsoftazureadapter-test:8.19.3 -c "import sys, traceback; sys.path.insert(0, 'app')
+try:
+    import adapter
+    d = adapter.get_adapter_definition()
+    print('OK kinds:', len(d.object_types))
+    j = d.to_json()
+    print('to_json OK')
+except Exception:
+    traceback.print_exc()"
 
