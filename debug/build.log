@@ -688,3 +688,85 @@ dups2 = {k: c for k, c in Counter(ot_keys).items() if c > 1}
 print("JSON-level dups:", dups2)
 '
 If dups is empty but dups2 has entries, the SDK emits more than the dict contains — pointing at SDK-level duplication. If both are empty, the duplicate is being introduced by patch-describe-xml.py somehow. Paste outputs.
+
+
+
+
+
+951:    <ResourceKind key="AZURE_PUBLIC_IPADDRESSES" nameKey="326" type="1">
+2084:      <ResourceKind key="AZURE_PUBLIC_IPADDRESSES" nameKey="2000" type="4">
+ [ /tmp/pak-inspect ]# 
+ [ /tmp/pak-inspect ]# 
+ [ /tmp/pak-inspect ]# grep -n '<ResourceKind key=' MicrosoftAzureAdapter/conf/describe.xml | head -30
+14:    <ResourceKind key="MicrosoftAzureAdapter Instance" monitoringInterval="10" nameKey="9" type="7" credentialKind="AZURE_CLIENT_CREDENTIALS">
+163:    <ResourceKind key="azure_subscription" nameKey="15" type="1">
+169:    <ResourceKind key="AZURE_RESOURCE_GROUP" type="8" nameKey="12">
+310:    <ResourceKind key="AZURE_VIRTUAL_MACHINE" nameKey="14" type="4">
+356:    <ResourceKind key="AZURE_STORAGE_DISK" nameKey="31" type="4">
+380:    <ResourceKind key="AZURE_NW_INTERFACE" nameKey="18" type="4">
+397:    <ResourceKind key="AZURE_VIRTUAL_NETWORK" nameKey="27" type="4">
+420:    <ResourceKind key="azure_subnet" nameKey="57" type="1">
+428:    <ResourceKind key="AZURE_STORAGE_ACCOUNT" nameKey="34" type="4">
+510:    <ResourceKind key="AZURE_LB" nameKey="17" type="4">
+527:    <ResourceKind key="AZURE_KEY_VAULTS" nameKey="2025" type="4">
+569:    <ResourceKind key="AZURE_SQL_SERVER" nameKey="15" type="4">
+597:    <ResourceKind key="AZURE_SQL_DATABASE" nameKey="20" type="4">
+646:    <ResourceKind key="AZURE_APP_SERVICE" nameKey="30" type="4">
+712:    <ResourceKind key="AZURE_FUNCTIONS_APP" nameKey="2001" type="4">
+763:    <ResourceKind key="AZURE_APP_SERVICE_PLAN" nameKey="2244" type="4">
+803:    <ResourceKind key="AZURE_DB_ACCOUNT" nameKey="16" type="4">
+821:    <ResourceKind key="AZURE_POSTGRESQL_SERVER" nameKey="21" type="4">
+850:    <ResourceKind key="AZURE_MYSQL_SERVER" nameKey="22" type="4">
+878:    <ResourceKind key="AZURE_COMPUTE_HOSTGROUPS" nameKey="2008" type="4">
+912:    <ResourceKind key="AZURE_DEDICATE_HOST" nameKey="3206" type="4">
+951:    <ResourceKind key="AZURE_PUBLIC_IPADDRESSES" nameKey="326" type="1">
+961:    <ResourceKind key="AZURE_EXPRESSROUTE_CIRCUITS" nameKey="2017" type="4">
+1010:    <ResourceKind key="azure_recovery_services_vault" nameKey="328" type="1">
+1016:    <ResourceKind key="azure_log_analytics_workspace" nameKey="329" type="1">
+1022:    <ResourceKind key="AZURE_REGION_PER_SUB" showTag="false" nameKey="800" type="4">
+1161:    <ResourceKind key="AZURE_REGION" showTag="false" nameKey="801" type="4">
+1317:    <ResourceKind key="AZURE_WORLD" showTag="false" type="8" subType="6" worldObjectName="Azure World" nameKey="900">
+1475:    <ResourceKind key="AZURE_VIRTUAL_SCALESET_INSTANCE" nameKey="26" type="4">
+1533:    <ResourceKind key="AZURE_COMPUTE_DOMAINNAMES" nameKey="2006" type="4">
+ [ /tmp/pak-inspect ]# echo "..."
+...
+ [ /tmp/pak-inspect ]# grep -n '<ResourceKind key=' MicrosoftAzureAdapter/conf/describe.xml | sed -n '30,60p'
+1533:    <ResourceKind key="AZURE_COMPUTE_DOMAINNAMES" nameKey="2006" type="4">
+1547:    <ResourceKind key="AZURE_CONTAINER" nameKey="3115" type="4">
+1584:    <ResourceKind key="AZURE_CDN_PROFILES_ENDPOINTS" nameKey="2023" type="4">
+1628:    <ResourceKind key="AZURE_SQL_MANAGEDINSTANCES_DATABASE" nameKey="2035" type="4">
+1675:    <ResourceKind key="AZURE_MARIA_DBSERVER_DATABASE" nameKey="2036" type="4">
+1709:    <ResourceKind key="AZURE_NETAPPACCOUNT_CAPACITYPOOLS" nameKey="2027" type="4">
+1745:    <ResourceKind key="AZURE_NETAPPACCOUNT_CAPACITYPOOLS_VOLUMES" nameKey="2028" type="4">
+1786:    <ResourceKind key="AZURE_MEDIASERVICES_LIVEEVENTS" nameKey="2030" type="4">
+1818:    <ResourceKind key="AZURE_MEDIASERVICES_STREAMINGEP" nameKey="2031" type="4">
+1855:    <ResourceKind key="AZURE_NH_NAMESPACES_NOTIFICATIONHUBS" nameKey="2032" type="4">
+1894:    <ResourceKind key="AZURE_EVENT_HUBS" nameKey="3180" type="4">
+1936:    <ResourceKind key="AZURE_DATA_EXPLORER_DATABASE" nameKey="48" type="4">
+1950:    <ResourceKind key="AZURE_EVENT_GRID_SUBSCRIPTION" nameKey="2059" type="4">
+1981:    <ResourceKind key="AZURE_SYNAPSE_ANALYTICS_SQL_POOL" nameKey="43" type="4">
+2033:    <ResourceKind key="AZURE_SYNAPSE_ANALYTICS_BIGDATA_POOL" nameKey="44" type="4">
+2081:    <ResourceKind key="AZURE_SERVICES_FROM_XML" showTag="false" nameKey="3000" type="4"/>
+2084:      <ResourceKind key="AZURE_PUBLIC_IPADDRESSES" nameKey="2000" type="4">
+
+ [ /tmp/pak-inspect ]# sudo docker run --rm --entrypoint /usr/local/bin/python microsoftazureadapter-test:8.19.5 -c '
+> import sys
+> sys.path.insert(0, "app")
+> import adapter
+> d = adapter.get_adapter_definition()
+> keys = list(d.object_types.keys())
+> print("dict size:", len(keys))
+> from collections import Counter
+> dups = {k: c for k, c in Counter(keys).items() if c > 1}
+> print("dict-level dups:", dups)
+> # Now check the JSON output for duplicates
+> j = d.to_json()
+> ot_keys = [ot["key"] for ot in j["object_types"]]
+> print("JSON object_types size:", len(ot_keys))
+> dups2 = {k: c for k, c in Counter(ot_keys).items() if c > 1}
+> print("JSON-level dups:", dups2)
+> '
+dict size: 44
+dict-level dups: {}
+JSON object_types size: 44
+JSON-level dups: {}
