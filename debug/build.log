@@ -127,39 +127,6 @@ sudo docker exec azure-test sh -c "for f in /home/aria-ops-adapter-user/src/app/
 
 sudo docker rm -f azure-test
 
-
-
-
-root@photon [ /opt/aria/Aria-MP-Builder ]# # Trigger the 500
-root@photon [ /opt/aria/Aria-MP-Builder ]# curl -s -o /dev/null http://localhost:8181/adapterDefinition
-root@photon [ /opt/aria/Aria-MP-Builder ]# echo "=== CONTAINER LOGS (verbose) ==="
-=== CONTAINER LOGS (verbose) ===
-root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker logs azure-test 2>&1 | tail -100
-INFO:     Started server process [1]
-INFO:     Waiting for application startup.
-INFO:     Application startup complete.
-INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
-INFO:     172.17.0.1:34660 - "GET /adapterDefinition HTTP/1.1" 500 Internal Server Error
-INFO:     172.17.0.1:34664 - "GET /adapterDefinition HTTP/1.1" 500 Internal Server Error
-INFO:     172.17.0.1:59732 - "GET /adapterDefinition HTTP/1.1" 500 Internal Server Error
-root@photon [ /opt/aria/Aria-MP-Builder ]# echo ""
-
-root@photon [ /opt/aria/Aria-MP-Builder ]# echo "=== Controller files ==="
-=== Controller files ===
-root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker exec azure-test ls /home/aria-ops-adapter-user/src/app/swagger_server/controllers/
-__init__.py
-authorization_controller.py
-controller.py
-root@photon [ /opt/aria/Aria-MP-Builder ]# echo ""
-
-root@photon [ /opt/aria/Aria-MP-Builder ]# echo "=== adapter_definition_controller (or similar) ==="
-=== adapter_definition_controller (or similar) ===
-root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker exec azure-test sh -c "ls /home/aria-ops-adapter-user/src/app/swagger_server/controllers/ | grep -i 'adapter\|definition'"
-root@photon [ /opt/aria/Aria-MP-Builder ]# sudo docker exec azure-test sh -c "for f in /home/aria-ops-adapter-user/src/app/swagger_server/controllers/*.py; do echo \"### \$f ###\"; cat \"\$f\"; echo; done" | head -200
-### /home/aria-ops-adapter-user/src/app/swagger_server/controllers/__init__.py ###
-#  Copyright 2022 VMware, Inc.
-#  SPDX-License-Identifier: Apache-2.0
-
 ### /home/aria-ops-adapter-user/src/app/swagger_server/controllers/authorization_controller.py ###
 #  Copyright 2022 VMware, Inc.
 #  SPDX-License-Identifier: Apache-2.0
@@ -535,120 +502,6 @@ grep -n "Failed to load resource kind describe 47" /tmp/install-window.log
 LINE=$(grep -n "Failed to load resource kind describe 47" /tmp/install-window.log | head -1 | cut -d: -f1)
 sed -n "$((LINE-25)),$((LINE+5))p" /tmp/install-window.log
 
-
-
-
-
-root@ARIAOPS-NODE [ ~ ]# TARGET=$(sudo grep -l "977741b6-8f7e-4bfe-9587-80f8a5ee1ffb" /storage/log/vcops/log/analytics-6b281004-1325-4f5b-be20-3b5ffacd06c7.log.1 2>/dev/null | head -1)
-echo "Reading: $TARGET"
-Reading: /storage/log/vcops/log/analytics-6b281004-1325-4f5b-be20-3b5ffacd06c7.log.1
-root@ARIAOPS-NODE [ ~ ]# 
-root@ARIAOPS-NODE [ ~ ]# 
-root@ARIAOPS-NODE [ ~ ]# sudo grep "^2026-04-28T19:2[56]" "$TARGET" > /tmp/install-window.log
-wc -l /tmp/install-window.log
-155 /tmp/install-window.log
-root@ARIAOPS-NODE [ ~ ]# 
-root@ARIAOPS-NODE [ ~ ]# grep -nE "AdapterDescribe|DistributedTaskInstall|describe\.xml|loadDescribe|MicrosoftAzureAdapter|Caused by:|^\s+at " /tmp/install-window.log
-2:2026-04-28T19:26:03,973+0000 INFO  [DistTaskSolutionManagerDistributedTask]  com.integrien.alive.controller.DistributedTaskInstallUninstallAdapters.<init> - isForceInstall = true, isForceUpdateContent = true
-3:2026-04-28T19:26:04,069+0000 INFORMATION [DistTaskDistributedTaskInstallUninstallAdapters]  com.integrien.alive.controller.DistributedTaskInstallUninstallAdapters.run - DistributedTaskInstallUninstallAdapters started ...
-12:2026-04-28T19:26:04,077+0000 INFO  [DistTaskDistributedTaskInstallUninstallAdapters]  com.integrien.alive.controller.DistributedTaskInstallUninstallAdapters.installAdapters - installAdapters Started ...
-13:2026-04-28T19:26:04,090+0000 ERROR [DistTaskDistributedTaskInstallUninstallAdapters]  com.integrien.alive.common.adapter3.describe.ResourceAttributeDescribe.load - Illegal symbols in attribute key: SERVICE_DESCRIPTORS|AZURE_SUBSCRIPTION_ID
-14:2026-04-28T19:26:04,090+0000 WARN  [DistTaskDistributedTaskInstallUninstallAdapters]  com.integrien.alive.common.adapter3.describe.AdapterDescribe.loadDescribe - Failed to load resource kind describe 47
-15:2026-04-28T19:26:04,090+0000 WARN  [DistTaskDistributedTaskInstallUninstallAdapters]  com.integrien.alive.controller.DistributedTaskInstallUninstallAdapters.getAdapterKindAndVersion - Unable to create AdapterDescribe object.
-16:2026-04-28T19:26:04,090+0000 ERROR [DistTaskDistributedTaskInstallUninstallAdapters]  com.integrien.alive.controller.DistributedTaskInstallUninstallAdapters.getKindsAndRemoveOldAdapters - Cannot check version for adapter MicrosoftAzureAdapter.conf: Incorrect format in describe.xml
-17:2026-04-28T19:26:04,093+0000 ERROR [DistTaskDistributedTaskInstallUninstallAdapters]  com.integrien.alive.controller.DistributedTaskInstallUninstallAdapters.installAdapters - DistributedTaskInstallUninstallAdapters finished with Fail: Cannot check version for adapter MicrosoftAzureAdapter.conf: Incorrect format in describe.xml
-87:2026-04-28T19:26:04,155+0000 INFORMATION [DistTaskDistributedTaskInstallUninstallAdapters]  com.integrien.alive.controller.DistributedTaskInstallUninstallAdapters.run - DistributedTaskInstallUninstallAdapters finished in 78ms.
-root@ARIAOPS-NODE [ ~ ]# 
-root@ARIAOPS-NODE [ ~ ]# 
-root@ARIAOPS-NODE [ ~ ]# grep -n "Failed to load resource kind describe 47" /tmp/install-window.log
-14:2026-04-28T19:26:04,090+0000 WARN  [DistTaskDistributedTaskInstallUninstallAdapters]  com.integrien.alive.common.adapter3.describe.AdapterDescribe.loadDescribe - Failed to load resource kind describe 47
-root@ARIAOPS-NODE [ ~ ]# 
-root@ARIAOPS-NODE [ ~ ]# 
-root@ARIAOPS-NODE [ ~ ]# 
-root@ARIAOPS-NODE [ ~ ]# LINE=$(grep -n "Failed to load resource kind describe 47" /tmp/install-window.log | head -1 | cut -d: -f1)
-sed -n "$((LINE-25)),$((LINE+5))p" /tmp/install-window.log
-sed: invalid option -- '1'
-Usage: sed [OPTION]... {script-only-if-no-other-script} [input-file]...
-
-  -n, --quiet, --silent
-                 suppress automatic printing of pattern space
-      --debug
-                 annotate program execution
-  -e script, --expression=script
-                 add the script to the commands to be executed
-  -f script-file, --file=script-file
-                 add the contents of script-file to the commands to be executed
-  --follow-symlinks
-                 follow symlinks when processing in place
-  -i[SUFFIX], --in-place[=SUFFIX]
-                 edit files in place (makes backup if SUFFIX supplied)
-  -l N, --line-length=N
-                 specify the desired line-wrap length for the `l' command
-  --posix
-                 disable all GNU extensions.
-  -E, -r, --regexp-extended
-                 use extended regular expressions in the script
-                 (for portability use POSIX -E).
-  -s, --separate
-                 consider files as separate rather than as a single,
-                 continuous long stream.
-      --sandbox
-                 operate in sandbox mode (disable e/r/w commands).
-  -u, --unbuffered
-                 load minimal amounts of data from the input files and flush
-                 the output buffers more often
-  -z, --null-data
-                 separate lines by NUL characters
-      --help     display this help and exit
-      --version  output version information and exit
-
-If no -e, --expression, -f, or --file option is given, then the first
-non-option argument is taken as the sed script to interpret.  All
-remaining arguments are names of input files; if no input files are
-specified, then the standard input is read.
-
-GNU sed home page: <https://www.gnu.org/software/sed/>.
-General help using GNU software: <https://www.gnu.org/gethelp/>.
-
-
-
-
-
-14:20:56,150 asyncio DEBUG Using selector: EpollSelector
-14:20:56,150 docker.utils.config DEBUG Trying paths: ['/root/.docker/config.json', '/root/.dockercfg']
-14:20:56,150 docker.utils.config DEBUG Found file at path: /root/.docker/config.json
-14:20:56,150 docker.auth DEBUG Found 'auths' section
-14:20:56,150 docker.auth DEBUG Found entry (registry='https://index.docker.io/v1/', username='fake')
-14:20:56,163 urllib3.connectionpool DEBUG http://localhost:None "GET /version HTTP/1.1" 200 800
-14:20:56,165 docker.utils.config DEBUG Trying paths: ['/root/.docker/config.json', '/root/.dockercfg']
-14:20:56,165 docker.utils.config DEBUG Found file at path: /root/.docker/config.json
-14:20:56,165 vmware_aria_operations_integration_sdk.ui INFO Starting Building adapter
-14:20:56,165 docker.auth DEBUG Found 'auths' section
-14:20:56,165 docker.auth DEBUG Found entry (registry='https://index.docker.io/v1/', username='fake')
-14:20:56,173 urllib3.connectionpool DEBUG http://localhost:None "GET /version HTTP/1.1" 200 800
-14:20:56,175 urllib3.connectionpool DEBUG http://localhost:None "GET /v1.43/images/base-adapter:python-1.2.0/json HTTP/1.1" 200 None
-14:20:56,427 docker.api.build DEBUG Looking for auth config
-14:20:56,427 docker.api.build DEBUG Sending auth config ('https://index.docker.io/v1/')
-14:20:56,491 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.43/build?t=microsoftazureadapter-test%3A8.19.3&q=False&nocache=False&rm=True&forcerm=False&pull=False&labels=%7B%22mp-test%22%3A+%221777472456.164751%22%7D HTTP/1.1" 200 None
-14:20:59,656 urllib3.connectionpool DEBUG http://localhost:None "GET /v1.43/images/8008aedf7bcf/json HTTP/1.1" 200 None
-14:20:59,667 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.43/containers/create HTTP/1.1" 201 88
-14:20:59,668 urllib3.connectionpool DEBUG http://localhost:None "GET /v1.43/containers/bcad353bf6f5aabbc6a9315da133efef62288a27e0d9581d126ae30459862a37/json HTTP/1.1" 200 None
-14:20:59,845 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.43/containers/bcad353bf6f5aabbc6a9315da133efef62288a27e0d9581d126ae30459862a37/start HTTP/1.1" 204 0
-14:20:59,845 vmware_aria_operations_integration_sdk.ui INFO Finished Building adapter
-14:20:59,845 vmware_aria_operations_integration_sdk.ui INFO Starting Waiting for adapter to start
-14:20:59,845 vmware_aria_operations_integration_sdk.ui INFO Finished Waiting for adapter to start
-14:21:00,952 httpx._client DEBUG HTTP Request: GET http://localhost:8181/apiVersion "HTTP/1.1 200 OK"
-14:21:00,993 httpx._client DEBUG HTTP Request: GET http://localhost:8181/adapterDefinition "HTTP/1.1 500 Internal Server Error"
-14:21:00,993 vmware_aria_operations_integration_sdk.describe ERROR 500 Internal Server Error
-{"type": "about:blank", "title": "Internal Server Error", "detail": "The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.", "status": 500}
-14:21:00,996 vmware_aria_operations_integration_sdk.describe ERROR adapterDefinition endpoint returned 500.
-14:21:01,128 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.43/containers/bcad353bf6f5aabbc6a9315da133efef62288a27e0d9581d126ae30459862a37/kill HTTP/1.1" 204 0
-14:21:01,136 urllib3.connectionpool DEBUG http://localhost:None "DELETE /v1.43/containers/bcad353bf6f5aabbc6a9315da133efef62288a27e0d9581d126ae30459862a37?v=False&link=False&force=False HTTP/1.1" 204 0
-14:21:01,138 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.43/images/prune?filters=%7B%22label%22%3A+%5B%22mp-test%22%5D%7D HTTP/1.1" 200 42
-14:21:01,140 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.43/images/prune?filters=%7B%22label%22%3A+%5B%22mp-test%22%5D%7D HTTP/1.1" 200 42
-14:21:01,141 vmware_aria_operations_integration_sdk.mp_build ERROR Unable to build pak file
-
-
 Same /tmp full pattern most likely — the container's /adapterDefinition is 500ing again. Two quick checks:
 
 
@@ -686,4 +539,23 @@ cd /opt/aria/Aria-MP-Builder
 VERSION=$(awk -F'"' '/"version":/ {print $4}' Azure-Native-Build/manifest.txt)
 echo "Version: $VERSION"
 sudo docker tag microsoftazureadapter-test:$VERSION 214.73.76.134:5000/azuregovcloud-adapter:latest
+sudo docker push 214.73.76.134:5000/azuregovcloud-adapter:latest
+
+
+
+
+cd /opt/aria/Aria-MP-Builder
+git fetch && git reset --hard origin/main
+bash scripts/build-pak.sh 2>&1 | tee debug/build.log
+
+# Confirm 27 kinds + dynamic loader fired (should now substitute 22 kinds:
+# 19 first-class + 3 geo)
+grep -E 'native loader|substitut|Reaping' debug/build.log
+PAK=$(ls -t Azure-Native-Build/build/*.pak | head -1)
+rm -rf /tmp/pak-inspect && mkdir /tmp/pak-inspect && cd /tmp/pak-inspect
+unzip -q "$PAK" && unzip -q adapter.zip
+grep -c '<ResourceKind ' MicrosoftAzureAdapter/conf/describe.xml   # expect 28 (27 + adapter-instance)
+
+# Push and install
+sudo docker tag microsoftazureadapter-test:8.19.4 214.73.76.134:5000/azuregovcloud-adapter:latest
 sudo docker push 214.73.76.134:5000/azuregovcloud-adapter:latest
