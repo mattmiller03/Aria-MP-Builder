@@ -614,6 +614,39 @@ General help using GNU software: <https://www.gnu.org/gethelp/>.
 
 
 
+14:20:56,150 asyncio DEBUG Using selector: EpollSelector
+14:20:56,150 docker.utils.config DEBUG Trying paths: ['/root/.docker/config.json', '/root/.dockercfg']
+14:20:56,150 docker.utils.config DEBUG Found file at path: /root/.docker/config.json
+14:20:56,150 docker.auth DEBUG Found 'auths' section
+14:20:56,150 docker.auth DEBUG Found entry (registry='https://index.docker.io/v1/', username='fake')
+14:20:56,163 urllib3.connectionpool DEBUG http://localhost:None "GET /version HTTP/1.1" 200 800
+14:20:56,165 docker.utils.config DEBUG Trying paths: ['/root/.docker/config.json', '/root/.dockercfg']
+14:20:56,165 docker.utils.config DEBUG Found file at path: /root/.docker/config.json
+14:20:56,165 vmware_aria_operations_integration_sdk.ui INFO Starting Building adapter
+14:20:56,165 docker.auth DEBUG Found 'auths' section
+14:20:56,165 docker.auth DEBUG Found entry (registry='https://index.docker.io/v1/', username='fake')
+14:20:56,173 urllib3.connectionpool DEBUG http://localhost:None "GET /version HTTP/1.1" 200 800
+14:20:56,175 urllib3.connectionpool DEBUG http://localhost:None "GET /v1.43/images/base-adapter:python-1.2.0/json HTTP/1.1" 200 None
+14:20:56,427 docker.api.build DEBUG Looking for auth config
+14:20:56,427 docker.api.build DEBUG Sending auth config ('https://index.docker.io/v1/')
+14:20:56,491 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.43/build?t=microsoftazureadapter-test%3A8.19.3&q=False&nocache=False&rm=True&forcerm=False&pull=False&labels=%7B%22mp-test%22%3A+%221777472456.164751%22%7D HTTP/1.1" 200 None
+14:20:59,656 urllib3.connectionpool DEBUG http://localhost:None "GET /v1.43/images/8008aedf7bcf/json HTTP/1.1" 200 None
+14:20:59,667 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.43/containers/create HTTP/1.1" 201 88
+14:20:59,668 urllib3.connectionpool DEBUG http://localhost:None "GET /v1.43/containers/bcad353bf6f5aabbc6a9315da133efef62288a27e0d9581d126ae30459862a37/json HTTP/1.1" 200 None
+14:20:59,845 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.43/containers/bcad353bf6f5aabbc6a9315da133efef62288a27e0d9581d126ae30459862a37/start HTTP/1.1" 204 0
+14:20:59,845 vmware_aria_operations_integration_sdk.ui INFO Finished Building adapter
+14:20:59,845 vmware_aria_operations_integration_sdk.ui INFO Starting Waiting for adapter to start
+14:20:59,845 vmware_aria_operations_integration_sdk.ui INFO Finished Waiting for adapter to start
+14:21:00,952 httpx._client DEBUG HTTP Request: GET http://localhost:8181/apiVersion "HTTP/1.1 200 OK"
+14:21:00,993 httpx._client DEBUG HTTP Request: GET http://localhost:8181/adapterDefinition "HTTP/1.1 500 Internal Server Error"
+14:21:00,993 vmware_aria_operations_integration_sdk.describe ERROR 500 Internal Server Error
+{"type": "about:blank", "title": "Internal Server Error", "detail": "The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.", "status": 500}
+14:21:00,996 vmware_aria_operations_integration_sdk.describe ERROR adapterDefinition endpoint returned 500.
+14:21:01,128 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.43/containers/bcad353bf6f5aabbc6a9315da133efef62288a27e0d9581d126ae30459862a37/kill HTTP/1.1" 204 0
+14:21:01,136 urllib3.connectionpool DEBUG http://localhost:None "DELETE /v1.43/containers/bcad353bf6f5aabbc6a9315da133efef62288a27e0d9581d126ae30459862a37?v=False&link=False&force=False HTTP/1.1" 204 0
+14:21:01,138 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.43/images/prune?filters=%7B%22label%22%3A+%5B%22mp-test%22%5D%7D HTTP/1.1" 200 42
+14:21:01,140 urllib3.connectionpool DEBUG http://localhost:None "POST /v1.43/images/prune?filters=%7B%22label%22%3A+%5B%22mp-test%22%5D%7D HTTP/1.1" 200 42
+14:21:01,141 vmware_aria_operations_integration_sdk.mp_build ERROR Unable to build pak file
 
 
 
