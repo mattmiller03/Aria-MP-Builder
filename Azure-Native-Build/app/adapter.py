@@ -663,14 +663,19 @@ def get_adapter_definition():
     _add_service_descriptors(er)
 
     # -- Recovery Services Vault (custom, no native equivalent) --
+    # NOTE: no _add_service_descriptors() — the SDK emits SERVICE_DESCRIPTORS as
+    # flat pipe-separated attribute keys ("SERVICE_DESCRIPTORS|AZURE_SUBSCRIPTION_ID")
+    # which Aria Ops's parser rejects as "Illegal symbols in attribute key". The
+    # 19 native-equivalent kinds get away with it because the dynamic loader in
+    # patch-describe-xml.py substitutes them with native nested-ResourceGroup XML.
+    # Custom kinds with no native equivalent must avoid SERVICE_DESCRIPTORS.
     rv = definition.define_object_type(OBJ_RECOVERY_VAULT, "Azure Recovery Services Vault")
     _add_standard_identifiers(rv)
-    _add_service_descriptors(rv)
 
     # -- Log Analytics Workspace (custom, no native equivalent) --
+    # See note above re: SERVICE_DESCRIPTORS exclusion for custom kinds.
     la = definition.define_object_type(OBJ_LOG_ANALYTICS, "Azure Log Analytics Workspace")
     _add_standard_identifiers(la)
-    _add_service_descriptors(la)
 
     # ===================================================================
     # Region / World aggregation kinds — match native pak describe.xml

@@ -6,7 +6,6 @@ from azure_client import AzureClient
 from constants import (
     API_VERSIONS, OBJ_LOG_ANALYTICS, OBJ_RESOURCE_GROUP,
     RES_IDENT_SUB, RES_IDENT_RG, RES_IDENT_REGION, RES_IDENT_ID,
-    SD_SUBSCRIPTION, SD_RESOURCE_GROUP, SD_REGION, SD_SERVICE, AZURE_SERVICE_NAMES,
 )
 from helpers import make_identifiers, extract_resource_group, safe_property, sanitize_tag_key
 
@@ -45,11 +44,10 @@ def collect_log_analytics_workspaces(client: AzureClient, result, adapter_kind: 
                 ]),
             )
 
-            # SERVICE_DESCRIPTORS
-            safe_property(obj, SD_SUBSCRIPTION, sub_id)
-            safe_property(obj, SD_RESOURCE_GROUP, rg_name)
-            safe_property(obj, SD_REGION, location)
-            safe_property(obj, SD_SERVICE, AZURE_SERVICE_NAMES.get(OBJ_LOG_ANALYTICS, ""))
+            # SERVICE_DESCRIPTORS group is omitted on this custom kind — see
+            # adapter.py note: pipe-separated attribute keys are rejected by Aria
+            # Ops's parser and only the 19 native-equivalent kinds get the
+            # native-XML substitution that uses nested groups instead.
 
             safe_property(obj, "workspace_name", ws_name)
             safe_property(obj, "resource_id", resource_id)
