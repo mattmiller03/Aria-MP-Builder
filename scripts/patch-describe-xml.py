@@ -420,11 +420,20 @@ def _substitute_resource_kind(content: str, kind: str, block: str) -> tuple[str,
 
 def _load_native_resourcekinds(native_xml_path: str) -> dict:
     """Read the native pak's describe.xml and return a dict mapping each
-    ResourceKind key to its raw `<ResourceKind ...>...</ResourceKind>` span.
+    ResourceKind key to its raw `<ResourceKind ...>...</ResourceKind>` span
+    (or, for self-closing kinds, the `<ResourceKind ... />` element itself).
 
     Uses regex (not ET) so we preserve the exact whitespace from the source —
     important because Aria Ops parses describe.xml byte-for-byte and any
     SDK-vs-native diff has bitten us before.
+
+    Critical: self-closing tags (`<ResourceKind .../>`) MUST be detected
+    explicitly. Without that, the regex would happily match the self-closer
+    as an "open" tag and then look for the next `</ResourceKind>` — which
+    belongs to a LATER kind in the file. That overlong span, substituted
+    into our pak, creates a duplicate of the next kind. (Symptom hit on
+    AZURE_SERVICES_FROM_XML which is self-closing in the native pak; the
+    bogus span dragged AZURE_PUBLIC_IPADDRESSES along with it.)
     """
     with open(native_xml_path, "r", encoding="utf-8") as f:
         native_content = f.read()
@@ -435,11 +444,17 @@ def _load_native_resourcekinds(native_xml_path: str) -> dict:
     )
     for match in open_re.finditer(native_content):
         key = match.group(1)
-        close_start = native_content.find("</ResourceKind>", match.end())
-        if close_start == -1:
-            continue
-        full_end = close_start + len("</ResourceKind>")
-        kinds[key] = native_content[match.start():full_end]
+        # The matched text includes the closing `>`. If the char before `>`
+        # is `/`, this is a self-closing element with no body or close tag.
+        is_self_closing = match.group(0).rstrip(">").endswith("/")
+        if is_self_closing:
+            kinds[key] = native_content[match.start():match.end()]
+        else:
+            close_start = native_content.find("</ResourceKind>", match.end())
+            if close_start == -1:
+                continue
+            full_end = close_start + len("</ResourceKind>")
+            kinds[key] = native_content[match.start():full_end]
 
     return kinds
 
