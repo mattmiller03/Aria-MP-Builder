@@ -600,12 +600,21 @@ cat /tmp/our-kinds.txt
 sudo grep -oE 'ResourceKind key="[^"]+"' /opt/aria/Aria-MP-Builder/sdk_packages/MicrosoftAzureAdapter-818024067771/AzureAdapter/MicrosoftAzureAdapter/conf/describe.xml | sort -u | head -50
 
 
-# 1. Our kinds (already exported to /tmp/our-kinds.txt — re-format for sorting)
-cat /tmp/our-kinds.txt | python3 -c "import sys, ast; [print(k) for k in ast.literal_eval(sys.stdin.read().strip())]" | sort > /tmp/ours-sorted.txt
+sudo docker run --rm --entrypoint /usr/local/bin/python microsoftazureadapter-test:8.19.5 -c '
+import sys
+sys.path.insert(0, "app")
+import adapter
+for k in sorted(adapter.get_adapter_definition().object_types.keys()):
+    print(k)
+' > /tmp/ours-sorted.txt
+wc -l /tmp/ours-sorted.txt
 
-# 2. Native kinds
+# Native kinds list (no head limit this time)
 sudo grep -oE 'ResourceKind key="[^"]+"' /opt/aria/Aria-MP-Builder/sdk_packages/MicrosoftAzureAdapter-818024067771/AzureAdapter/MicrosoftAzureAdapter/conf/describe.xml \
-  | sed -E 's/ResourceKind key="([^"]+)"/\1/' | sort -u > /tmp/native-sorted.txt
+  | sed -E 's/ResourceKind key="([^"]+)"/\1/' \
+  | sort -u > /tmp/native-sorted.txt
+wc -l /tmp/native-sorted.txt
 
-# 3. Show our kinds that have NO native equivalent — these are the dynamic-loader skips
+# The diff — kinds we have that native doesn't (these are the dynamic-loader skips)
+echo "=== ours but not in native ==="
 comm -23 /tmp/ours-sorted.txt /tmp/native-sorted.txt
