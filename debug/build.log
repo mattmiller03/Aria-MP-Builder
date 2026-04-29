@@ -655,28 +655,36 @@ grep -oE '<ResourceKind key="[^"]+"' MicrosoftAzureAdapter/conf/describe.xml | s
 
 
 
- [ /tmp/pak-inspect ]# grep -c '<ResourceKind key="AZURE_PUBLIC_IPADDRESSES"' MicrosoftAzureAdapter/conf/describe.xml
-2
- [ /tmp/pak-inspect ]# grep -n '<ResourceKind key=' MicrosoftAzureAdapter/conf/describe.xml | sort -t'"' -k2 | uniq -c -f1 -w 50 | sort -rn | head
-      2 1709:    <ResourceKind key="AZURE_NETAPPACCOUNT_CAPACITYPOOLS" nameKey="2027" type="4">
-      1 961:    <ResourceKind key="AZURE_EXPRESSROUTE_CIRCUITS" nameKey="2017" type="4">
-      1 951:    <ResourceKind key="AZURE_PUBLIC_IPADDRESSES" nameKey="326" type="1">
-      1 912:    <ResourceKind key="AZURE_DEDICATE_HOST" nameKey="3206" type="4">
-      1 878:    <ResourceKind key="AZURE_COMPUTE_HOSTGROUPS" nameKey="2008" type="4">
-      1 850:    <ResourceKind key="AZURE_MYSQL_SERVER" nameKey="22" type="4">
-      1 821:    <ResourceKind key="AZURE_POSTGRESQL_SERVER" nameKey="21" type="4">
-      1 803:    <ResourceKind key="AZURE_DB_ACCOUNT" nameKey="16" type="4">
-      1 763:    <ResourceKind key="AZURE_APP_SERVICE_PLAN" nameKey="2244" type="4">
-      1 712:    <ResourceKind key="AZURE_FUNCTIONS_APP" nameKey="2001" type="4">
- [ /tmp/pak-inspect ]# 
- [ /tmp/pak-inspect ]# grep -oE '<ResourceKind key="[^"]+"' MicrosoftAzureAdapter/conf/describe.xml | sort | uniq -c | sort -rn | head
-      2 <ResourceKind key="AZURE_PUBLIC_IPADDRESSES"
-      1 <ResourceKind key="MicrosoftAzureAdapter Instance"
-      1 <ResourceKind key="AZURE_WORLD"
-      1 <ResourceKind key="AZURE_VIRTUAL_SCALESET_INSTANCE"
-      1 <ResourceKind key="AZURE_VIRTUAL_NETWORK"
-      1 <ResourceKind key="AZURE_VIRTUAL_MACHINE"
-      1 <ResourceKind key="AZURE_SYNAPSE_ANALYTICS_SQL_POOL"
-      1 <ResourceKind key="AZURE_SYNAPSE_ANALYTICS_BIGDATA_POOL"
-      1 <ResourceKind key="azure_subscription"
-      1 <ResourceKind key="azure_subnet"
+Let me see exactly where both duplicates are and what's around them:
+
+
+# Show both line numbers
+grep -n '<ResourceKind key="AZURE_PUBLIC_IPADDRESSES"' MicrosoftAzureAdapter/conf/describe.xml
+
+# Show all kinds with their order — need to find where the extra emission slips in
+grep -n '<ResourceKind key=' MicrosoftAzureAdapter/conf/describe.xml | head -30
+echo "..."
+grep -n '<ResourceKind key=' MicrosoftAzureAdapter/conf/describe.xml | sed -n '30,60p'
+The first command tells us the two line numbers. The second/third map the order — comparing where the duplicate sits relative to first-class kinds vs stub-loop-emitted kinds will tell us if the duplicate is from the explicit define_object_type at adapter.py:656 OR sneaking in from somewhere else.
+
+Also a sanity check on the SDK's serialization, since adapter.py calls only have 1 OBJ_PUBLIC_IP use:
+
+
+sudo docker run --rm --entrypoint /usr/local/bin/python microsoftazureadapter-test:8.19.5 -c '
+import sys
+sys.path.insert(0, "app")
+import adapter
+d = adapter.get_adapter_definition()
+keys = list(d.object_types.keys())
+print("dict size:", len(keys))
+from collections import Counter
+dups = {k: c for k, c in Counter(keys).items() if c > 1}
+print("dict-level dups:", dups)
+# Now check the JSON output for duplicates
+j = d.to_json()
+ot_keys = [ot["key"] for ot in j["object_types"]]
+print("JSON object_types size:", len(ot_keys))
+dups2 = {k: c for k, c in Counter(ot_keys).items() if c > 1}
+print("JSON-level dups:", dups2)
+'
+If dups is empty but dups2 has entries, the SDK emits more than the dict contains — pointing at SDK-level duplication. If both are empty, the duplicate is being introduced by patch-describe-xml.py somehow. Paste outputs.
