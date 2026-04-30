@@ -1,0 +1,1160 @@
+#!/usr/bin/env python3
+"""End-to-end verification for the Azure Gov management pack.
+
+Drives a real collection cycle by importing app/adapter.py:collect() directly
+with a hand-rolled StubAdapterInstance, then layers on three more audits:
+  --pak       describe.xml audit (kind registry, Dedicated Host custom attrs,
+              pipe-keyed attrs on custom kinds)
+  --pak       content drift audit (dashboards, alert defs, traversal specs)
+  --aria-ops  Aria Ops Suite-API counts and Dedicated Host props/stats
+
+Each audit is opt-in via flag so subsets run independently. Live collection
+needs the aria.ops SDK installed (wheel under app/wheels/); static audits do
+not.
+
+Exit code: 0 = all PASS, 1 = any FAIL, 2 = WARN-only.
+
+See plans/pure-cuddling-charm.md for context.
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import logging
+import os
+import re
+import ssl
+import sys
+import time
+import urllib.error
+import urllib.request
+import xml.etree.ElementTree as ET
+import zipfile
+from pathlib import Path
+from typing import Any, Optional
+
+logger = logging.getLogger("verify_collection")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    stream=sys.stdout,
+)
+
+
+# ---------------------------------------------------------------------------
+# Per-kind expectations
+# ---------------------------------------------------------------------------
+# Conservative: require count >= min_count, parent edge, and the universal
+# SERVICE_DESCRIPTORS|AZURE_SUBSCRIPTION_ID property. Kind-specific extras only
+# where the collector reliably emits them. Keys verified against
+# constants.py MONITOR_METRICS and the actual safe_property() calls in each
+# collector file.
+
+# Universal property emitted by _add_service_descriptors() in adapter.py for
+# nearly every kind.
+UNIVERSAL_PROP = "SERVICE_DESCRIPTORS|AZURE_SUBSCRIPTION_ID"
+
+KIND_SPECS: dict[str, dict[str, Any]] = {
+    # Roots
+    "azure_subscription": {
+        "min_count": 1,
+        "parent_kind": None,
+        "required_props": set(),
+    },
+    "AZURE_RESOURCE_GROUP": {
+        "min_count": 1,
+        "parent_kind": "azure_subscription",
+        "required_props": {UNIVERSAL_PROP},
+    },
+    # Compute
+    "AZURE_VIRTUAL_MACHINE": {
+        "min_count": 0,  # tenant may have zero
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+        "required_metrics": {"CPU|CPU_USAGE", "NETWORK|NETWORK_IN"},
+    },
+    "AZURE_STORAGE_DISK": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+    },
+    "AZURE_COMPUTE_HOSTGROUPS": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+    },
+    "AZURE_DEDICATE_HOST": {  # native pak typo preserved
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {
+            UNIVERSAL_PROP,
+            "hourly_rate",
+            "monthly_rate_estimate",
+            "vm_size_summary",
+            "host_vcpu_capacity",
+            "memory_utilization_pct",
+            "health_availability_state",
+            "policy_compliance_state",
+        },
+    },
+    # Networking
+    "AZURE_NW_INTERFACE": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+        "required_metrics": {"BYTES_SENT", "BYTES_RECEIVED"},
+    },
+    "AZURE_VIRTUAL_NETWORK": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+    },
+    "azure_subnet": {
+        "min_count": 0,
+        "parent_kind": "AZURE_VIRTUAL_NETWORK",
+        "required_props": set(),
+    },
+    "AZURE_LB": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+        "required_metrics": {"BYTE_COUNT"},
+    },
+    "AZURE_PUBLIC_IPADDRESSES": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+    },
+    "AZURE_EXPRESSROUTE_CIRCUITS": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+    },
+    # Storage
+    "AZURE_STORAGE_ACCOUNT": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+        "required_metrics": {"summary|usedCapacity"},
+    },
+    # Identity / Security
+    "AZURE_KEY_VAULTS": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+    },
+    # Database
+    "AZURE_SQL_SERVER": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+    },
+    "AZURE_SQL_DATABASE": {
+        "min_count": 0,
+        "parent_kind": "AZURE_SQL_SERVER",
+        "required_props": {UNIVERSAL_PROP},
+    },
+    "AZURE_POSTGRESQL_SERVER": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+        "required_metrics": {"CPU_PERCENT"},
+    },
+    "AZURE_MYSQL_SERVER": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+        "required_metrics": {"CPU_PERCENT"},
+    },
+    "AZURE_DB_ACCOUNT": {  # Cosmos DB
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+    },
+    # Web / App Service
+    "AZURE_APP_SERVICE": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+        "required_metrics": {"summary|requests"},
+    },
+    "AZURE_FUNCTIONS_APP": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+    },
+    "AZURE_APP_SERVICE_PLAN": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": {UNIVERSAL_PROP},
+    },
+    # Custom kinds — must NOT have pipe-keyed attrs (rejected by Aria Ops)
+    "azure_recovery_services_vault": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": set(),
+    },
+    "azure_log_analytics_workspace": {
+        "min_count": 0,
+        "parent_kind": "AZURE_RESOURCE_GROUP",
+        "required_props": set(),
+    },
+    # World aggregation
+    "AZURE_WORLD": {
+        "min_count": 1,
+        "parent_kind": None,
+        "required_props": set(),
+    },
+    "AZURE_REGION": {
+        "min_count": 1,
+        "parent_kind": None,
+        "required_props": set(),
+    },
+    "AZURE_REGION_PER_SUB": {
+        "min_count": 1,
+        "parent_kind": None,
+        "required_props": set(),
+    },
+}
+
+# Custom (non-native) kind keys — must not have pipe-keyed attrs.
+CUSTOM_KIND_KEYS = {
+    "azure_subscription",
+    "azure_subnet",
+    "azure_recovery_services_vault",
+    "azure_log_analytics_workspace",
+}
+
+# Dedicated Host custom attributes — must be present in the patched
+# describe.xml AND populated on collected objects. Source of truth:
+# app/collectors/dedicated_hosts.py safe_property(host_obj, ...) calls.
+DH_CUSTOM_ATTRS = [
+    # Pricing
+    "hourly_rate",
+    "monthly_rate_estimate",
+    # Capacity / utilization
+    "host_vcpu_capacity",
+    "total_vm_vcpus_allocated",
+    "vcpu_utilization_pct",
+    "host_memory_capacity_gb",
+    "memory_utilization_pct",
+    "memory_available_gb",
+    "total_vm_memory_gb",
+    "vm_memory_breakdown",
+    # VM placement
+    "vm_count",
+    "vm_names",
+    "vm_size_summary",
+    "vm_size_distinct_count",
+    "vm_disk_skus",
+    # Allocatable capacity
+    "max_available_slots",
+    "smallest_vm_size",
+    "smallest_vm_available",
+    "allocatable_vm_summary",
+    # Health
+    "health_availability_state",
+    "health_detailed_status",
+    "health_reason_type",
+    "health_summary",
+    # Maintenance
+    "maintenance_pending",
+    "maintenance_impact_type",
+    "maintenance_status",
+    # Cost (if Cost Management API reachable)
+    "cost_month_to_date",
+    "cost_currency",
+    "cost_last_30_days",
+    # Advisor
+    "advisor_recommendation_count",
+    "advisor_recommendations",
+    "advisor_impact",
+    "advisor_category",
+    # Activity log
+    "recent_operations_count",
+    "last_operation",
+    "last_operation_time",
+    "last_operation_status",
+    "last_operation_caller",
+    # Policy compliance
+    "policy_compliance_state",
+    "policy_non_compliant_count",
+    # Reservations
+    "reservation_status",
+    "reservation_id",
+    "reservation_expiry",
+    # ARM properties
+    "time_created",
+    "sku_tier",
+    "sku_capacity",
+]
+
+# Identifier keys that look like AZURE_* but are NOT resource kinds.
+NON_KIND_AZURE_TOKENS = {
+    "AZURE_TENANT_ID",
+    "AZURE_SUBSCRIPTION_ID",
+    "AZURE_CLIENT_ID",
+    "AZURE_RESOURCE_GROUP",  # also a kind, but token reuse is fine
+    "AZURE_REGION",  # also a kind
+    "AZURE_SERVICE",
+    "AZURE_GOV_CLOUD_ACCOUNT",
+    "AZURE_STANDARD_ACCOUNT",
+    "AZURE_CLIENT_CREDENTIALS",
+    "AZURE_NIC_VM",
+}
+
+
+# ---------------------------------------------------------------------------
+# Connection loading + stub
+# ---------------------------------------------------------------------------
+
+def load_connection(path: str) -> dict:
+    """Load mp-test format connections.json -> flat dict."""
+    with open(path) as f:
+        data = json.load(f)
+    conns = data.get("connections", [])
+    if not conns:
+        raise ValueError(f"No 'connections' in {path}")
+    conn = conns[0]
+    identifiers = {
+        k: (v.get("value") if isinstance(v, dict) else v)
+        for k, v in conn.get("identifiers", {}).items()
+    }
+    credentials: dict[str, Optional[str]] = {}
+    cred_block = conn.get("credential") or {}
+    for k, v in cred_block.items():
+        if k == "credential_kind_key":
+            credentials["_type"] = v
+        elif isinstance(v, dict):
+            credentials[k] = v.get("value")
+        else:
+            credentials[k] = v
+    return {
+        "name": conn.get("name", "<unnamed>"),
+        "identifiers": identifiers,
+        "credentials": credentials,
+        "suite_api_hostname": conn.get("suite_api_hostname"),
+        "suite_api_username": conn.get("suite_api_username"),
+        "suite_api_password": conn.get("suite_api_password"),
+    }
+
+
+class StubAdapterInstance:
+    """Minimal shim implementing the two methods adapter.collect() reads."""
+
+    def __init__(self, conn: dict) -> None:
+        self._identifiers = conn["identifiers"]
+        self._credentials = conn["credentials"]
+
+    def get_identifier_value(
+        self, key: str, default: Optional[str] = None
+    ) -> Optional[str]:
+        v = self._identifiers.get(key)
+        return v if v else default
+
+    def get_credential_value(self, key: str) -> Optional[str]:
+        return self._credentials.get(key)
+
+
+# ---------------------------------------------------------------------------
+# Live collection
+# ---------------------------------------------------------------------------
+
+def run_collection(stub: StubAdapterInstance) -> tuple[Any, float]:
+    """Import adapter and run collect(). Returns (CollectResult, duration_seconds)."""
+    here = Path(__file__).resolve().parent
+    app_dir = here.parent / "app"
+    if not app_dir.exists():
+        raise FileNotFoundError(f"Expected app/ at {app_dir}")
+    sys.path.insert(0, str(app_dir))
+    import importlib  # noqa
+    adapter_mod = importlib.import_module("adapter")
+    t0 = time.time()
+    result = adapter_mod.collect(stub)
+    return result, time.time() - t0
+
+
+def inspect_result(result: Any) -> dict[str, list[dict]]:
+    """Walk CollectResult.objects, group by kind, snapshot what we need."""
+    by_kind: dict[str, list[dict]] = {}
+    for obj in result.objects.values():
+        kind = obj.object_type()
+        snap = {
+            "name": obj.get_key().name,
+            "identifiers": {
+                k: ident.value
+                for k, ident in obj.get_key().identifiers.items()
+            },
+            "properties": {
+                p.key: p.value for p in obj._properties
+            },
+            "metric_keys": sorted({m.key for m in obj._metrics}),
+            "metric_datapoints_by_key": {},
+            "parents": [
+                {"kind": k.object_kind, "name": k.name}
+                for k in obj.get_parents()
+            ],
+        }
+        for m in obj._metrics:
+            snap["metric_datapoints_by_key"][m.key] = (
+                snap["metric_datapoints_by_key"].get(m.key, 0) + 1
+            )
+        by_kind.setdefault(kind, []).append(snap)
+    return by_kind
+
+
+def assert_kind(
+    by_kind: dict[str, list[dict]], kind: str, spec: dict
+) -> tuple[str, int, list[str]]:
+    """Return (status, count, reasons) for one kind. status in PASS/WARN/FAIL."""
+    reasons: list[str] = []
+    objs = by_kind.get(kind, [])
+    count = len(objs)
+
+    min_count = spec.get("min_count", 0)
+    if count < min_count:
+        return ("FAIL", count, [f"count {count} < min {min_count}"])
+    if count == 0:
+        return ("WARN", 0, ["no objects (tenant may have none)"])
+
+    # Parent edge
+    parent_kind = spec.get("parent_kind")
+    if parent_kind:
+        no_parent = [
+            o for o in objs
+            if not any(p["kind"] == parent_kind for p in o["parents"])
+        ]
+        if no_parent:
+            reasons.append(
+                f"{len(no_parent)}/{count} missing parent {parent_kind}"
+            )
+
+    # Required props (at least one object has each, with non-empty value)
+    for prop in spec.get("required_props", set()):
+        present = any(
+            prop in o["properties"]
+            and o["properties"][prop] not in (None, "", "None")
+            for o in objs
+        )
+        if not present:
+            reasons.append(f"prop {prop!r} not populated on any object")
+
+    # Required metrics (at least one object has each)
+    min_dp = spec.get("min_metric_datapoints", 1)
+    for metric in spec.get("required_metrics", set()):
+        present = any(metric in o["metric_keys"] for o in objs)
+        if not present:
+            reasons.append(f"metric {metric!r} absent on every object")
+            continue
+        max_dp = max(
+            (o["metric_datapoints_by_key"].get(metric, 0) for o in objs),
+            default=0,
+        )
+        if max_dp < min_dp:
+            reasons.append(
+                f"metric {metric!r} has at most {max_dp} datapoints "
+                f"(need >= {min_dp})"
+            )
+
+    if reasons:
+        return ("FAIL", count, reasons)
+    return ("PASS", count, [])
+
+
+# ---------------------------------------------------------------------------
+# describe.xml audit
+# ---------------------------------------------------------------------------
+
+def _read_describe_xml(pak_path: Path) -> bytes:
+    """Extract describe.xml from a .pak. May be at root or inside adapter.zip."""
+    with zipfile.ZipFile(pak_path) as outer:
+        names = outer.namelist()
+
+        # Try direct describe.xml
+        direct = next((n for n in names if n.endswith("describe.xml")), None)
+        if direct:
+            return outer.read(direct)
+
+        # Try inside adapter.zip
+        adapter_zips = [n for n in names if n.endswith("adapter.zip")]
+        for az_name in adapter_zips:
+            with outer.open(az_name) as az_fp:
+                # zipfile needs a seekable stream; load fully into BytesIO
+                import io
+                az_bytes = az_fp.read()
+                with zipfile.ZipFile(io.BytesIO(az_bytes)) as inner:
+                    for n in inner.namelist():
+                        if n.endswith("describe.xml"):
+                            return inner.read(n)
+
+    raise ValueError(f"No describe.xml found in {pak_path}")
+
+
+def audit_describe_xml(pak_path: str) -> dict[str, dict[str, Any]]:
+    """Parse describe.xml; return {kind_key: {attrs, metrics, groups, parent}}."""
+    pak = Path(pak_path)
+    if not pak.exists():
+        raise FileNotFoundError(pak_path)
+    xml_bytes = _read_describe_xml(pak)
+    root = ET.fromstring(xml_bytes)
+    ns = ""
+    if root.tag.startswith("{"):
+        ns = root.tag[: root.tag.index("}") + 1]
+
+    index: dict[str, dict[str, Any]] = {}
+    for rk in root.iter(f"{ns}ResourceKind"):
+        key = rk.get("key", "")
+        if not key:
+            continue
+        attrs: set[str] = set()
+        metrics: set[str] = set()
+        groups: set[str] = set()
+        for child in rk.iter():
+            tag = child.tag[len(ns):] if ns and child.tag.startswith(ns) else child.tag
+            ck = child.get("key", "")
+            if not ck:
+                continue
+            if tag == "ResourceAttribute":
+                # isProperty="true" => property; "false" => metric; default true
+                is_prop = child.get("isProperty", "true").lower() != "false"
+                if is_prop:
+                    attrs.add(ck)
+                else:
+                    metrics.add(ck)
+            elif tag == "ResourceGroup":
+                groups.add(ck)
+        index[key] = {"attrs": attrs, "metrics": metrics, "groups": groups}
+    return index
+
+
+# ---------------------------------------------------------------------------
+# Content drift audit
+# ---------------------------------------------------------------------------
+
+KIND_TOKEN_RE = re.compile(r"\b(AZURE_[A-Z][A-Z0-9_]*|azure_[a-z][a-z0-9_]*)\b")
+
+
+def _attr_in_describe(
+    attr_key: str, describe_index: dict[str, dict[str, Any]]
+) -> bool:
+    for d in describe_index.values():
+        if attr_key in d["attrs"] or attr_key in d["metrics"]:
+            return True
+    return False
+
+
+def _walk_json_for_tokens(
+    node: Any,
+    path: str,
+    drift: list[tuple[str, str, str]],
+    valid_kinds: set[str],
+    file_: str,
+) -> None:
+    if isinstance(node, dict):
+        for k, v in node.items():
+            _walk_json_for_tokens(v, f"{path}.{k}", drift, valid_kinds, file_)
+    elif isinstance(node, list):
+        for i, item in enumerate(node):
+            _walk_json_for_tokens(item, f"{path}[{i}]", drift, valid_kinds, file_)
+    elif isinstance(node, str):
+        for m in KIND_TOKEN_RE.finditer(node):
+            tok = m.group(1)
+            if tok in NON_KIND_AZURE_TOKENS:
+                continue
+            if tok in valid_kinds:
+                continue
+            # Treat AZURE_RESOURCE_GROUP and AZURE_REGION as valid kinds
+            # (they appear as both identifier names and kind keys).
+            drift.append((file_, path or "(root)", f"unknown kind token {tok}"))
+
+
+def audit_content(
+    content_dir: str, describe_index: dict[str, dict[str, Any]]
+) -> list[tuple[str, str, str]]:
+    """Walk content/ for kind/attribute references not in describe_index."""
+    drift: list[tuple[str, str, str]] = []
+    base = Path(content_dir)
+    if not base.exists():
+        return [(content_dir, "(missing)", "content directory does not exist")]
+
+    valid_kinds = set(describe_index.keys())
+
+    # Traversal specs
+    for f in base.rglob("*.xml"):
+        if "traversalspec" not in str(f).lower():
+            continue
+        try:
+            text = f.read_text(encoding="utf-8", errors="replace")
+        except OSError as e:
+            drift.append((str(f), "(read error)", str(e)))
+            continue
+        # Require AZURE_ or azure_ prefix on captured kind so we don't
+        # mis-capture nested adapter-kind tokens like
+        # `MicrosoftAzureAdapter::MicrosoftAzureAdapter::AZURE_X`.
+        for m in re.finditer(
+            r"MicrosoftAzureAdapter::([Aa][Zz][Uu][Rr][Ee]_[A-Za-z0-9_]+)", text
+        ):
+            kind = m.group(1)
+            if kind not in valid_kinds and kind not in NON_KIND_AZURE_TOKENS:
+                drift.append(
+                    (str(f), f"offset {m.start()}", f"unknown kind {kind}")
+                )
+
+    # Alert defs (XML)
+    for f in base.rglob("*.xml"):
+        if "alertdef" not in str(f).lower():
+            continue
+        try:
+            tree = ET.parse(f)
+        except (ET.ParseError, OSError) as e:
+            drift.append((str(f), "(parse error)", str(e)))
+            continue
+        for elem in tree.iter():
+            for attr in (
+                "resourceKind",
+                "objectType",
+                "adapterAndObjectType",
+            ):
+                rk = elem.get(attr) or ""
+                if "::" in rk:
+                    rk = rk.split("::", 1)[-1]
+                if rk and (rk.startswith("AZURE_") or rk.startswith("azure_")):
+                    if rk not in valid_kinds and rk not in NON_KIND_AZURE_TOKENS:
+                        drift.append(
+                            (str(f), elem.tag, f"unknown kind {rk} in @{attr}")
+                        )
+            for attr in ("attributeKey", "statKey", "key"):
+                ak = elem.get(attr) or ""
+                if "|" in ak and not _attr_in_describe(ak, describe_index):
+                    drift.append(
+                        (str(f), elem.tag, f"unknown attr {ak} in @{attr}")
+                    )
+
+    # Dashboards (JSON)
+    for f in base.rglob("*.json"):
+        if "dashboard" not in str(f).lower():
+            continue
+        try:
+            data = json.loads(f.read_text(encoding="utf-8", errors="replace"))
+        except (json.JSONDecodeError, OSError) as e:
+            drift.append((str(f), "(parse error)", str(e)))
+            continue
+        _walk_json_for_tokens(data, "", drift, valid_kinds, str(f))
+
+    return drift
+
+
+# ---------------------------------------------------------------------------
+# Aria Ops Suite-API
+# ---------------------------------------------------------------------------
+
+def _aria_request(
+    url: str,
+    headers: dict[str, str],
+    ctx: ssl.SSLContext,
+    body: Optional[bytes] = None,
+    timeout: int = 30,
+) -> dict:
+    req = urllib.request.Request(url, data=body, headers=headers)
+    if body is not None:
+        req.method = "POST"
+    with urllib.request.urlopen(req, context=ctx, timeout=timeout) as resp:
+        return json.loads(resp.read())
+
+
+def verify_aria_ops(
+    host: str,
+    user: str,
+    password: str,
+    expected_counts: Optional[dict[str, int]] = None,
+) -> dict:
+    """Acquire token, enumerate kinds, count resources per kind.
+
+    Returns a structured dict with counts and per-kind comparison if
+    expected_counts is provided.
+    """
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+
+    base = f"https://{host}/suite-api/api"
+    common_headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+    }
+
+    # Acquire token
+    try:
+        tok_body = json.dumps({"username": user, "password": password}).encode()
+        tok_resp = _aria_request(
+            f"{base}/auth/token/acquire", common_headers, ctx, body=tok_body
+        )
+        token = tok_resp.get("token")
+        if not token:
+            return {"error": f"no token in response: {tok_resp}"}
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError) as e:
+        return {"error": f"token acquire failed: {e}"}
+
+    auth_headers = {
+        "Authorization": f"vRealizeOpsToken {token}",
+        "Accept": "application/json",
+    }
+
+    # Enumerate kinds
+    try:
+        rk_resp = _aria_request(
+            f"{base}/adapterkinds/MicrosoftAzureAdapter/resourcekinds",
+            auth_headers,
+            ctx,
+        )
+    except (urllib.error.URLError, urllib.error.HTTPError, OSError) as e:
+        return {"error": f"resourcekinds query failed: {e}"}
+    kind_keys = [
+        rk.get("key") for rk in rk_resp.get("resource-kind", []) if rk.get("key")
+    ]
+
+    counts: dict[str, Any] = {}
+    mismatches: list[str] = []
+    for kind in kind_keys:
+        try:
+            url = (
+                f"{base}/resources?adapterKind=MicrosoftAzureAdapter"
+                f"&resourceKind={kind}&pageSize=1"
+            )
+            resp = _aria_request(url, auth_headers, ctx)
+            n = resp.get("pageInfo", {}).get("totalCount", 0)
+            counts[kind] = n
+            if expected_counts is not None and kind in expected_counts:
+                exp = expected_counts[kind]
+                # Allow rounding within +/-1 (collection in flight)
+                if abs(n - exp) > max(1, exp // 10):
+                    mismatches.append(f"{kind}: aria={n} live={exp}")
+        except (urllib.error.URLError, urllib.error.HTTPError, OSError) as e:
+            counts[kind] = f"ERROR: {e}"
+
+    return {
+        "host": host,
+        "kind_count": len(kind_keys),
+        "counts": counts,
+        "mismatches": mismatches,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Reports
+# ---------------------------------------------------------------------------
+
+def render_text_report(report: dict) -> str:
+    out: list[str] = []
+    out.append("# Azure MP — End-to-End Verification Report")
+    out.append(f"Generated: {report['timestamp']}")
+    if report.get("connection"):
+        out.append(f"Connection: {report['connection']}")
+    if report.get("pak"):
+        out.append(f"Pak: {report['pak']}")
+    out.append("")
+
+    if "live" in report:
+        live = report["live"]
+        if live.get("error"):
+            out.append("## Live Collection: FAILED")
+            out.append(f"  {live['error']}")
+            out.append("")
+        else:
+            out.append(
+                f"## Live Collection ({live['duration']:.1f}s, "
+                f"{live['total_objects']} objects)"
+            )
+            out.append("")
+            out.append("| Kind | Status | Count | Notes |")
+            out.append("|---|---|---|---|")
+            order = sorted(
+                live["per_kind"].items(),
+                key=lambda kv: (
+                    {"FAIL": 0, "WARN": 1, "PASS": 2}.get(kv[1]["status"], 3),
+                    kv[0],
+                ),
+            )
+            for kind, r in order:
+                notes = "; ".join(r["reasons"]) if r["reasons"] else ""
+                out.append(
+                    f"| `{kind}` | **{r['status']}** | {r['count']} | {notes} |"
+                )
+            out.append("")
+            extras = live.get("kind_counts_unspecified", {})
+            if extras:
+                out.append("### Other kinds collected (not in spec table)")
+                for k, n in sorted(extras.items()):
+                    out.append(f"- `{k}`: {n}")
+                out.append("")
+            dh_miss = live.get("dedicated_host_missing_attrs", [])
+            if dh_miss:
+                out.append("### Dedicated Host attribute coverage")
+                for entry in dh_miss:
+                    out.append(
+                        f"- `{entry['name']}` missing: "
+                        f"{', '.join(entry['missing'])}"
+                    )
+                out.append("")
+
+    if "describe_audit" in report:
+        d = report["describe_audit"]
+        if d.get("error"):
+            out.append(f"## describe.xml Audit: FAILED ({d['error']})")
+            out.append("")
+        else:
+            out.append(
+                f"## describe.xml Audit ({d['kind_count']} kinds in pak)"
+            )
+            if d.get("missing_kinds"):
+                out.append(
+                    f"- **Missing expected kinds:** "
+                    f"{', '.join(d['missing_kinds'])}"
+                )
+            if d.get("dedicated_host_attrs_missing"):
+                out.append(
+                    f"- **Dedicated Host attrs not in describe.xml:** "
+                    f"{', '.join(d['dedicated_host_attrs_missing'])}"
+                )
+            if d.get("custom_kinds_with_pipe_attrs"):
+                out.append(
+                    f"- **Custom kinds with pipe-keyed attrs (will be "
+                    f"rejected by Aria Ops):** "
+                    f"{json.dumps(d['custom_kinds_with_pipe_attrs'])}"
+                )
+            if not (
+                d.get("missing_kinds")
+                or d.get("dedicated_host_attrs_missing")
+                or d.get("custom_kinds_with_pipe_attrs")
+            ):
+                out.append("- All expected kinds present, no pipe-attr issues.")
+            out.append("")
+
+    if "content_drift" in report:
+        drift = report["content_drift"]
+        out.append(f"## Content Drift ({len(drift)} issues)")
+        for f, where, msg in drift[:50]:
+            out.append(f"- {f} @ {where}: {msg}")
+        if len(drift) > 50:
+            out.append(f"... and {len(drift) - 50} more (see JSON report)")
+        out.append("")
+
+    if "aria_ops" in report:
+        a = report["aria_ops"]
+        if a.get("error"):
+            out.append(f"## Aria Ops Suite-API: ERROR ({a['error']})")
+        else:
+            out.append(
+                f"## Aria Ops Suite-API ({a['host']}, "
+                f"{a['kind_count']} kinds enumerated)"
+            )
+            for kind, count in sorted(a["counts"].items()):
+                out.append(f"- `{kind}`: {count}")
+            if a.get("mismatches"):
+                out.append("")
+                out.append("### Count mismatches vs live collection")
+                for m in a["mismatches"]:
+                    out.append(f"- {m}")
+        out.append("")
+
+    out.append("## Summary")
+    out.append(f"- Exit signal: {report.get('exit_summary', '?')}")
+    return "\n".join(out)
+
+
+def render_json_report(report: dict, path: str) -> None:
+    serializable = json.loads(json.dumps(report, default=_json_default))
+    with open(path, "w") as f:
+        json.dump(serializable, f, indent=2)
+
+
+def _json_default(o: Any) -> Any:
+    if isinstance(o, set):
+        return sorted(o)
+    if isinstance(o, Path):
+        return str(o)
+    return str(o)
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main(argv: Optional[list[str]] = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="End-to-end verifier for the Azure Gov management pack.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""\
+examples:
+  # Static-only audit (no Azure API calls, no SDK needed):
+  #   describe.xml registry + Dedicated Host custom attrs +
+  #   pipe-keyed attr check on custom kinds + content drift
+  python scripts/verify_collection.py \\
+      --pak build/MicrosoftAzureAdapter.pak
+
+  # Live collection only — runs the 19 first-class collectors against
+  # Azure Gov, asserts counts/parents/props/metrics per kind, dumps JSON
+  python scripts/verify_collection.py \\
+      --connection connections.json \\
+      --out verify-$(date +%Y%m%d-%H%M).json
+
+  # Full sweep on the MP Builder server (Photon OS):
+  #   live collect + pak audit + content drift + Aria Ops Suite-API
+  ARIA_PASS='...' python scripts/verify_collection.py \\
+      --connection connections.json \\
+      --pak build/MicrosoftAzureAdapter.pak \\
+      --aria-ops aria.ops.local --aria-user admin \\
+      --out verify-$(date +%Y%m%d-%H%M).json
+
+  # Aria Ops check only (after pak deploy, no rebuild needed) — pulls
+  # username/password from connections.json's suite_api_* fields if
+  # --aria-user / ARIA_PASS not given
+  python scripts/verify_collection.py \\
+      --connection connections.json \\
+      --aria-ops aria.ops.local
+
+  # Override content/ location (e.g. when pak is in a custom path)
+  python scripts/verify_collection.py \\
+      --pak /tmp/custom.pak \\
+      --content Azure-Native-Build/content
+
+  # Diff two runs to detect drift over time (counts, missing kinds, etc.)
+  diff <(jq -S . verify-20260430-0900.json) \\
+       <(jq -S . verify-20260501-0900.json)
+
+exit codes:
+  0  all PASS
+  1  any FAIL (missing kind, missing parent, dropped metric, etc.)
+  2  WARN only (e.g. tenant has no instances of an optional kind)
+""",
+    )
+    parser.add_argument(
+        "--connection",
+        help="Path to mp-test format connections.json (enables live collect)",
+    )
+    parser.add_argument(
+        "--pak",
+        help="Path to .pak (enables describe.xml + content drift audits)",
+    )
+    parser.add_argument(
+        "--content",
+        help="Path to content/ dir; defaults to <pak>/../../content",
+    )
+    parser.add_argument(
+        "--aria-ops",
+        help="Aria Ops hostname for Suite-API audit (e.g., aria.ops.local)",
+    )
+    parser.add_argument("--aria-user", help="Aria Ops API username")
+    parser.add_argument(
+        "--aria-pass-env",
+        default="ARIA_PASS",
+        help="Env var holding Aria Ops password (default: ARIA_PASS)",
+    )
+    parser.add_argument("--out", help="Path to write JSON report")
+    parser.add_argument(
+        "--no-text-report",
+        action="store_true",
+        help="Suppress markdown stdout report",
+    )
+    args = parser.parse_args(argv)
+
+    if not (args.connection or args.pak or args.aria_ops):
+        parser.error(
+            "at least one of --connection, --pak, --aria-ops is required"
+        )
+
+    report: dict[str, Any] = {
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+    }
+    if args.pak:
+        report["pak"] = args.pak
+
+    has_fail = False
+    has_warn = False
+    expected_counts_for_aria: Optional[dict[str, int]] = None
+    conn: Optional[dict] = None
+
+    # --- Live collection ---------------------------------------------------
+    if args.connection:
+        conn = load_connection(args.connection)
+        report["connection"] = conn["name"]
+        stub = StubAdapterInstance(conn)
+        logger.info("Running live collection...")
+        try:
+            result, duration = run_collection(stub)
+        except Exception as e:
+            logger.error("run_collection failed: %s", e, exc_info=True)
+            report["live"] = {"error": f"{type(e).__name__}: {e}"}
+            has_fail = True
+        else:
+            err = getattr(result, "_error_message", None)
+            if err:
+                logger.error("Collection returned error: %s", err)
+                report["live"] = {"error": err, "duration": duration}
+                has_fail = True
+            else:
+                by_kind = inspect_result(result)
+                total = sum(len(v) for v in by_kind.values())
+                per_kind: dict[str, dict] = {}
+                for kind, spec in KIND_SPECS.items():
+                    status, count, reasons = assert_kind(by_kind, kind, spec)
+                    per_kind[kind] = {
+                        "status": status,
+                        "count": count,
+                        "reasons": reasons,
+                    }
+                    if status == "FAIL":
+                        has_fail = True
+                    elif status == "WARN":
+                        has_warn = True
+                # Counts for kinds not in spec table (likely stub kinds via
+                # bulk_resources). Surface them but don't grade.
+                spec_keys = set(KIND_SPECS.keys())
+                extras = {
+                    k: len(v) for k, v in by_kind.items() if k not in spec_keys
+                }
+                # Dedicated Host attribute coverage
+                dh_kind = "AZURE_DEDICATE_HOST"
+                dh_miss: list[dict] = []
+                for o in by_kind.get(dh_kind, []):
+                    miss = [
+                        a for a in DH_CUSTOM_ATTRS
+                        if a not in o["properties"]
+                        or o["properties"][a] in (None, "")
+                    ]
+                    if miss:
+                        dh_miss.append({"name": o["name"], "missing": miss})
+                if dh_miss:
+                    has_warn = True
+                report["live"] = {
+                    "duration": duration,
+                    "total_objects": total,
+                    "kind_counts": {k: len(v) for k, v in by_kind.items()},
+                    "kind_counts_unspecified": extras,
+                    "per_kind": per_kind,
+                    "dedicated_host_missing_attrs": dh_miss,
+                }
+                expected_counts_for_aria = {
+                    k: len(v) for k, v in by_kind.items()
+                }
+
+    # --- describe.xml + content drift -------------------------------------
+    if args.pak:
+        if not Path(args.pak).exists():
+            logger.error("Pak not found: %s", args.pak)
+            report["describe_audit"] = {"error": f"pak not found: {args.pak}"}
+            has_fail = True
+        else:
+            logger.info("Auditing describe.xml in %s", args.pak)
+            try:
+                describe_index = audit_describe_xml(args.pak)
+            except Exception as e:
+                logger.error("describe.xml audit failed: %s", e, exc_info=True)
+                report["describe_audit"] = {"error": str(e)}
+                has_fail = True
+            else:
+                expected_kinds = list(KIND_SPECS.keys())
+                missing = [
+                    k for k in expected_kinds if k not in describe_index
+                ]
+                dh_kind = "AZURE_DEDICATE_HOST"
+                dh = describe_index.get(dh_kind, {})
+                dh_present = dh.get("attrs", set()) | dh.get("metrics", set())
+                dh_missing = [a for a in DH_CUSTOM_ATTRS if a not in dh_present]
+                custom_pipe: dict[str, list[str]] = {}
+                for kind in CUSTOM_KIND_KEYS:
+                    info = describe_index.get(kind, {})
+                    pipe_attrs = [
+                        a for a in info.get("attrs", set()) | info.get("metrics", set())
+                        if "|" in a
+                    ]
+                    if pipe_attrs:
+                        custom_pipe[kind] = pipe_attrs
+
+                report["describe_audit"] = {
+                    "kind_count": len(describe_index),
+                    "missing_kinds": missing,
+                    "dedicated_host_attrs_missing": dh_missing,
+                    "custom_kinds_with_pipe_attrs": custom_pipe,
+                }
+                if missing or dh_missing or custom_pipe:
+                    has_fail = True
+
+                content_dir = args.content
+                if not content_dir:
+                    pak_parent = Path(args.pak).resolve().parent
+                    # Common layouts: build/foo.pak -> ../content
+                    candidates = [
+                        pak_parent.parent / "content",
+                        pak_parent / "content",
+                    ]
+                    content_dir = next(
+                        (str(c) for c in candidates if c.exists()), None
+                    )
+                if content_dir:
+                    logger.info(
+                        "Auditing content drift against %s", content_dir
+                    )
+                    drift = audit_content(content_dir, describe_index)
+                    report["content_drift"] = drift
+                    if drift:
+                        has_warn = True
+                else:
+                    logger.warning(
+                        "No content/ dir found near pak; skipping drift audit"
+                    )
+
+    # --- Aria Ops Suite-API ------------------------------------------------
+    if args.aria_ops:
+        password = os.environ.get(args.aria_pass_env)
+        user = args.aria_user
+        if not password and conn:
+            password = conn.get("suite_api_password") or password
+        if not user and conn:
+            user = conn.get("suite_api_username")
+        if not (user and password):
+            logger.error(
+                "Aria Ops requires --aria-user and a password "
+                "(env %s or connections.json suite_api_password)",
+                args.aria_pass_env,
+            )
+            report["aria_ops"] = {
+                "error": "missing user/password for Aria Ops"
+            }
+            has_fail = True
+        else:
+            logger.info(
+                "Querying Aria Ops Suite-API at %s as %s", args.aria_ops, user
+            )
+            ao = verify_aria_ops(
+                args.aria_ops, user, password, expected_counts_for_aria
+            )
+            report["aria_ops"] = ao
+            if ao.get("error"):
+                has_fail = True
+            elif ao.get("mismatches"):
+                has_warn = True
+
+    # --- Render ------------------------------------------------------------
+    if has_fail:
+        report["exit_summary"] = "FAIL"
+        exit_code = 1
+    elif has_warn:
+        report["exit_summary"] = "WARN"
+        exit_code = 2
+    else:
+        report["exit_summary"] = "PASS"
+        exit_code = 0
+
+    if not args.no_text_report:
+        print(render_text_report(report))
+    if args.out:
+        render_json_report(report, args.out)
+        logger.info("JSON report written to %s", args.out)
+
+    return exit_code
+
+
+if __name__ == "__main__":
+    sys.exit(main())
